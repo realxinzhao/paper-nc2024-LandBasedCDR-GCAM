@@ -1,0 +1,21 @@
+# File: A999.globaltech_coef_ssp1.csv
+# Title: Default coefficients for DAC
+# Units: airCO2 input is unitless (MtC from the atmosphere per Mt dac demand); all others are GJ per kg C (EJ of energy per Mt C)
+# Column types: ccccnnnn
+# ----------
+supplysector,subsector,technology,minicam.energy.input,1971,2020,2050,2100
+ces,dac,HT-dac-ng,process heat dac,0.0297,0.0297,0.019433333,0.019433333
+ces,dac,HT-dac-ng,elect_td_ind,0.006526667,0.006526667,0.004766667,0.004766667
+ces,dac,HT-dac-ng,airCO2,1,1,1,1
+ces,dac,HT-dac-ng,water_td_ind_C,0.017233333,0.017233333,0.017233333,0.017233333
+ces,dac,HT-dac-ng,water_td_ind_W,0.017233333,0.017233333,0.017233333,0.017233333
+ces,dac,nodac,process heat dac,0,0,0,0
+ces,dac,nodac,elect_td_ind,0,0,0,0
+ces,dac,nodac,airCO2,0,0,0,0
+process heat dac,gasCCS,gasCCS,wholesale gas,1,1,1,1
+ces,dac,HT-dac-elec,elect_td_ind,0.0220044,0.0220044,0.0186384,0.0186384
+ces,dac,HT-dac-elec,airCO2,1,1,1,1
+ces,dac,HT-dac-elec,water_td_ind_C,0.017233333,0.017233333,0.017233333,0.017233333
+ces,dac,HT-dac-elec,water_td_ind_W,0.017233333,0.017233333,0.017233333,0.017233333
+ces,dac,LT-dac-elec,elect_td_ind,0.0200684,0.0200684,0.009320178,0.009320178
+ces,dac,LT-dac-elec,airCO2,1,1,1,1
