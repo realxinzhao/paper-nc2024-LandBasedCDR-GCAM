@@ -10,6 +10,7 @@
 #' a vector of output names, or (if \code{command} is "MAKE") all
 #' the generated outputs: \code{dac_USA.xml}. The corresponding file in the
 #' original data system was \code{batch_dac_USA_xml.R} (gcamusa XML).
+#' @author JF March 2021
 module_gcamusa_batch_dac_USA_xml <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
     return(c("L2999.DeleteSupplysector_USAdac",

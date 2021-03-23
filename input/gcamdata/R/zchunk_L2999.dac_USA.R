@@ -18,7 +18,7 @@
 #' @importFrom assertthat assert_that
 #' @importFrom dplyr arrange bind_rows distinct filter if_else group_by lag left_join mutate pull select
 #' @importFrom tidyr complete nesting
-#' @author JF October 2017
+#' @author JF March 2021
 module_gcamdata_L2999.dac_USA <- function(command, ...) {
 
 
@@ -37,7 +37,7 @@ module_gcamdata_L2999.dac_USA <- function(command, ...) {
              "L2999.StubTech_dac",
              "L2999.PerCapitaBased_dac",
              "L2999.PriceElasticity_dac"))
-#"L2999.StubTechProd_dac"
+
 
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L2999.DeleteSupplysector_USAdac",
@@ -63,7 +63,6 @@ module_gcamdata_L2999.dac_USA <- function(command, ...) {
     calibrated_techs <- get_data(all_data, "energy/calibrated_techs_ces")
     A999.calibration_state <- get_data(all_data, "gcam-usa/A999.calibration_state")
     A999.demand <- get_data(all_data, "energy/A999.demand")
-    #A999.globaltech_coef <- get_data(all_data, "energy/A999.globaltech_coef_ssp2")
 
     L2999.GlobalTechCoef_dac <- get_data(all_data, "L2999.GlobalTechCoef_dac", strip_attributes = TRUE)
     L2999.Supplysector_dac <- get_data(all_data, "L2999.Supplysector_dac", strip_attributes = TRUE)
@@ -74,7 +73,7 @@ module_gcamdata_L2999.dac_USA <- function(command, ...) {
     L2999.StubTech_dac <- get_data(all_data, "L2999.StubTech_dac", strip_attributes = TRUE)
     L2999.PerCapitaBased_dac <- get_data(all_data, "L2999.PerCapitaBased_dac", strip_attributes = TRUE)
     L2999.PriceElasticity_dac <- get_data(all_data, "L2999.PriceElasticity_dac", strip_attributes = TRUE)
-    #L2999.StubTechProd_dac <- get_data(all_data, "L2999.StubTechProd_dac", strip_attributes = TRUE)
+
 
 
 
@@ -99,7 +98,7 @@ module_gcamdata_L2999.dac_USA <- function(command, ...) {
       dac_states
 
     # 1a. Supplysector information
-    # L2999.Supplysector_dac: Supply sector information for dac sector
+    # L2999.Supplysector_dac: Supply sector information for ces ("climate engineering services") sector containing dac
 
     L2999.Supplysector_dac %>%
       filter(region == gcam.USA_REGION) %>%
@@ -212,31 +211,6 @@ module_gcamdata_L2999.dac_USA <- function(command, ...) {
       distinct ->
       dac_production_technologies
 
-    # Add dac sector information to the data frame of input-output coefficients of
-    # dac production by state.
-    #L1999.IO_GJkg_state_dac_F_Yh %>%
-    #  left_join_error_no_match(dac_production_technologies, by = c("sector", "fuel")) %>%
-    #  select(state,fuel, sector, year, value, supplysector, subsector, technology, minicam.energy.input) ->
-    #  L2999.IO_GJkg_state_dac_F_Yh
-
-    # Interpolate dac production default coefficients to future years.
-    #
-    # First change format of the the production default coefficients data frame from wide to long.
-    #A999.globaltech_coef_long <- gather_years(A999.globaltech_coef)
-
-    # Then linearly interpolate the default coefficients for future years. In the next step these
-    # values will be added to the state input-output coefficients data frame.
-    #A999.globaltech_coef_long %>%
-    #  complete(nesting(supplysector, subsector, minicam.energy.input, technology), year = c(year, MODEL_FUTURE_YEARS)) %>%
-    ##  arrange(supplysector, subsector, minicam.energy.input, technology, year) %>%
-    #  group_by(supplysector, subsector, minicam.energy.input, technology) %>%
-    #  mutate(value = approx_fun(year, value), value = signif(value, energy.DIGITS_COEFFICIENT)) %>%
-    #  ungroup ->
-    #  L2999.globaltech_coef
-
-    #write.csv(L2999.globaltech_coef,"L2999.globaltech_coef.csv")
-
-
 
     L2999.GlobalTechCoef_dac_USA %>%
       rename(supplysector=sector.name,
@@ -268,10 +242,6 @@ module_gcamdata_L2999.dac_USA <- function(command, ...) {
       select(-replace) ->
       L2999.StubTechCoef_dac_USA
 
-    #change market name for water use to USA
-    #L2999.StubTechCoef_dac_USA %>%
-    #  mutate(market.name = if_else(grepl("water", minicam.energy.input), 'USA', market.name)) ->
-    #  L2999.StubTechCoef_dac_USA
 
     #change market name for airCO2 to global
     L2999.StubTechCoef_dac_USA %>%
@@ -314,7 +284,6 @@ module_gcamdata_L2999.dac_USA <- function(command, ...) {
       add_legacy_name("L2999.Supplysector_dac") %>%
       add_precursors("L2999.Supplysector_dac") ->
       L2999.DeleteSupplysector_USAdac
-
 
     L2999.DeleteFinalDemand_USAdac %>%
       add_title("Supply sector keywords for dac sector") %>%
@@ -398,26 +367,12 @@ module_gcamdata_L2999.dac_USA <- function(command, ...) {
       L2999.Supplysector_dac_USA
 
     L2999.StubTechProd_dac_USA %>%
-      #add_title("Dummy calibration for all dac stub technologies for all states") %>%
       add_units("NA") %>%
       add_comments("Added dac calibration coefficients to all states") %>%
       add_legacy_name("L2999.StubTechProd_dac_USA") %>%
       add_precursors("gcam-usa/A999.calibration_state","energy/A999.demand","energy/calibrated_techs_ces") ->
       L2999.StubTechProd_dac_USA
 
-    #write.csv(L2999.DeleteSupplysector_USAdac,"L2999.DeleteSupplysector_USAdac.csv")
-    #write.csv(L2999.DeleteFinalDemand_USAdac,"L2999.DeleteFinalDemand_USAdac.csv")
-    #write.csv(L2999.SubsectorLogit_dac_USA,"L2999.SubsectorLogit_dac_USA.csv")
-    #write.csv(L2999.SubsectorShrwtFllt_dac_USA,"L2999.SubsectorShrwtFllt_dac_USA.csv")
-    #write.csv(L2999.SubsectorInterp_dac_USA,"L2999.SubsectorInterp_dac_USA.csv")
-    #write.csv(L2999.StubTech_dac_USA,"L2999.StubTech_dac_USA.csv")
-    #write.csv(L2999.PerCapitaBased_dac_USA,"L2999.PerCapitaBased_dac_USA.csv")
-    #write.csv(L2999.PriceElasticity_dac_USA,"L2999.PriceElasticity_dac_USA.csv")
-    #write.csv(L2999.FinalEnergyKeyword_dac_USA,"L2999.FinalEnergyKeyword_dac_USA.csv")
-    #write.csv(L2999.BaseService_dac_USA,"L2999.BaseService_dac_USA.csv")
-    #write.csv(L2999.StubTechCoef_dac_USA,"L2999.StubTechCoef_dac_USA.csv")
-    #write.csv(L2999.Supplysector_dac_USA,"L2999.Supplysector_dac_USA.csv")
-    #write.csv(L2999.StubTechProd_dac_USA,"L2999.StubTechProd_dac_USA.csv")
 
     return_data(L2999.DeleteSupplysector_USAdac,
                 L2999.DeleteFinalDemand_USAdac,

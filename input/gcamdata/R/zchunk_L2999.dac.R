@@ -18,7 +18,7 @@
 #' @importFrom assertthat assert_that
 #' @importFrom dplyr arrange bind_rows distinct filter if_else group_by lag left_join mutate pull select
 #' @importFrom tidyr complete nesting
-#' @author JF October 2017
+#' @author JF March 2021
 module_energy_L2999.dac <- function(command, ...) {
 
   TECH_PARAMETRIZATION_OUTPUTS <- paste0("ssp", 1:5)
@@ -26,7 +26,7 @@ module_energy_L2999.dac <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
     return(c(FILE = "common/GCAM_region_names",
              FILE = "energy/calibrated_techs_ces",
-             #FILE = "emissions/A_PrimaryFuelCCoef",
+
              FILE = "energy/A999.sector",
              FILE = "energy/A999.subsector_interp",
              FILE = "energy/A999.subsector_logit",
@@ -43,8 +43,6 @@ module_energy_L2999.dac <- function(command, ...) {
              FILE = "energy/A999.globaltech_cost_ssp3",
              FILE = "energy/A999.globaltech_cost_ssp4",
              FILE = "energy/A999.globaltech_cost_ssp5",
-
-             FILE = "energy/A999.globaltech_shrwt",
 
              FILE = "energy/A999.globaltech_shrwt_ssp1",
              FILE = "energy/A999.globaltech_shrwt_ssp2",
@@ -105,13 +103,9 @@ module_energy_L2999.dac <- function(command, ...) {
     GCAM_region_names <- get_data(all_data, "common/GCAM_region_names")
     calibrated_techs <- get_data(all_data, "energy/calibrated_techs_ces")
     A999.sector <- get_data(all_data, "energy/A999.sector", strip_attributes = TRUE)
-    #A_PrimaryFuelCCoef <- get_data(all_data, "emissions/A_PrimaryFuelCCoef")
     A999.subsector_interp <- get_data(all_data, "energy/A999.subsector_interp", strip_attributes = TRUE)
     A999.subsector_logit <- get_data(all_data, "energy/A999.subsector_logit", strip_attributes = TRUE)
     A999.subsector_shrwt <- get_data(all_data, "energy/A999.subsector_shrwt", strip_attributes = TRUE)
-    #A999.globaltech_coef <- get_data(all_data, "energy/A999.globaltech_coef")
-    #A999.globaltech_cost <- get_data(all_data, "energy/A999.globaltech_cost")
-    #A999.globaltech_shrwt <- get_data(all_data, "energy/A999.globaltech_shrwt", strip_attributes = TRUE)
     A999.globaltech_co2capture <- get_data(all_data, "energy/A999.globaltech_co2capture")
     A999.demand <- get_data(all_data, "energy/A999.demand", strip_attributes = TRUE)
     A999.globaltech_retirement <- get_data(all_data, "energy/A999.globaltech_retirement", strip_attributes = TRUE)
@@ -153,7 +147,7 @@ module_energy_L2999.dac <- function(command, ...) {
     # ===================================================
     # 1. Perform computations
     # 1a. Supplysector information
-    # L2999.Supplysector_dac: Supply sector information for dac sector
+    # L2999.Supplysector_dac: Supply sector information for ces "climate engineering services" sector containing dac subsectors and technologies
     A999.sector %>%
       write_to_all_regions(c(LEVEL2_DATA_NAMES[["Supplysector"]], LOGIT_TYPE_COLNAME), GCAM_region_names) ->
       L2999.Supplysector_dac
@@ -165,18 +159,18 @@ module_energy_L2999.dac <- function(command, ...) {
       L2999.FinalEnergyKeyword_dac
 
     # 1b. Subsector information
-    # L2999.SubsectorLogit_dac: Subsector logit exponents of dac sector
+    # L2999.SubsectorLogit_dac: Subsector logit exponents of ces sector
     A999.subsector_logit %>%
       write_to_all_regions(c(LEVEL2_DATA_NAMES[["SubsectorLogit"]], LOGIT_TYPE_COLNAME), GCAM_region_names) ->
       L2999.SubsectorLogit_dac
 
-    # and L2999.SubsectorShrwtFllt_dac: Subsector shareweights of dac sector
+    # and L2999.SubsectorShrwtFllt_dac: Subsector shareweights of ces sector
     A999.subsector_shrwt %>%
       filter(!is.na(year.fillout)) %>%
       write_to_all_regions(LEVEL2_DATA_NAMES[["SubsectorShrwtFllt"]], GCAM_region_names) ->
       L2999.SubsectorShrwtFllt_dac
 
-    # L2999.SubsectorInterp_dac: Subsector shareweight interpolation of dac sector
+    # L2999.SubsectorInterp_dac: Subsector shareweight interpolation of ces sector
     A999.subsector_interp %>%
       filter(is.na(to.value)) %>%
       write_to_all_regions(LEVEL2_DATA_NAMES[["SubsectorInterp"]], GCAM_region_names) ->
@@ -194,9 +188,6 @@ module_energy_L2999.dac <- function(command, ...) {
       L2999.StubTech_dac
 
     # L2999.GlobalTechShrwt_dac: Shareweights of global dac technologies
-
-
-
     A999.globaltech_shrwt %>%
       gather_years %>%
       complete(nesting(supplysector, subsector, technology,scenario), year = c(year, MODEL_BASE_YEARS, MODEL_FUTURE_YEARS)) %>%
@@ -210,10 +201,10 @@ module_energy_L2999.dac <- function(command, ...) {
       select(LEVEL2_DATA_NAMES[["GlobalTechYr"]], "share.weight","scenario") ->
       L2999.GlobalTechShrwt_dac
 
-
+    #L2999.GlobalTechCoef_dac: Energy inputs and coefficients of dac technologies
     #concatenate tables of all ssps into one table for later filtering
     A999.globaltech_coef <- bind_rows(A999.globaltech_coef_ssp1,A999.globaltech_coef_ssp2,A999.globaltech_coef_ssp3,A999.globaltech_coef_ssp4,A999.globaltech_coef_ssp5)
-    # L2999.GlobalTechCoef_dac: Energy inputs and coefficients of dac technologies
+
     A999.globaltech_coef %>%
       gather_years %>%
       complete(nesting(supplysector, subsector, technology, minicam.energy.input,scenario), year = c(year, MODEL_BASE_YEARS, MODEL_FUTURE_YEARS)) %>%
@@ -230,7 +221,7 @@ module_energy_L2999.dac <- function(command, ...) {
 
     # Carbon capture rates for dac.
     # L2999.GlobalTechCapture_dac: defines CO2 capture fractions for dac (by definition 1, as all inputs are defined per tonne C removed from the atmosphere),
-    # as well as a separately-defined process heat dac sector.
+    # as well as a separately-defined process heat dac sector, which has slightly lower capture rates for natural gas combustion emissions.
     # This allows separate consideration of the capture fraction of any combustion emissions resulting from the process heat input
     # No need to consider historical periods here
     A999.globaltech_co2capture %>%
@@ -249,13 +240,10 @@ module_energy_L2999.dac <- function(command, ...) {
       L2999.GlobalTechCapture_dac
 
 
-
+    # L2999.GlobalTechCost_dac: Non-energy costs of global dac technologies
+    #first we concatenate all the ssp cost parametrizations into one table, for later filtering
     A999.globaltech_cost <- bind_rows(A999.globaltech_cost_ssp1,A999.globaltech_cost_ssp2,A999.globaltech_cost_ssp3,A999.globaltech_cost_ssp4,A999.globaltech_cost_ssp5)
 
-
-
-
-    # L2999.GlobalTechCost_dac: Non-energy costs of global dac manufacturing technologies
 
     A999.globaltech_cost %>%
       gather_years %>%
@@ -284,18 +272,8 @@ module_energy_L2999.dac <- function(command, ...) {
       coef_mean # temporary value
 
 
-    # Adjust the non-energy costs in the table for model input
-#    L2999.GlobalTechCost_dac %>%
-#      filter(technology %in% L2999.GlobalTechCapture_dac[["technology"]]) %>%
-#      mutate(input.cost = input.cost) %>%
-#      bind_rows(filter(L2999.GlobalTechCost_dac, !(technology %in% L2999.GlobalTechCapture_dac[["technology"]]))) %>%
-#      mutate(input.cost = round(input.cost, energy.DIGITS_COST)) ->
-#      L2999.GlobalTechCost_dac
-
-
-
      #Calibration and region-specific data
-    # L2999.StubTechProd_dac: calibrated ces production
+    # L2999.StubTechProd_dac: calibrated ces production (arbitrarily high value met entirely by no-capture technology in history)
     calibrated_techs %>%
       filter(calibration == "output") %>% # Only take the tech IDs where the calibration is identified as output
       select(sector, supplysector, subsector, technology) %>%
@@ -315,35 +293,19 @@ module_energy_L2999.dac <- function(command, ...) {
       L2999.StubTechProd_dac
 
 
-    # L2999.StubTechCoef_dac: region-specific coefficients of dac production technologies
-    # Take this as a given in all years for which data is available
-    calibrated_techs %>%
-      select(sector, fuel, supplysector, subsector, technology, minicam.energy.input) %>%
-      distinct ->
-      calibrated_techs_export # temporary tibble
-
-
-    # L2999.StubTechCalInput_dac_heat: calibrated dac production
-    calibrated_techs %>%
-      select(sector, fuel, supplysector, subsector, technology, minicam.energy.input) %>%
-      distinct ->
-      calibrated_techs_export # temporary tibble
-
-
-
     # L2999.PerCapitaBased_dac: per-capita based flag for dac exports final demand.  Note that this should be zero as the amount of DAC shouldn't be explicitly tied to population
     A999.demand %>%
       write_to_all_regions(LEVEL2_DATA_NAMES[["PerCapitaBased"]], GCAM_region_names) ->
       L2999.PerCapitaBased_dac
 
 
-#     L2999.BaseService_dac: base-year service output of dac
+#     L2999.BaseService_dac: base-year service output of dac (arbitrarily high)
       L2999.StubTechProd_dac %>%
       select(region, year, base.service = calOutputValue) %>%
       mutate(energy.final.demand = A999.demand[["energy.final.demand"]]) ->
       L2999.BaseService_dac
 
-    # L2999.PriceElasticity_dac: price elasticity
+    # L2999.PriceElasticity_dac: price elasticity (zero to represent the backstop nature of dac technology)
     A999.demand %>%
       write_to_all_regions(LEVEL2_DATA_NAMES[["PriceElasticity"]][LEVEL2_DATA_NAMES[["PriceElasticity"]] != "year"], GCAM_region_names) %>%
       repeat_add_columns(tibble(year = MODEL_FUTURE_YEARS)) %>%
@@ -400,12 +362,10 @@ module_energy_L2999.dac <- function(command, ...) {
       L2999.GlobalTechCost_dac %>%
         filter(scenario == sce) %>%
         select(-c(scenario))%>%
-        #add_title("Energy inputs and coefficients of dac technologies") %>%
         add_title(paste("Cost coefficients of dac -", sce)) %>%
         add_units("1975$/kg for supplysector dac; 1975$/GJ for supplysector process heat dac") %>%
         add_comments(sce) %>%
         add_comments("Includes non-energy related capture costs only per kgC captured from the atmosphere. Storage costs will be computed endogenously through the carbon storage markets. Additional non-energy cost of process heat dac assumed zero.") %>%
-        #add_legacy_name("L2999.GlobalTechCoef_dac") %>%
         add_legacy_name(paste0("L2999.GlobalTechCost_dac_", tolower(sce))) %>%
         add_precursors(paste0("energy/A999.globaltech_cost_", tolower(sce))) ->
         x
@@ -418,12 +378,10 @@ module_energy_L2999.dac <- function(command, ...) {
       L2999.GlobalTechCoef_dac %>%
         filter(scenario == sce) %>%
         select(-c(scenario))%>%
-        #add_title("Energy inputs and coefficients of dac technologies") %>%
         add_title(paste("Tech coefficients of dac -", sce)) %>%
         add_units("airCO2 input is unitless (Mt airCO2 per Mt dac); all others are GJ per kg (EJ of energy per Mt of dac)") %>%
         add_comments(sce) %>%
         add_comments("For dac sector, the energy use coefficients from A999.globaltech_coef are interpolated into all model years") %>%
-        #add_legacy_name("L2999.GlobalTechCoef_dac") %>%
         add_legacy_name(paste0("L2999.GlobalTechCoef_dac_", tolower(sce))) %>%
         add_precursors(paste0("energy/A999.globaltech_coef_", tolower(sce))) ->
         x
@@ -492,23 +450,21 @@ module_energy_L2999.dac <- function(command, ...) {
       add_units("NA") %>%
       add_comments("For dac sector, the stub technologies from A999.globaltech_shrwt are expanded into all GCAM regions") %>%
       add_legacy_name("L2999.StubTech_dac") %>%
-      add_precursors("energy/A999.globaltech_shrwt", "common/GCAM_region_names") ->
+      add_precursors("energy/A999.globaltech_shrwt_ssp1", "energy/A999.globaltech_shrwt_ssp2","energy/A999.globaltech_shrwt_ssp3","energy/A999.globaltech_shrwt_ssp4","energy/A999.globaltech_shrwt_ssp5",
+                     "common/GCAM_region_names") ->
       L2999.StubTech_dac
 
     L2999.GlobalTechShrwt_dac %>%
       add_title("Shareweights of global dac technologies") %>%
       add_units("Unitless") %>%
       add_comments("For dac sector, the share weights from A999.globaltech_shrwt are interpolated into all base years and future years") %>%
-    #  add_legacy_name("L2999.GlobalTechShrwt_dac") %>%
       add_precursors("energy/A999.globaltech_shrwt_ssp1","energy/A999.globaltech_shrwt_ssp2","energy/A999.globaltech_shrwt_ssp3","energy/A999.globaltech_shrwt_ssp4","energy/A999.globaltech_shrwt_ssp5") ->
-      #add_precursors("energy/A999.globaltech_shrwt") ->
       L2999.GlobalTechShrwt_dac
 
     L2999.GlobalTechCoef_dac %>%
       add_title("Energy inputs and coefficients of dac technologies") %>%
       add_units("airCO2 input is unitless (Mt airCO2 per Mt dac); all others are GJ per kg (EJ of energy per Mt of dac)") %>%
       add_comments("For dac sector, the energy use coefficients from A999.globaltech_coef are interpolated into all model years") %>%
-      #add_legacy_name("L2999.GlobalTechCoef_dac") %>%
       add_precursors("energy/A999.globaltech_coef_ssp1","energy/A999.globaltech_coef_ssp2","energy/A999.globaltech_coef_ssp3","energy/A999.globaltech_coef_ssp4","energy/A999.globaltech_coef_ssp5") ->
       L2999.GlobalTechCoef_dac
 
@@ -518,7 +474,6 @@ module_energy_L2999.dac <- function(command, ...) {
       add_title("Non-energy costs of global dac manufacturing technologies") %>%
       add_units("1975$/kg for supplysector dac; 1975$/GJ for supplysector process heat dac") %>%
       add_comments("Includes non-energy related capture costs only per kgC captured from the atmosphere. Storage costs will be computed endogenously through the carbon storage markets. Additional non-energy cost of process heat dac assumed zero.") %>%
-      #add_legacy_name("L2999.GlobalTechCost_dac") %>%
       add_precursors("energy/A999.globaltech_cost_ssp1","energy/A999.globaltech_cost_ssp2","energy/A999.globaltech_cost_ssp3","energy/A999.globaltech_cost_ssp4","energy/A999.globaltech_cost_ssp5") ->
       L2999.GlobalTechCost_dac
 
