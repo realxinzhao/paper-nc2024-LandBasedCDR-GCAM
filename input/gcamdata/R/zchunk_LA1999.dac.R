@@ -9,7 +9,8 @@
 #' @return Depends on \code{command}: either a vector of required inputs,
 #' a vector of output names, or (if \code{command} is "MAKE") all
 #' the generated outputs: \code{L1999.out_Mt_R_dac_Yh},
-#' @details This chunk generates input, output, and IO coefficients for the direct air capture sector. (these should be universally zero for historical periods as there is no dac in history)
+#' @details This chunk defines historical demand for the climate engineering services sector, setting up structure for future competition.
+#' For all historical years, is met entirely by "no DAC" technology
 #' @importFrom assertthat assert_that
 #' @importFrom dplyr arrange bind_rows filter group_by left_join mutate select semi_join summarise summarise_all
 #' @importFrom tidyr complete gather nesting
@@ -33,8 +34,7 @@ module_energy_LA1999.dac <- function(command, ...) {
     all_data <- list(...)[[1]]
 
     # Load required inputs
-    #iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
-    #A_PrimaryFuelCCoef <- get_data(all_data, "emissions/A_PrimaryFuelCCoef")
+
     ces_calibration <- get_data(all_data, "energy/A999.calibration")
 
 
