@@ -13,7 +13,7 @@
 #' @importFrom assertthat assert_that
 #' @importFrom dplyr arrange bind_rows filter group_by left_join mutate select semi_join summarise summarise_all
 #' @importFrom tidyr complete gather nesting
-#' @author JF Nov 2017
+#' @author JF March 2021
 module_energy_LA1999.dac <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
     return(c(FILE = "energy/A999.calibration"))
