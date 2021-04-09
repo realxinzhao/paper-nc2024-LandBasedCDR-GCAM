@@ -10,6 +10,6 @@
 # Column types: ccccicinni
 # ----------
 supplysector,subsector,technology,year,lifetime,shutdown.rate,half.life,steepness,median.shutdown.point,profit.shutdown.steepness
-ces,dac,HT-dac-ng,initial-future-year,80,,40,0.1,-0.1,6
-ces,dac,HT-dac-elec,initial-future-year,80,,40,0.1,-0.1,6
-ces,dac,LT-dac-elec,initial-future-year,60,,30,0.1,-0.1,6
+ces,dac,hightemp DAC NG,initial-future-year,80,,40,0.1,-0.1,6
+ces,dac,hightemp DAC elec,initial-future-year,80,,40,0.1,-0.1,6
+ces,dac,lowtemp DAC heatpump,initial-future-year,60,,30,0.1,-0.1,6

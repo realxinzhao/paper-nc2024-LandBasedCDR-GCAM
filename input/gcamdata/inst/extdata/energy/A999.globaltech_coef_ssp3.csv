@@ -4,18 +4,18 @@
 # Column types: ccccnnnn
 # ----------
 supplysector,subsector,technology,minicam.energy.input,1971,2020,2050,2100
-ces,dac,HT-dac-ng,process heat dac,0.0297,0.0297,0.0297,0.0297
-ces,dac,HT-dac-ng,elect_td_ind,0.006526667,0.006526667,0.006526667,0.006526667
-ces,dac,HT-dac-ng,airCO2,1,1,1,1
-ces,dac,HT-dac-ng,water_td_ind_C,0.017233333,0.017233333,0.017233333,0.017233333
-ces,dac,HT-dac-ng,water_td_ind_W,0.017233333,0.017233333,0.017233333,0.017233333
-ces,dac,nodac,process heat dac,0,0,0,0
-ces,dac,nodac,elect_td_ind,0,0,0,0
-ces,dac,nodac,airCO2,0,0,0,0
-process heat dac,gasCCS,gasCCS,wholesale gas,1,1,1,1
-ces,dac,HT-dac-elec,elect_td_ind,0.0220044,0.0220044,0.0220044,0.0220044
-ces,dac,HT-dac-elec,airCO2,1,1,1,1
-ces,dac,HT-dac-elec,water_td_ind_C,0.017233333,0.017233333,0.017233333,0.017233333
-ces,dac,HT-dac-elec,water_td_ind_W,0.017233333,0.017233333,0.017233333,0.017233333
-ces,dac,LT-dac-elec,elect_td_ind,0.0200684,0.0200684,0.0200684,0.0200684
-ces,dac,LT-dac-elec,airCO2,1,1,1,1
+ces,dac,hightemp DAC NG,process heat dac,0.0297,0.0297,0.0297,0.0297
+ces,dac,hightemp DAC NG,elect_td_ind,0.006526667,0.006526667,0.006526667,0.006526667
+ces,dac,hightemp DAC NG,airCO2,1,1,1,1
+ces,dac,hightemp DAC NG,water_td_ind_C,0.017233333,0.017233333,0.017233333,0.017233333
+ces,dac,hightemp DAC NG,water_td_ind_W,0.017233333,0.017233333,0.017233333,0.017233333
+ces,dac,no DAC,process heat dac,0,0,0,0
+ces,dac,no DAC,elect_td_ind,0,0,0,0
+ces,dac,no DAC,airCO2,0,0,0,0
+process heat dac,gas CCS,gas CCS,wholesale gas,1,1,1,1
+ces,dac,hightemp DAC elec,elect_td_ind,0.0220044,0.0220044,0.0220044,0.0220044
+ces,dac,hightemp DAC elec,airCO2,1,1,1,1
+ces,dac,hightemp DAC elec,water_td_ind_C,0.017233333,0.017233333,0.017233333,0.017233333
+ces,dac,hightemp DAC elec,water_td_ind_W,0.017233333,0.017233333,0.017233333,0.017233333
+ces,dac,lowtemp DAC heatpump,elect_td_ind,0.0200684,0.0200684,0.0200684,0.0200684
+ces,dac,lowtemp DAC heatpump,airCO2,1,1,1,1

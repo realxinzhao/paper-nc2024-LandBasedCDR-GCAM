@@ -4,8 +4,8 @@
 # Column types: ccccnnnn
 # ----------
 supplysector,subsector,technology,minicam.non.energy.input,1971,2020,2050,2100
-ces,dac,HT-dac-ng,non-energy,0.297615642,0.297615642,0.07742967,0.07742967
-ces,dac,HT-dac-elec,non-energy,0.381047227,0.381047227,0.096028217,0.096028217
-ces,dac,LT-dac-elec,non-energy,0.423419501,0.423419501,0.1356294,0.1356294
-ces,dac,nodac,non-energy,0.001,0.001,0.001,0.001
-process heat dac,gasCCS,gasCCS,non-energy,0,0,0,0
+ces,dac,hightemp DAC NG,non-energy,0.297615642,0.297615642,0.07742967,0.07742967
+ces,dac,hightemp DAC elec,non-energy,0.381047227,0.381047227,0.096028217,0.096028217
+ces,dac,lowtemp DAC heatpump,non-energy,0.423419501,0.423419501,0.1356294,0.1356294
+ces,dac,no DAC,non-energy,0.001,0.001,0.001,0.001
+process heat dac,gas CCS,gas CCS,non-energy,0,0,0,0
