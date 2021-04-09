@@ -1,0 +1,57 @@
+# File: A999.calibration_state.csv
+# Title: Calibration values for climate engineering services sector
+# Units: MtC
+# Column types: ccin
+# ----------
+state,sector,year,value
+AK,ces,2015,40
+AL,ces,2015,40
+AR,ces,2015,40
+AZ,ces,2015,40
+CA,ces,2015,40
+CO,ces,2015,40
+CT,ces,2015,40
+DC,ces,2015,40
+DE,ces,2015,40
+FL,ces,2015,40
+GA,ces,2015,40
+HI,ces,2015,40
+IA,ces,2015,40
+ID,ces,2015,40
+IL,ces,2015,40
+IN,ces,2015,40
+KS,ces,2015,40
+KY,ces,2015,40
+LA,ces,2015,40
+MA,ces,2015,40
+MD,ces,2015,40
+ME,ces,2015,40
+MI,ces,2015,40
+MN,ces,2015,40
+MO,ces,2015,40
+MS,ces,2015,40
+MT,ces,2015,40
+NC,ces,2015,40
+ND,ces,2015,40
+NE,ces,2015,40
+NH,ces,2015,40
+NJ,ces,2015,40
+NM,ces,2015,40
+NV,ces,2015,40
+NY,ces,2015,40
+OH,ces,2015,40
+OK,ces,2015,40
+OR,ces,2015,40
+PA,ces,2015,40
+RI,ces,2015,40
+SC,ces,2015,40
+SD,ces,2015,40
+TN,ces,2015,40
+TX,ces,2015,40
+UT,ces,2015,40
+VA,ces,2015,40
+VT,ces,2015,40
+WA,ces,2015,40
+WI,ces,2015,40
+WV,ces,2015,40
+WY,ces,2015,40
