@@ -5,4 +5,4 @@
 # ----------
 supplysector,subsector,apply.to,from.year,to.year,to.value,interpolation.function
 ces,dac,share-weight,final-calibration-year,end-year,,fixed
-process heat dac,gasCCS,share-weight,final-calibration-year,end-year,,fixed
+process heat dac,gas CCS,share-weight,final-calibration-year,end-year,,fixed
