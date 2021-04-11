@@ -5,5 +5,5 @@
 # ----------
 supplysector,subsector,logit.exponent,logit.type
 airCO2,airCO2,-6,
-process heat dac,gasCCS,-6,
+process heat dac,gas CCS,-6,
 ces,dac,-0.036,absolute-cost-logit
