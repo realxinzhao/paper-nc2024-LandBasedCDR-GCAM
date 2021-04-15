@@ -5,6 +5,6 @@
 # ----------
 supplysector,subsector,technology,1971,2100
 process heat dac,gas CCS,gas CCS,0.95,0.95
-ces,dac,HT-dac-ng,1,1
-ces,dac,HT-dac-elec,1,1
-ces,dac,LT-dac-elec,1,1
+ces,dac,hightemp DAC NG,1,1
+ces,dac,hightemp DAC elec,1,1
+ces,dac,lowtemp DAC heatpump,1,1
