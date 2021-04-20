@@ -14,8 +14,6 @@ refining,coal to liquids,coal to liquids,non-energy,5.294117647,5.294117647,,0.7
 refining,coal to liquids,coal to liquids CCS level 1,non-energy,5.980615385,5.980615385,,0.6,0.05,coal to liquids
 refining,coal to liquids,coal to liquids CCS level 2,non-energy,6.467671233,6.467671233,,0.6,0.05,coal to liquids
 refining,gas to liquids,gas to liquids,non-energy,3.970588235,3.970588235,,0.7,0.03,
-refining,gas to liquids,gas to liquids CCS level 1,non-energy,4.485461538,4.485461538,,0.6,0.05,gas to liquids
-refining,gas to liquids,gas to liquids CCS level 2,non-energy,4.850753424,4.850753424,,0.6,0.05,gas to liquids
 refining,biomass liquids,cellulosic ethanol,non-energy,4.74,4.74,,0.7,0.03,
 refining,biomass liquids,cellulosic ethanol CCS level 1,non-energy,4.991818182,4.991818182,,0.6,0.05,cellulosic ethanol
 refining,biomass liquids,cellulosic ethanol CCS level 2,non-energy,6.850561798,6.850561798,,0.6,0.05,cellulosic ethanol

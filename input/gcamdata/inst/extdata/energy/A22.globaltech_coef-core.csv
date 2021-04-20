@@ -16,8 +16,6 @@ refining,coal to liquids,coal to liquids,regional coal,2.112,2.112,1.959
 refining,coal to liquids,coal to liquids CCS level 1,regional coal,2.196,2.196,2.037
 refining,coal to liquids,coal to liquids CCS level 2,regional coal,2.323,2.323,2.155
 refining,gas to liquids,gas to liquids,regional natural gas,1.654,1.654,1.534
-refining,gas to liquids,gas to liquids CCS level 1,regional natural gas,1.719784091,1.719784091,1.595078101
-refining,gas to liquids,gas to liquids CCS level 2,regional natural gas,1.819243371,1.819243371,1.687478305
 refining,biomass liquids,cellulosic ethanol,regional biomass,2.057,2.057,1.771
 refining,biomass liquids,cellulosic ethanol CCS level 1,regional biomass,2.139,2.139,1.842
 refining,biomass liquids,cellulosic ethanol CCS level 2,regional biomass,2.263,2.263,1.948
