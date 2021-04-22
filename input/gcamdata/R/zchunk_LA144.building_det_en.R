@@ -243,8 +243,8 @@ module_energy_LA144.building_det_en <- function(command, ...) {
     # Calculate building non-energy costs by supply sector, subsector, and technology
 
     # Define discount rate
-    discount_rate_bld <- 0.1
-
+    discount_rate_bld <- 0.0930733977179875
+    
     # A44.cost_efficiency reports base costs and efficiencies of building technologies
     # Note that this produces a final output table.
     A44.cost_efficiency %>%
