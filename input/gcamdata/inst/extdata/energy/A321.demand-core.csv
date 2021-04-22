@@ -5,4 +5,4 @@
 # Column types: cin 
 # ----------
 energy.final.demand,perCapitaBased,price.elasticity
-cement,1,-0.1
+cement,1,-0.4
