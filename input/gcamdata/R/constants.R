@@ -384,7 +384,7 @@ energy.WIND.BASE.COST.YEAR        <- 2005        # Base cost year for wind, used
 energy.MIN_WEIGHT_EJ <- 1e-08
 
 # Transportation fixed charge rate information
-energy.DISCOUNT_RATE_VEH <- 0.1   # Consumer discount rate for vehicle purchases
+energy.DISCOUNT_RATE_VEH <- 0.0930733977179875 # Consumer discount rate for vehicle purchases
 energy.NPER_AMORT_VEH    <- 10    # Number of periods (years) over which vehicle capital payments are amortized
 
 energy.DEFAULT_ELECTRIC_EFFICIENCY <- 0.33
