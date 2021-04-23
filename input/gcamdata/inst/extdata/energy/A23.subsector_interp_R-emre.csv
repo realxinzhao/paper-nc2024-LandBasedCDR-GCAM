@@ -4,7 +4,39 @@
 # Units: Unitless share-weights
 # Source: EMRE
 # Comment:
-# Column types: ccccccnc 
+# Column types: ccccnnnc 
 # ----------
 region,supplysector,subsector,apply.to,from.year,to.year,to.value,interpolation.function
 China,electricity,nuclear,share-weight,2015,2030,1,linear
+USA,electricity,refined liquids,share-weight,2015,2100,1,linear
+Africa_Eastern,electricity,refined liquids,share-weight,2015,2100,1,linear
+Africa_Northern,electricity,refined liquids,share-weight,2015,2100,1,linear
+Africa_Southern,electricity,refined liquids,share-weight,2015,2100,1,linear
+Africa_Western,electricity,refined liquids,share-weight,2015,2100,1,linear
+Australia_NZ,electricity,refined liquids,share-weight,2015,2100,1,linear
+Brazil,electricity,refined liquids,share-weight,2015,2100,1,linear
+Canada,electricity,refined liquids,share-weight,2015,2100,1,linear
+Central America and Caribbean,electricity,refined liquids,share-weight,2015,2100,1,linear
+Central Asia,electricity,refined liquids,share-weight,2015,2100,1,linear
+China,electricity,refined liquids,share-weight,2015,2100,1,linear
+EU-12,electricity,refined liquids,share-weight,2015,2100,1,linear
+EU-15,electricity,refined liquids,share-weight,2015,2100,1,linear
+Europe_Eastern,electricity,refined liquids,share-weight,2015,2100,1,linear
+Europe_Non_EU,electricity,refined liquids,share-weight,2015,2100,1,linear
+European Free Trade Association,electricity,refined liquids,share-weight,2015,2100,1,linear
+India,electricity,refined liquids,share-weight,2015,2100,1,linear
+Indonesia,electricity,refined liquids,share-weight,2015,2100,1,linear
+Japan,electricity,refined liquids,share-weight,2015,2100,1,linear
+Mexico,electricity,refined liquids,share-weight,2015,2100,1,linear
+Middle East,electricity,refined liquids,share-weight,2015,2100,1,linear
+Pakistan,electricity,refined liquids,share-weight,2015,2100,1,linear
+Russia,electricity,refined liquids,share-weight,2015,2100,1,linear
+South Africa,electricity,refined liquids,share-weight,2015,2100,1,linear
+South America_Northern,electricity,refined liquids,share-weight,2015,2100,1,linear
+South America_Southern,electricity,refined liquids,share-weight,2015,2100,1,linear
+South Asia,electricity,refined liquids,share-weight,2015,2100,1,linear
+South Korea,electricity,refined liquids,share-weight,2015,2100,1,linear
+Southeast Asia,electricity,refined liquids,share-weight,2015,2100,1,linear
+Taiwan,electricity,refined liquids,share-weight,2015,2100,1,linear
+Argentina,electricity,refined liquids,share-weight,2015,2100,1,linear
+Colombia,electricity,refined liquids,share-weight,2015,2100,1,linear
