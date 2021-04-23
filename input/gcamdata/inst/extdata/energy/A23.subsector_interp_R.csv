@@ -2,7 +2,7 @@
 # Title: Region-specific electric subsector shareweights interpolation rules by GCAM4 region
 # WARNING: These are hard coding GCAM 4 region names (i.e. 32 regions).  If the region definitions change this file may not match.
 # Units: Unitless share-weights
-# Source:
+# Source: EMRE
 # Comment:
 # Column types: ccccccnc 
 # ----------

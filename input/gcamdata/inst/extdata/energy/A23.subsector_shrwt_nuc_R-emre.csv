@@ -2,7 +2,7 @@
 # Title: Region-specific nuclear electric subsector shareweights by GCAM3 region
 # Units: Unitless share-weights
 # Source:
-# Column types: ccccnnn 
+# Column types: ccccnnnn 
 # ----------
 region_GCAM3,iso,supplysector,subsector,2015,2020,2030,2100
 USA,,electricity,nuclear,0,0.058823529,0.176470588,1
