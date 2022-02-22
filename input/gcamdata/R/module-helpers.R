@@ -362,9 +362,12 @@ replace_GLU <- function(d, map, GLU_pattern = "^GLU[0-9]{3}$") {
 #' @param data = input data tibble to receive carbon info
 #' @param carbon_info_table = table with veg and soil carbon densities, and mature.age
 #' @param matchvars =  a character vector for by = in left_join(data, carbon_info_table, by = ...)
+#' @param minsoilClandtype =  a character vector indicating the land type for the minimium soil C density. If Null, the default values are used
 #' @return the original table with carbon density info added
 #' @importFrom dplyr left_join mutate rename
-add_carbon_info <- function( data, carbon_info_table, matchvars = c("region", "GLU", "Cdensity_LT" = "Land_Type")) {
+add_carbon_info <- function( data, carbon_info_table,
+                             matchvars = c("region", "GLU", "Cdensity_LT" = "Land_Type"),
+                             minsoilClandtype = "Cropland") {
 
   GCAM_region_names <- veg_c <- soil_c <- hist.veg.carbon.density <- hist.soil.carbon.density <-
     mature.age <- GCAM_region_ID <- NULL  # silence package check notes
@@ -372,6 +375,26 @@ add_carbon_info <- function( data, carbon_info_table, matchvars = c("region", "G
   if(!("region" %in% names(carbon_info_table))) {
     carbon_info_table %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") ->
+      carbon_info_table
+  }
+
+  if(is.null(minsoilClandtype)){
+    carbon_info_table %>%
+      mutate(min.veg.carbon.density = aglu.MIN_VEG_CARBON_DENSITY,
+             min.soil.carbon.density = aglu.MIN_SOIL_CARBON_DENSITY)->
+      carbon_info_table
+  } else {
+    carbon_info_table %>%
+      mutate(min.veg.carbon.density = aglu.MIN_VEG_CARBON_DENSITY) %>%
+      left_join(carbon_info_table %>%
+                  filter(Land_Type == minsoilClandtype) %>%
+                  select(GCAM_region_ID, GLU, region,
+                         min.soil.carbon.density = soil_c),
+                by = c("GCAM_region_ID", "GLU", "region")) %>%
+      group_by(region) %>%
+      mutate(min.soil.carbon.density =
+               replace_na(mean(min.soil.carbon.density, na.rm = T))) %>%
+      ungroup() ->
       carbon_info_table
   }
 
@@ -385,8 +408,10 @@ add_carbon_info <- function( data, carbon_info_table, matchvars = c("region", "G
            mature.age.year.fillout = min(MODEL_BASE_YEARS),
            veg.carbon.density = hist.veg.carbon.density,
            soil.carbon.density = hist.soil.carbon.density,
-           min.veg.carbon.density = aglu.MIN_VEG_CARBON_DENSITY,
-           min.soil.carbon.density = aglu.MIN_SOIL_CARBON_DENSITY)
+           min.veg.carbon.density = aglu.MIN_VEG_CARBON_DENSITY) %>%
+    group_by(region) %>%
+    mutate(min.soil.carbon.density = replace_na(mean(min.soil.carbon.density, na.rm = T))) %>%
+    ungroup()
 }
 
 #' reduce_mgd_carbon
