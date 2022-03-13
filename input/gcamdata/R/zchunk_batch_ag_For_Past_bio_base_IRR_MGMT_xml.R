@@ -10,7 +10,6 @@
 #' a vector of output names, or (if \code{command} is "MAKE") all
 #' the generated outputs: \code{ag_For_Past_bio_base_IRR_MGMT.xml}. The corresponding file in the
 #' original data system was \code{batch_ag_For_Past_bio_base_IRR_MGMT.xml.R} (aglu XML).
-#' (XZ 3-11-2022) reduce dependency; will clean up later
 module_aglu_batch_ag_For_Past_bio_base_IRR_MGMT_xml <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
     return(c("L2012.AgSupplySector",
@@ -18,7 +17,7 @@ module_aglu_batch_ag_For_Past_bio_base_IRR_MGMT_xml <- function(command, ...) {
              "L2012.AgProduction_ag_irr_mgmt",
              "L2012.AgProduction_For",
              "L2012.AgProduction_Past",
-             #"L2012.AgHAtoCL_irr_mgmt",
+             #"L2012.AgHAtoCL_irr_mgmt", # Note: not exporting HAtoCL as not used in GCAM
              "L2012.AgYield_bio_ref"))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c(XML = "ag_For_Past_bio_base_IRR_MGMT.xml"))

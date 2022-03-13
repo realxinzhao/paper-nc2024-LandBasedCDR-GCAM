@@ -24,7 +24,6 @@ module_aglu_L2012.ag_For_Past_bio_input_irr_mgmt <- function(command, ...) {
              FILE = "water/basin_to_country_mapping",
              FILE = "aglu/A_agSupplySector",
              FILE = "aglu/A_agSupplySubsector",
-             #"L101.ag_Prod_Mt_R_C_Y_GLU",
              "L113.ag_bioYield_GJm2_R_GLU",
              "L122.ag_HA_to_CropLand_R_Y_GLU",
              "L123.ag_Prod_Mt_R_Past_Y_GLU",
@@ -32,8 +31,6 @@ module_aglu_L2012.ag_For_Past_bio_input_irr_mgmt <- function(command, ...) {
              "L132.ag_an_For_Prices",
              "L1321.ag_prP_R_C_75USDkg",
              "L1321.expP_R_F_75USDm3",
-             #"L161.ag_irrProd_Mt_R_C_Y_GLU",
-             #"L161.ag_rfdProd_Mt_R_C_Y_GLU",
              "L163.ag_irrBioYield_GJm2_R_GLU",
              "L163.ag_rfdBioYield_GJm2_R_GLU",
              "L181.ag_Prod_Mt_R_C_Y_GLU_irr_level",
@@ -63,7 +60,6 @@ module_aglu_L2012.ag_For_Past_bio_input_irr_mgmt <- function(command, ...) {
     basin_to_country_mapping <- get_data(all_data, "water/basin_to_country_mapping")
     A_AgSupplySector <- get_data(all_data, "aglu/A_agSupplySector", strip_attributes = TRUE)
     A_AgSupplySubsector <- get_data(all_data, "aglu/A_agSupplySubsector", strip_attributes = TRUE)
-    #L101.ag_Prod_Mt_R_C_Y_GLU <- get_data(all_data, "L101.ag_Prod_Mt_R_C_Y_GLU", strip_attributes = TRUE)
     L113.ag_bioYield_GJm2_R_GLU <- get_data(all_data, "L113.ag_bioYield_GJm2_R_GLU", strip_attributes = TRUE)
     L122.ag_HA_to_CropLand_R_Y_GLU <- get_data(all_data, "L122.ag_HA_to_CropLand_R_Y_GLU", strip_attributes = TRUE)
     L123.ag_Prod_Mt_R_Past_Y_GLU <- get_data(all_data, "L123.ag_Prod_Mt_R_Past_Y_GLU", strip_attributes = TRUE)
@@ -71,8 +67,6 @@ module_aglu_L2012.ag_For_Past_bio_input_irr_mgmt <- function(command, ...) {
     L132.ag_an_For_Prices <- get_data(all_data, "L132.ag_an_For_Prices", strip_attributes = TRUE)
     L1321.ag_prP_R_C_75USDkg <- get_data(all_data, "L1321.ag_prP_R_C_75USDkg", strip_attributes = TRUE)
     L1321.expP_R_F_75USDm3 <- get_data(all_data, "L1321.expP_R_F_75USDm3", strip_attributes = TRUE)
-    #L161.ag_irrProd_Mt_R_C_Y_GLU <- get_data(all_data, "L161.ag_irrProd_Mt_R_C_Y_GLU", strip_attributes = TRUE)
-    #L161.ag_rfdProd_Mt_R_C_Y_GLU <- get_data(all_data, "L161.ag_rfdProd_Mt_R_C_Y_GLU", strip_attributes = TRUE)
     L163.ag_irrBioYield_GJm2_R_GLU <- get_data(all_data, "L163.ag_irrBioYield_GJm2_R_GLU", strip_attributes = TRUE)
     L163.ag_rfdBioYield_GJm2_R_GLU <- get_data(all_data, "L163.ag_rfdBioYield_GJm2_R_GLU", strip_attributes = TRUE)
     L181.ag_Prod_Mt_R_C_Y_GLU_irr_level <- get_data(all_data, "L181.ag_Prod_Mt_R_C_Y_GLU_irr_level", strip_attributes = TRUE)
@@ -385,7 +379,6 @@ module_aglu_L2012.ag_For_Past_bio_input_irr_mgmt <- function(command, ...) {
       add_precursors("common/GCAM_region_names",
                      "water/basin_to_country_mapping",
                      "aglu/A_agSupplySubsector",
-                     #"L101.ag_Prod_Mt_R_C_Y_GLU",
                      "L123.ag_Prod_Mt_R_Past_Y_GLU",
                      "L123.For_Prod_bm3_R_Y_GLU") ->
       L2012.AgSupplySubsector
@@ -399,8 +392,6 @@ module_aglu_L2012.ag_For_Past_bio_input_irr_mgmt <- function(command, ...) {
       add_legacy_name("L2012.AgProduction_ag_irr_mgmt") %>%
       add_precursors("common/GCAM_region_names",
                      "water/basin_to_country_mapping",
-                     #"L161.ag_irrProd_Mt_R_C_Y_GLU",
-                     #"L161.ag_rfdProd_Mt_R_C_Y_GLU",
                      "L181.ag_Prod_Mt_R_C_Y_GLU_irr_level") ->
       L2012.AgProduction_ag_irr_mgmt
 
