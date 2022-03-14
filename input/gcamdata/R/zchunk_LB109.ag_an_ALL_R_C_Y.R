@@ -26,7 +26,9 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
               "L106.an_NetExp_Mt_R_C_Y",
               "L108.ag_Feed_Mt_R_C_Y",
               "L108.ag_NetExp_Mt_R_FodderHerb_Y",
-              "L122.in_Mt_R_C_Yh"))
+              "L122.in_Mt_R_C_Yh",
+             # temp added XZ
+             FILE = "aglu/FAO/L1091_GrossTrade_Mt_R_C_Y"))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L109.ag_ALL_Mt_R_C_Y",
              "L109.an_ALL_Mt_R_C_Y"))
@@ -50,6 +52,8 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
     L108.ag_Feed_Mt_R_C_Y <- get_data(all_data, "L108.ag_Feed_Mt_R_C_Y")
     L108.ag_NetExp_Mt_R_FodderHerb_Y <- get_data(all_data, "L108.ag_NetExp_Mt_R_FodderHerb_Y")
     L122.in_Mt_R_C_Yh <- get_data(all_data, "L122.in_Mt_R_C_Yh")
+    # temp added XZ
+    L1091.GrossTrade_Mt_R_C_Y <- get_data(all_data, "aglu/FAO/L1091_GrossTrade_Mt_R_C_Y")
 
     # Part 1: Primary agricultural goods
     # List of all flows for primary agricultural good balances
@@ -202,6 +206,29 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
         L109.an_ALL_Mt_R_C_Y
     }
 
+    # XZ temp add
+    # add gross trade here directly
+    L109.ag_ALL_Mt_R_C_Y %>%
+      left_join(L1091.GrossTrade_Mt_R_C_Y,
+                by = c("GCAM_region_ID", "GCAM_commodity", "year")) %>%
+      # feed crops
+      mutate(GrossExp_Mt = if_else(is.na(GrossExp_Mt) & NetExp_Mt > 0, NetExp_Mt, GrossExp_Mt),
+             GrossExp_Mt = if_else(is.na(GrossExp_Mt) & NetExp_Mt <= 0, 0, GrossExp_Mt),
+             GrossImp_Mt = if_else(is.na(GrossImp_Mt) & NetExp_Mt < 0, -NetExp_Mt, GrossImp_Mt),
+             GrossImp_Mt = if_else(is.na(GrossImp_Mt) & NetExp_Mt >= 0, 0, GrossImp_Mt)) ->
+      L109.ag_ALL_Mt_R_C_Y
+
+    L109.an_ALL_Mt_R_C_Y %>%
+      left_join(L1091.GrossTrade_Mt_R_C_Y,
+                by = c("GCAM_region_ID", "GCAM_commodity", "year")) %>%
+      mutate(GrossExp_Mt = if_else(is.na(GrossExp_Mt) & NetExp_Mt > 0, NetExp_Mt, GrossExp_Mt),
+             GrossExp_Mt = if_else(is.na(GrossExp_Mt) & NetExp_Mt <= 0, 0, GrossExp_Mt),
+             GrossImp_Mt = if_else(is.na(GrossImp_Mt) & NetExp_Mt < 0, -NetExp_Mt, GrossImp_Mt),
+             GrossImp_Mt = if_else(is.na(GrossImp_Mt) & NetExp_Mt >= 0, 0, GrossImp_Mt)) ->
+      L109.an_ALL_Mt_R_C_Y
+
+
+
     # Produce outputs
     L109.ag_ALL_Mt_R_C_Y %>%
       add_title("Primary agricultural good mass balances, by region / commodity / year.") %>%
@@ -214,7 +241,10 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
                      "L106.ag_NetExp_Mt_R_C_Y",
                      "L108.ag_Feed_Mt_R_C_Y",
                      "L108.ag_NetExp_Mt_R_FodderHerb_Y",
-                     "L122.in_Mt_R_C_Yh") ->
+                     "L122.in_Mt_R_C_Yh",
+                     # XZ temp
+                     "aglu/FAO/L1091_GrossTrade_Mt_R_C_Y"
+                     ) ->
       L109.ag_ALL_Mt_R_C_Y
 
     L109.an_ALL_Mt_R_C_Y %>%
@@ -225,7 +255,9 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
       add_legacy_name("L109.an_ALL_Mt_R_C_Y") %>%
       add_precursors("L105.an_Food_Mt_R_C_Y",
                      "L105.an_Prod_Mt_R_C_Y",
-                     "L106.an_NetExp_Mt_R_C_Y") ->
+                     "L106.an_NetExp_Mt_R_C_Y",
+                     # XZ temp
+                     "aglu/FAO/L1091_GrossTrade_Mt_R_C_Y") ->
       L109.an_ALL_Mt_R_C_Y
 
     return_data(L109.ag_ALL_Mt_R_C_Y, L109.an_ALL_Mt_R_C_Y)
