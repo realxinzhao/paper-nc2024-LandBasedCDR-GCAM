@@ -55,7 +55,10 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
              FILE = "aglu/FAO/L100.FAO_an_Food_t",
              FILE = "aglu/FAO/L100.FAO_an_Prod_t",
              FILE = "aglu/FAO/L100.FAO_an_Stocks",
-             FILE = "aglu/FAO/L100.FAO_an_Dairy_Stocks"
+             FILE = "aglu/FAO/L100.FAO_an_Dairy_Stocks",
+
+             FILE = "aglu/A_recent_feed_modifications",
+             FILE = "aglu/FAO/L132.ag_an_For_Prices"
              ))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L100.FAO_ag_HA_ha",
@@ -88,7 +91,14 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
              "L105.an_Food_Pcal_R_C_Y",
              "L105.an_kcalg_R_C_Y",
              "L105.an_Prod_Mt_R_C_Y",
-             "L105.an_Prod_Mt_ctry_C_Y"))
+             "L105.an_Prod_Mt_ctry_C_Y",
+             # test adding L108 here
+             "L101.ag_Feed_Mt_R_C_Y",
+
+             "L132.ag_an_For_Prices"
+
+
+             ))
   } else if(command == driver.MAKE) {
 
     iso <- FAO_country <- `country codes` <- `element codes` <- `item codes` <-
@@ -124,6 +134,8 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
     L100.FAO_an_Stocks <- get_data(all_data, "aglu/FAO/L100.FAO_an_Stocks")
     L100.FAO_an_Dairy_Stocks <- get_data(all_data, "aglu/FAO/L100.FAO_an_Dairy_Stocks")
 
+    A_recent_feed_modifications <- get_data(all_data, "aglu/A_recent_feed_modifications")
+    L132.ag_an_For_Prices <- get_data(all_data,"L132.ag_an_For_Prices")
 
     # assert FAO_an_Stocks has unit of head
 
@@ -725,6 +737,50 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
                      "aglu/FAO/FAO_an_items_cal_SUA") ->
       L106.an_NetExp_Mt_R_C_Y
 
+    # Moving L108 partly to here ----
+    L100.FAO_ag_Feed_t %>%
+      select(iso, item, year, value) %>%
+      left_join(A_recent_feed_modifications, by = c("iso", "item", "year")) %>%                    # Swap in modified feed data where relevant
+      mutate(value = if_else(is.na(feed), value, feed)) %>%
+      select(-feed) %>%
+      left_join_error_no_match(iso_GCAM_regID, by = "iso") %>%                                     # Map in GCAM region ID
+      left_join(select(FAO_ag_items_cal_SUA, item, GCAM_commodity), by = "item") %>%               # Map in GCAM commodity
+      filter(!is.na(GCAM_commodity)) %>%                                                           # Remove entries that are not GCAM comodities
+      group_by(GCAM_region_ID, GCAM_commodity, year) %>%
+      summarize(value = sum(value)) %>%                                                            # Aggregate by crop, region, year
+      mutate(value = value * CONV_TON_MEGATON) %>%                                                 # Convert from tons to Mt
+      ungroup() %>%
+      complete(GCAM_region_ID = unique(iso_GCAM_regID$GCAM_region_ID),
+               GCAM_commodity, year, fill = list(value = 0)) ->                                   # Fill in missing region/commodity combinations with 0
+      L101.ag_Feed_Mt_R_C_Y
+
+
+    L101.ag_Feed_Mt_R_C_Y %>%
+      add_title("Feed use by GCAM region, commodity, and year aggregated from FAO") %>%
+      add_units("Mt/yr") %>%
+      add_legacy_name("L101.ag_Feed_Mt_R_C_Y") %>%
+      add_precursors("common/iso_GCAM_regID", "aglu/FAO/FAO_ag_items_cal_SUA",
+                     "aglu/A_recent_feed_modifications", "L100.FAO_ag_Feed_t") ->
+      L101.ag_Feed_Mt_R_C_Y
+
+    # Read in L132 prices and remove the chunk ----
+
+    # Produce outputs
+    L132.ag_an_For_Prices %>%
+      add_title("Prices for all GCAM AGLU commodities") %>%
+      add_units("1975$/kg and 1975$/m3") %>%
+      add_comments("Calculate average prices over calibration years by GCAM commodity.") %>%
+      add_comments("Averages across years are unweighted; averages over FAO item are weighted by production.") %>%
+      add_legacy_name("L132.ag_an_For_Prices") %>%
+      add_precursors("aglu/FAO/FAO_ag_items_PRODSTAT",
+                     "aglu/FAO/FAO_an_items_PRODSTAT",
+                     "aglu/FAO/FAO_USA_ag_an_P_USDt_PRICESTAT",
+                     "aglu/FAO/FAO_USA_For_Exp_t_USD_FORESTAT",
+                     "aglu/USDA_Alfalfa_prices_USDt",
+                     "aglu/FAO/FAO_ag_Prod_t_PRODSTAT",
+                     "aglu/FAO/FAO_USA_an_Prod_t_PRODSTAT") ->
+      L132.ag_an_For_Prices
+
     # Return data ----
     return_data(L100.FAO_ag_HA_ha,
                 L100.FAO_ag_Prod_t,
@@ -745,7 +801,10 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
 
                 L101.ag_Food_Mt_R_C_Y, L101.ag_Food_Pcal_R_C_Y, L101.ag_kcalg_R_C_Y,
                 L105.an_Food_Mt_R_C_Y, L105.an_Food_Pcal_R_C_Y, L105.an_kcalg_R_C_Y, L105.an_Prod_Mt_R_C_Y, L105.an_Prod_Mt_ctry_C_Y,
-                L106.ag_NetExp_Mt_R_C_Y, L106.an_NetExp_Mt_R_C_Y)
+                L106.ag_NetExp_Mt_R_C_Y, L106.an_NetExp_Mt_R_C_Y,
+                L101.ag_Feed_Mt_R_C_Y,
+                L132.ag_an_For_Prices
+                )
   } else {
     stop("Unknown command")
   }
