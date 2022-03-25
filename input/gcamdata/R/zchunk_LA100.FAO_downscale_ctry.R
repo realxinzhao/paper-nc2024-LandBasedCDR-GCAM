@@ -123,19 +123,19 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
     # FAO_an_Stocks <- get_data(all_data, "aglu/FAO/FAO_an_Stocks")
     # FAO_an_Dairy_Stocks <- get_data(all_data, "aglu/FAO/FAO_an_Dairy_Stocks")
 
-    L106.ag_NetExp_Mt_R_C_Y <- get_data(all_data, "aglu/FAO/L106.ag_NetExp_Mt_R_C_Y")
-    L106.an_NetExp_Mt_R_C_Y <- get_data(all_data, "aglu/FAO/L106.an_NetExp_Mt_R_C_Y")
-    L100.FAO_ag_HA_ha <- get_data(all_data, "aglu/FAO/L100.FAO_ag_HA_ha")
-    L100.FAO_ag_Prod_t <- get_data(all_data, "aglu/FAO/L100.FAO_ag_Prod_t")
-    L100.FAO_ag_Feed_t <- get_data(all_data, "aglu/FAO/L100.FAO_ag_Feed_t")
-    L100.FAO_ag_Food_t <- get_data(all_data, "aglu/FAO/L100.FAO_ag_Food_t")
-    L100.FAO_an_Food_t <- get_data(all_data, "aglu/FAO/L100.FAO_an_Food_t")
-    L100.FAO_an_Prod_t <- get_data(all_data, "aglu/FAO/L100.FAO_an_Prod_t")
-    L100.FAO_an_Stocks <- get_data(all_data, "aglu/FAO/L100.FAO_an_Stocks")
-    L100.FAO_an_Dairy_Stocks <- get_data(all_data, "aglu/FAO/L100.FAO_an_Dairy_Stocks")
+    L106.ag_NetExp_Mt_R_C_Y <- get_data(all_data, "aglu/FAO/L106.ag_NetExp_Mt_R_C_Y", strip_attributes = T)
+    L106.an_NetExp_Mt_R_C_Y <- get_data(all_data, "aglu/FAO/L106.an_NetExp_Mt_R_C_Y", strip_attributes = T)
+    L100.FAO_ag_HA_ha <- get_data(all_data, "aglu/FAO/L100.FAO_ag_HA_ha", strip_attributes = T)
+    L100.FAO_ag_Prod_t <- get_data(all_data, "aglu/FAO/L100.FAO_ag_Prod_t", strip_attributes = T)
+    L100.FAO_ag_Feed_t <- get_data(all_data, "aglu/FAO/L100.FAO_ag_Feed_t", strip_attributes = T)
+    L100.FAO_ag_Food_t <- get_data(all_data, "aglu/FAO/L100.FAO_ag_Food_t", strip_attributes = T)
+    L100.FAO_an_Food_t <- get_data(all_data, "aglu/FAO/L100.FAO_an_Food_t", strip_attributes = T)
+    L100.FAO_an_Prod_t <- get_data(all_data, "aglu/FAO/L100.FAO_an_Prod_t", strip_attributes = T)
+    L100.FAO_an_Stocks <- get_data(all_data, "aglu/FAO/L100.FAO_an_Stocks", strip_attributes = T)
+    L100.FAO_an_Dairy_Stocks <- get_data(all_data, "aglu/FAO/L100.FAO_an_Dairy_Stocks", strip_attributes = T)
 
     A_recent_feed_modifications <- get_data(all_data, "aglu/A_recent_feed_modifications")
-    L132.ag_an_For_Prices <- get_data(all_data,"L132.ag_an_For_Prices")
+    L132.ag_an_For_Prices <- get_data(all_data,"aglu/FAO/L132.ag_an_For_Prices", strip_attributes = T)
 
     # assert FAO_an_Stocks has unit of head
 
@@ -286,10 +286,10 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
     # Aggregate to complete the merge of the two datasets
     FAO_Fert_Cons_tN_RESOURCESTAT <- aggregate(cons[names(cons) %in% FAO_histyear_cols],
                                                by = as.list(cons[coitel_colnames]),
-                                               sum, na.rm = TRUE)
+                                               sum, na.rm = TRUE) %>% as_tibble()
     FAO_Fert_Prod_tN_RESOURCESTAT <- aggregate(prod[names(prod) %in% FAO_histyear_cols],
                                                by = as.list(prod[coitel_colnames]),
-                                               sum, na.rm = TRUE)
+                                               sum, na.rm = TRUE) %>% as_tibble()
 
 
 
@@ -459,42 +459,42 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
 
     # Add description, units, process (done above), and precursor information
     L100.FAO_ag_HA_ha %>%
-      add_title("FAO agricultural harvested area by country, item, year") %>%
+      add_title("FAO agricultural harvested area by country, item, year", overwrite = T) %>%
       add_units("t") %>%
       add_precursors("aglu/FAO/L100.FAO_ag_HA_ha", "aglu/AGLU_ctry") ->
       L100.FAO_ag_HA_ha
     L100.FAO_ag_Prod_t %>%
-      add_title("FAO agricultural production by country, item, year") %>%
+      add_title("FAO agricultural production by country, item, year", overwrite = T) %>%
       add_units("t") %>%
       add_precursors("aglu/FAO/L100.FAO_ag_Prod_t", "aglu/AGLU_ctry") ->
       L100.FAO_ag_Prod_t
     L100.FAO_ag_Feed_t %>%
-      add_title("FAO agricultural feed by country, item, year") %>%
+      add_title("FAO agricultural feed by country, item, year", overwrite = T) %>%
       add_units("t") %>%
       add_precursors("aglu/FAO/L100.FAO_ag_Feed_t", "aglu/AGLU_ctry") ->
       L100.FAO_ag_Feed_t
     L100.FAO_ag_Food_t %>%
-      add_title("FAO agricultural food consumption by country, item, year") %>%
+      add_title("FAO agricultural food consumption by country, item, year", overwrite = T) %>%
       add_units("t") %>%
       add_precursors("aglu/FAO/L100.FAO_ag_Food_t", "aglu/AGLU_ctry") ->
       L100.FAO_ag_Food_t
     L100.FAO_an_Food_t %>%
-      add_title("FAO animal food consumption by country, item, year") %>%
+      add_title("FAO animal food consumption by country, item, year", overwrite = T) %>%
       add_units("t") %>%
       add_precursors("aglu/FAO/L100.FAO_an_Food_t", "aglu/AGLU_ctry") ->
       L100.FAO_an_Food_t
     L100.FAO_an_Prod_t %>%
-      add_title("FAO animal production by country, item, year") %>%
+      add_title("FAO animal production by country, item, year", overwrite = T) %>%
       add_units("t") %>%
       add_precursors("aglu/FAO/L100.FAO_an_Prod_t", "aglu/AGLU_ctry") ->
       L100.FAO_an_Prod_t
     L100.FAO_an_Stocks %>%
-      add_title("FAO animal stocks country, item, year") %>%
+      add_title("FAO animal stocks country, item, year", overwrite = T) %>%
       add_units("number") %>%
       add_precursors("aglu/FAO/L100.FAO_an_Stocks", "aglu/AGLU_ctry") ->
       L100.FAO_an_Stocks
     L100.FAO_an_Dairy_Stocks %>%
-      add_title("FAO dairy producing animal stocks country, item, year") %>%
+      add_title("FAO dairy producing animal stocks country, item, year", overwrite = T) %>%
       add_units("number") %>%
       add_precursors("aglu/FAO/L100.FAO_an_Dairy_Stocks", "aglu/AGLU_ctry") ->
       L100.FAO_an_Dairy_Stocks
@@ -713,8 +713,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
 # Moving L106 to here ----
 
     # Produce outputs
-    L106.NetExp_Mt_R_C_Y %>%
-      semi_join(select(FAO_ag_items_cal_SUA, GCAM_commodity), by = "GCAM_commodity") %>%
+    L106.ag_NetExp_Mt_R_C_Y %>%
       add_title("Net exports of primary agricultural goods by GCAM region / commodity / year") %>%
       add_units("Mt") %>%
       add_comments("Aggregate FAO primary agricultural goods gross exports and imports and calculate net exports by GCAM region, commodity and year") %>%
@@ -722,11 +721,10 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       add_comments("Re-calculate regional net exports using adjusted gross exports minus gross imports") %>%
       add_legacy_name("L106.ag_NetExp_Mt_R_C_Y") %>%
       add_precursors("common/iso_GCAM_regID",
-                     "aglu/FAO/FAO_ag_items_cal_SUA") ->
+                     "aglu/FAO/L106.ag_NetExp_Mt_R_C_Y") ->
       L106.ag_NetExp_Mt_R_C_Y
 
-    L106.NetExp_Mt_R_C_Y %>%
-      semi_join(select(FAO_an_items_cal_SUA, GCAM_commodity), by = "GCAM_commodity") %>%
+    L106.an_NetExp_Mt_R_C_Y %>%
       add_title("Net exports of animal products by GCAM region / commodity / year") %>%
       add_units("Mt") %>%
       add_comments("Aggregate FAO animal products gross exports and imports and calculate net exports by GCAM region, commodity and year") %>%
@@ -734,7 +732,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       add_comments("Re-calculate regional net exports using adjusted gross exports minus gross imports") %>%
       add_legacy_name("L106.an_NetExp_Mt_R_C_Y") %>%
       add_precursors("common/iso_GCAM_regID",
-                     "aglu/FAO/FAO_an_items_cal_SUA") ->
+                     "aglu/FAO/L106.an_NetExp_Mt_R_C_Y") ->
       L106.an_NetExp_Mt_R_C_Y
 
     # Moving L108 partly to here ----
@@ -772,13 +770,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       add_comments("Calculate average prices over calibration years by GCAM commodity.") %>%
       add_comments("Averages across years are unweighted; averages over FAO item are weighted by production.") %>%
       add_legacy_name("L132.ag_an_For_Prices") %>%
-      add_precursors("aglu/FAO/FAO_ag_items_PRODSTAT",
-                     "aglu/FAO/FAO_an_items_PRODSTAT",
-                     "aglu/FAO/FAO_USA_ag_an_P_USDt_PRICESTAT",
-                     "aglu/FAO/FAO_USA_For_Exp_t_USD_FORESTAT",
-                     "aglu/USDA_Alfalfa_prices_USDt",
-                     "aglu/FAO/FAO_ag_Prod_t_PRODSTAT",
-                     "aglu/FAO/FAO_USA_an_Prod_t_PRODSTAT") ->
+      add_precursors("aglu/FAO/L132.ag_an_For_Prices")->
       L132.ag_an_For_Prices
 
     # Return data ----
