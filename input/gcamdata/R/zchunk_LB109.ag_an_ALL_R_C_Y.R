@@ -53,7 +53,15 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
     L108.ag_NetExp_Mt_R_FodderHerb_Y <- get_data(all_data, "L108.ag_NetExp_Mt_R_FodderHerb_Y")
     L122.in_Mt_R_C_Yh <- get_data(all_data, "L122.in_Mt_R_C_Yh")
     # temp added XZ
+    # This chunk will adjust bioenergy feedstock and also feed demand using others
+    # There will be some assumptions needed
+    # Trade of secondary products will also be traced here
+    # New balance
+    # c("BeginStock_Mt", "Prod_Mt", "GrossImp_Mt", "Supply_Mt",
+    #   "Food_Mt", "Feed_Mt", "Biofuels_Mt","GrossExp_Mt", "NetExp_Mt", "Losses", "OtherUses_Mt", "EndStock_Mt")
     L1091.GrossTrade_Mt_R_C_Y <- get_data(all_data, "aglu/FAO/L1091_GrossTrade_Mt_R_C_Y")
+
+
 
     # Part 1: Primary agricultural goods
     # List of all flows for primary agricultural good balances

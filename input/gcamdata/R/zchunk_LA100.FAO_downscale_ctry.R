@@ -8,7 +8,7 @@
 #' @param ... other optional parameters, depending on command
 #' @return Depends on \code{command}: either a vector of required inputs,
 #' a vector of output names, or (if \code{command} is "MAKE") all
-#' the generated outputs: \code{L100.FAO_ag_HA_ha}, \code{L100.FAO_ag_Prod_t}, \code{L100.FAO_ag_Exp_t}, \code{L100.FAO_ag_Feed_t}, \code{L100.FAO_ag_Food_t}, \code{L100.FAO_ag_Imp_t}, \code{L100.FAO_an_Exp_t}, \code{L100.FAO_an_Food_t}, \code{L100.FAO_an_Imp_t}, \code{L100.FAO_an_Prod_t}, \code{L100.FAO_CL_kha}, \code{L100.FAO_fallowland_kha}, \code{L100.FAO_harv_CL_kha}, \code{L100.FAO_Fert_Cons_tN}, \code{L100.FAO_Fert_Prod_tN}, \code{L100.FAO_For_Exp_m3}, \code{L100.FAO_For_Imp_m3}, \code{L100.FAO_For_Prod_m3}. The corresponding file in the
+#' the generated outputs: \code{L100.FAO_ag_HA_ha}, \code{L100.FAO_ag_Prod_t}, \code{L100.FAO_ag_Feed_t}, \code{L100.FAO_ag_Food_t}, \code{L100.FAO_an_Food_t}, \code{L100.FAO_an_Prod_t}, \code{L100.FAO_CL_kha}, \code{L100.FAO_fallowland_kha}, \code{L100.FAO_harv_CL_kha}, \code{L100.FAO_Fert_Cons_tN}, \code{L100.FAO_Fert_Prod_tN}, \code{L100.FAO_For_Exp_m3}, \code{L100.FAO_For_Imp_m3}, \code{L100.FAO_For_Prod_m3}. The corresponding file in the
 #' original data system was \code{LA100.FAO_downscale_ctry.R} (aglu level1).
 #' @details Extrapolate each FAO dataset to 2011; match with country names; extrapolate to countries that
 #' split or combined at some point (e.g. Czechoslovakia needs to be split into Czech Republic and
@@ -22,18 +22,14 @@
 module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
     return(c(FILE = "aglu/AGLU_ctry",
-             FILE = "aglu/FAO/FAO_ag_HA_ha_PRODSTAT",
-             FILE = "aglu/FAO/FAO_ag_Prod_t_PRODSTAT",
-             FILE = "aglu/FAO/FAO_ag_Exp_t_SUA",
-             FILE = "aglu/FAO/FAO_ag_Feed_t_SUA",
-             FILE = "aglu/FAO/FAO_ag_Food_t_SUA",
-             FILE = "aglu/FAO/FAO_ag_Imp_t_SUA",
-             FILE = "aglu/FAO/FAO_an_Exp_t_SUA",
-             FILE = "aglu/FAO/FAO_an_Food_t_SUA",
-             FILE = "aglu/FAO/FAO_an_Imp_t_SUA",
-             FILE = "aglu/FAO/FAO_an_Prod_t_SUA",
-             FILE = "aglu/FAO/FAO_an_Stocks",
-             FILE = "aglu/FAO/FAO_an_Dairy_Stocks",
+             # FILE = "aglu/FAO/FAO_ag_HA_ha_PRODSTAT",
+             # FILE = "aglu/FAO/FAO_ag_Prod_t_PRODSTAT",
+             # FILE = "aglu/FAO/FAO_ag_Feed_t_SUA",
+             # FILE = "aglu/FAO/FAO_ag_Food_t_SUA",
+             # FILE = "aglu/FAO/FAO_an_Food_t_SUA",
+             # FILE = "aglu/FAO/FAO_an_Prod_t_SUA",
+             # FILE = "aglu/FAO/FAO_an_Stocks",
+             # FILE = "aglu/FAO/FAO_an_Dairy_Stocks",
              FILE = "aglu/FAO/FAO_CL_kha_RESOURCESTAT",
              FILE = "aglu/FAO/FAO_fallowland_kha_RESOURCESTAT",
              FILE = "aglu/FAO/FAO_harv_CL_kha_RESOURCESTAT",
@@ -44,20 +40,29 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
              FILE = "aglu/FAO/FAO_For_Exp_m3_FORESTAT",
              FILE = "aglu/FAO/FAO_For_Imp_m3_FORESTAT",
              FILE = "aglu/FAO/FAO_For_Prod_m3_FORESTAT",
-             #test adding L106
              FILE = "common/iso_GCAM_regID",
              FILE = "aglu/FAO/FAO_ag_items_cal_SUA",
-             FILE = "aglu/FAO/FAO_an_items_cal_SUA"))
+             FILE = "aglu/FAO/FAO_an_items_cal_SUA",
+
+             # Replace raw data with processed FAO data in a restructured manner
+
+             FILE = "aglu/FAO/L106.ag_NetExp_Mt_R_C_Y",
+             FILE = "aglu/FAO/L106.an_NetExp_Mt_R_C_Y",
+             FILE = "aglu/FAO/L100.FAO_ag_HA_ha",
+             FILE = "aglu/FAO/L100.FAO_ag_Prod_t",
+             FILE = "aglu/FAO/L100.FAO_ag_Feed_t",
+             FILE = "aglu/FAO/L100.FAO_ag_Food_t",
+             FILE = "aglu/FAO/L100.FAO_an_Food_t",
+             FILE = "aglu/FAO/L100.FAO_an_Prod_t",
+             FILE = "aglu/FAO/L100.FAO_an_Stocks",
+             FILE = "aglu/FAO/L100.FAO_an_Dairy_Stocks"
+             ))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L100.FAO_ag_HA_ha",
              "L100.FAO_ag_Prod_t",
-             "L100.FAO_ag_Exp_t",
              "L100.FAO_ag_Feed_t",
              "L100.FAO_ag_Food_t",
-             "L100.FAO_ag_Imp_t",
-             "L100.FAO_an_Exp_t",
              "L100.FAO_an_Food_t",
-             "L100.FAO_an_Imp_t",
              "L100.FAO_an_Prod_t",
              "L100.FAO_an_Stocks",
              "L100.FAO_an_Dairy_Stocks",
@@ -69,9 +74,21 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
              "L100.FAO_For_Exp_m3",
              "L100.FAO_For_Imp_m3",
              "L100.FAO_For_Prod_m3",
+
+             "L101.ag_Food_Mt_R_C_Y",
+             "L101.ag_Food_Pcal_R_C_Y",
+             "L101.ag_kcalg_R_C_Y",
+
              #test adding L106 here
              "L106.ag_NetExp_Mt_R_C_Y",
-             "L106.an_NetExp_Mt_R_C_Y"))
+             "L106.an_NetExp_Mt_R_C_Y",
+
+             #test adding L105 here
+             "L105.an_Food_Mt_R_C_Y",
+             "L105.an_Food_Pcal_R_C_Y",
+             "L105.an_kcalg_R_C_Y",
+             "L105.an_Prod_Mt_R_C_Y",
+             "L105.an_Prod_Mt_ctry_C_Y"))
   } else if(command == driver.MAKE) {
 
     iso <- FAO_country <- `country codes` <- `element codes` <- `item codes` <-
@@ -81,24 +98,72 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
 
     all_data <- list(...)[[1]]
 
-    # Load required inputs
+    # Load required inputs ----
     get_data(all_data, "aglu/AGLU_ctry") %>%
       select(iso, FAO_country) %>%
       distinct ->
       AGLU_ctry
 
-    FAO_ag_HA_ha_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_HA_ha_PRODSTAT")
-    FAO_ag_Prod_t_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_Prod_t_PRODSTAT")
-    FAO_ag_Exp_t_SUA <- get_data(all_data, "aglu/FAO/FAO_ag_Exp_t_SUA")
-    FAO_ag_Feed_t_SUA <- get_data(all_data, "aglu/FAO/FAO_ag_Feed_t_SUA")
-    FAO_ag_Food_t_SUA <- get_data(all_data, "aglu/FAO/FAO_ag_Food_t_SUA")
-    FAO_ag_Imp_t_SUA <- get_data(all_data, "aglu/FAO/FAO_ag_Imp_t_SUA")
-    FAO_an_Exp_t_SUA <- get_data(all_data, "aglu/FAO/FAO_an_Exp_t_SUA")
-    FAO_an_Food_t_SUA <- get_data(all_data, "aglu/FAO/FAO_an_Food_t_SUA")
-    FAO_an_Imp_t_SUA <- get_data(all_data, "aglu/FAO/FAO_an_Imp_t_SUA")
-    FAO_an_Prod_t_SUA <- get_data(all_data, "aglu/FAO/FAO_an_Prod_t_SUA")
-    FAO_an_Stocks <- get_data(all_data, "aglu/FAO/FAO_an_Stocks")
-    FAO_an_Dairy_Stocks <- get_data(all_data, "aglu/FAO/FAO_an_Dairy_Stocks")
+    # FAO_ag_HA_ha_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_HA_ha_PRODSTAT")
+    # FAO_ag_Prod_t_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_Prod_t_PRODSTAT")
+    # FAO_ag_Feed_t_SUA <- get_data(all_data, "aglu/FAO/FAO_ag_Feed_t_SUA")
+    # FAO_ag_Food_t_SUA <- get_data(all_data, "aglu/FAO/FAO_ag_Food_t_SUA")
+    # FAO_an_Food_t_SUA <- get_data(all_data, "aglu/FAO/FAO_an_Food_t_SUA")
+    # FAO_an_Prod_t_SUA <- get_data(all_data, "aglu/FAO/FAO_an_Prod_t_SUA")
+    # FAO_an_Stocks <- get_data(all_data, "aglu/FAO/FAO_an_Stocks")
+    # FAO_an_Dairy_Stocks <- get_data(all_data, "aglu/FAO/FAO_an_Dairy_Stocks")
+
+    L106.ag_NetExp_Mt_R_C_Y <- get_data(all_data, "aglu/FAO/L106.ag_NetExp_Mt_R_C_Y")
+    L106.an_NetExp_Mt_R_C_Y <- get_data(all_data, "aglu/FAO/L106.an_NetExp_Mt_R_C_Y")
+    L100.FAO_ag_HA_ha <- get_data(all_data, "aglu/FAO/L100.FAO_ag_HA_ha")
+    L100.FAO_ag_Prod_t <- get_data(all_data, "aglu/FAO/L100.FAO_ag_Prod_t")
+    L100.FAO_ag_Feed_t <- get_data(all_data, "aglu/FAO/L100.FAO_ag_Feed_t")
+    L100.FAO_ag_Food_t <- get_data(all_data, "aglu/FAO/L100.FAO_ag_Food_t")
+    L100.FAO_an_Food_t <- get_data(all_data, "aglu/FAO/L100.FAO_an_Food_t")
+    L100.FAO_an_Prod_t <- get_data(all_data, "aglu/FAO/L100.FAO_an_Prod_t")
+    L100.FAO_an_Stocks <- get_data(all_data, "aglu/FAO/L100.FAO_an_Stocks")
+    L100.FAO_an_Dairy_Stocks <- get_data(all_data, "aglu/FAO/L100.FAO_an_Dairy_Stocks")
+
+
+    # assert FAO_an_Stocks has unit of head
+
+    # The new data has consistent Production between PRODSTAT and SUA
+    # For fodder crops 2012 - 2017 == 2011
+
+
+    # # Some data in an_Stocks are in 1000s of heads instead of just heads; convert them
+    # fhyc <- names(FAO_an_Stocks) %in% aglu.FAO_HISTORICAL_YEARS
+    # thr <- FAO_an_Stocks$units == "1000 Head"
+    # FAO_an_Stocks[thr, fhyc] <- FAO_an_Stocks[thr, fhyc] * 1000
+    # FAO_an_Stocks$units <- FAO_an_Dairy_Stocks$units <- NULL
+    # # as necessary, expand the animal stocks data to 2012
+    # if(!"2012" %in% names(FAO_an_Stocks)) FAO_an_Stocks$`2012` <- FAO_an_Stocks$`2011`
+
+    # Fodder data only goes through 2011, but won't be extrapolated to 2012 in
+    # the function below because the column `2012` exists.
+    # Fill in the Fodder 2012 data here.
+    # FAO_ag_HA_ha_PRODSTAT %>%
+    #   filter(grepl("forage", item) | grepl("Fodder", item) | grepl("silage", item)) %>%
+    #   mutate(`2012` = `2011`) ->
+    #   FAO_fodder_HA_ha_PRODSTAT
+    #
+    # FAO_ag_HA_ha_PRODSTAT %>%
+    #   filter(!grepl("forage", item) & !grepl("Fodder", item) & !grepl("silage", item)) %>%
+    #   bind_rows(FAO_fodder_HA_ha_PRODSTAT) ->
+    #   FAO_ag_HA_ha_PRODSTAT
+    #
+    # FAO_ag_Prod_t_PRODSTAT %>%
+    #   filter(grepl("forage", item) | grepl("Fodder", item) | grepl("silage", item)) %>%
+    #   mutate(`2012` = `2011`) ->
+    #   FAO_fodder_Prod_t_PRODSTAT
+    #
+    # FAO_ag_Prod_t_PRODSTAT %>%
+    #   filter(!grepl("forage", item) & !grepl("Fodder", item) & !grepl("silage", item)) %>%
+    #   bind_rows(FAO_fodder_Prod_t_PRODSTAT) ->
+    #   FAO_ag_Prod_t_PRODSTAT
+
+
+
     FAO_CL_kha_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_CL_kha_RESOURCESTAT")
     FAO_fallowland_kha_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_fallowland_kha_RESOURCESTAT")
     FAO_harv_CL_kha_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_harv_CL_kha_RESOURCESTAT")
@@ -109,10 +174,13 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
     FAO_For_Exp_m3_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Exp_m3_FORESTAT")
     FAO_For_Imp_m3_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Imp_m3_FORESTAT")
     FAO_For_Prod_m3_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Prod_m3_FORESTAT")
-    # Test adding L106
+
+    # Add these
     iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
     FAO_ag_items_cal_SUA <- get_data(all_data, "aglu/FAO/FAO_ag_items_cal_SUA")
     FAO_an_items_cal_SUA <- get_data(all_data, "aglu/FAO/FAO_an_items_cal_SUA")
+
+
 
     itel_colnames <- c("item", "item codes", "element", "element codes")
     coitel_colnames <- c("countries", "country codes", itel_colnames)
@@ -172,16 +240,12 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
 
 
     #kbn 2019/12/16 Adding in hole-filling for all FAO data.
-    FAO_ag_HA_ha_PRODSTAT <- get_baseyear_or_mostrecent_FAO(FAO_ag_HA_ha_PRODSTAT)
-    FAO_ag_Prod_t_PRODSTAT <- get_baseyear_or_mostrecent_FAO(FAO_ag_Prod_t_PRODSTAT)
-    FAO_ag_Exp_t_SUA <- get_baseyear_or_mostrecent_FAO(FAO_ag_Exp_t_SUA)
-    FAO_ag_Feed_t_SUA <- get_baseyear_or_mostrecent_FAO(FAO_ag_Feed_t_SUA)
-    FAO_ag_Food_t_SUA <- get_baseyear_or_mostrecent_FAO(FAO_ag_Food_t_SUA)
-    FAO_ag_Imp_t_SUA <- get_baseyear_or_mostrecent_FAO(FAO_ag_Imp_t_SUA)
-    FAO_an_Exp_t_SUA <- get_baseyear_or_mostrecent_FAO(FAO_an_Exp_t_SUA)
-    FAO_an_Food_t_SUA <- get_baseyear_or_mostrecent_FAO(FAO_an_Food_t_SUA)
-    FAO_an_Imp_t_SUA <- get_baseyear_or_mostrecent_FAO(FAO_an_Imp_t_SUA)
-    FAO_an_Prod_t_SUA <- get_baseyear_or_mostrecent_FAO(FAO_an_Prod_t_SUA)
+    # FAO_ag_HA_ha_PRODSTAT <- get_baseyear_or_mostrecent_FAO(FAO_ag_HA_ha_PRODSTAT)
+    # FAO_ag_Prod_t_PRODSTAT <- get_baseyear_or_mostrecent_FAO(FAO_ag_Prod_t_PRODSTAT)
+    # FAO_ag_Feed_t_SUA <- get_baseyear_or_mostrecent_FAO(FAO_ag_Feed_t_SUA)
+    # FAO_ag_Food_t_SUA <- get_baseyear_or_mostrecent_FAO(FAO_ag_Food_t_SUA)
+    # FAO_an_Food_t_SUA <- get_baseyear_or_mostrecent_FAO(FAO_an_Food_t_SUA)
+    # FAO_an_Prod_t_SUA <- get_baseyear_or_mostrecent_FAO(FAO_an_Prod_t_SUA)
     FAO_fallowland_kha_RESOURCESTAT <- get_baseyear_or_mostrecent_FAO(FAO_fallowland_kha_RESOURCESTAT)
     FAO_harv_CL_kha_RESOURCESTAT <- get_baseyear_or_mostrecent_FAO(FAO_harv_CL_kha_RESOURCESTAT)
     FAO_Fert_Cons_tN_RESOURCESTAT <- get_baseyear_or_mostrecent_FAO(FAO_Fert_Cons_tN_RESOURCESTAT)
@@ -215,63 +279,21 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
                                                by = as.list(prod[coitel_colnames]),
                                                sum, na.rm = TRUE)
 
-    # Some data in an_Stocks are in 1000s of heads instead of just heads; convert them
-    # Also remove the units column to be consistent with the other FAO tables.
-    fhyc <- names(FAO_an_Stocks) %in% aglu.FAO_HISTORICAL_YEARS
-    thr <- FAO_an_Stocks$units == "1000 Head"
-    FAO_an_Stocks[thr, fhyc] <- FAO_an_Stocks[thr, fhyc] * 1000
-    FAO_an_Stocks$units <- FAO_an_Dairy_Stocks$units <- NULL
-    # as necessary, expand the animal stocks data to 2012
-    if(!"2012" %in% names(FAO_an_Stocks)) FAO_an_Stocks$`2012` <- FAO_an_Stocks$`2011`
 
-    # Fodder data only goes through 2011, but won't be extrapolated to 2012 in
-    # the function below because the column `2012` exists.
-    # Fill in the Fodder 2012 data here.
-    FAO_ag_HA_ha_PRODSTAT %>%
-      filter(grepl("forage", item) | grepl("Fodder", item) | grepl("silage", item)) %>%
-      mutate(`2012` = `2011`) ->
-      FAO_fodder_HA_ha_PRODSTAT
-
-    FAO_ag_HA_ha_PRODSTAT %>%
-      filter(!grepl("forage", item) & !grepl("Fodder", item) & !grepl("silage", item)) %>%
-      bind_rows(FAO_fodder_HA_ha_PRODSTAT) ->
-      FAO_ag_HA_ha_PRODSTAT
-
-    FAO_ag_Prod_t_PRODSTAT %>%
-      filter(grepl("forage", item) | grepl("Fodder", item) | grepl("silage", item)) %>%
-      mutate(`2012` = `2011`) ->
-      FAO_fodder_Prod_t_PRODSTAT
-
-    FAO_ag_Prod_t_PRODSTAT %>%
-      filter(!grepl("forage", item) & !grepl("Fodder", item) & !grepl("silage", item)) %>%
-      bind_rows(FAO_fodder_Prod_t_PRODSTAT) ->
-      FAO_ag_Prod_t_PRODSTAT
-
-    # China vegetable food consumption is estimated from production volumes in the SUA database that are far higher
-    # than the quantities for the constituent crops reported in the PRODSTAT database, which we use for production.
-    # This discrepancy is corrected (approximately) here.
-    FAO_ag_Food_t_SUA[FAO_histyear_cols] <- lapply(FAO_ag_Food_t_SUA[FAO_histyear_cols], as.numeric)
-    FAO_ag_Food_t_SUA[FAO_ag_Food_t_SUA$countries == "China" & FAO_ag_Food_t_SUA$item == "Vegetables, Other",
-                      FAO_histyear_cols] <-
-      FAO_ag_Food_t_SUA[FAO_ag_Food_t_SUA$countries == "China" & FAO_ag_Food_t_SUA$item == "Vegetables, Other",
-                        FAO_histyear_cols] * aglu.CHN_VEG_FOOD_MULT
 
     # Not all databases go to 2012. Extrapolate each dataset to 2012, repeating
     # the data for 2009/10. Where missing 1961, substitute 1962
-    list("FAO_ag_Exp_t_SUA" = FAO_ag_Exp_t_SUA,
-         "FAO_ag_Feed_t_SUA" = FAO_ag_Feed_t_SUA,
-         "FAO_ag_Food_t_SUA" = FAO_ag_Food_t_SUA,
-         "FAO_ag_Imp_t_SUA" = FAO_ag_Imp_t_SUA,
-         "FAO_an_Exp_t_SUA" = FAO_an_Exp_t_SUA,
-         "FAO_an_Food_t_SUA" = FAO_an_Food_t_SUA,
-         "FAO_an_Imp_t_SUA" = FAO_an_Imp_t_SUA,
-         "FAO_an_Prod_t_SUA" = FAO_an_Prod_t_SUA,
-         "FAO_an_Stocks" = FAO_an_Stocks,
-         "FAO_an_Dairy_Stocks" = FAO_an_Dairy_Stocks,
+    list(
+         # "FAO_ag_Feed_t_SUA" = FAO_ag_Feed_t_SUA,
+         # "FAO_ag_Food_t_SUA" = FAO_ag_Food_t_SUA,
+         # "FAO_an_Food_t_SUA" = FAO_an_Food_t_SUA,
+         # "FAO_an_Prod_t_SUA" = FAO_an_Prod_t_SUA,
+         # "FAO_an_Stocks" = FAO_an_Stocks,
+         # "FAO_an_Dairy_Stocks" = FAO_an_Dairy_Stocks,
+         # "FAO_ag_HA_ha_PRODSTAT" = FAO_ag_HA_ha_PRODSTAT,
+         # "FAO_ag_Prod_t_PRODSTAT" = FAO_ag_Prod_t_PRODSTAT,
          "FAO_Fert_Cons_tN_RESOURCESTAT" = FAO_Fert_Cons_tN_RESOURCESTAT,
          "FAO_Fert_Prod_tN_RESOURCESTAT" = FAO_Fert_Prod_tN_RESOURCESTAT,
-         "FAO_ag_HA_ha_PRODSTAT" = FAO_ag_HA_ha_PRODSTAT,
-         "FAO_ag_Prod_t_PRODSTAT" = FAO_ag_Prod_t_PRODSTAT,
          "FAO_For_Exp_m3_FORESTAT" = FAO_For_Exp_m3_FORESTAT,
          "FAO_For_Imp_m3_FORESTAT" = FAO_For_Imp_m3_FORESTAT,
          "FAO_For_Prod_m3_FORESTAT" = FAO_For_Prod_m3_FORESTAT) %>%
@@ -414,66 +436,55 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       add_comments("Downscale countries") ->
       L100.FAO_harv_CL_kha
 
+
+    # Amendment ----
+    # move to FAOSTAT_GCAM package later for the alfalfa adjustment
+    L100.FAO_ag_Prod_t %>%
+      mutate(value = if_else(iso == "usa" & item == "Alfalfa for forage and silage",
+                             value / 4, value))  ->                                                                          # Aggregate by ISO, item, and region (some iso codes apply to multiple lines in data)
+      L100.FAO_ag_Prod_t
+
+
     # Add description, units, process (done above), and precursor information
-    L100.FAOlist[["L100.FAO_ag_HA_ha"]] %>%
+    L100.FAO_ag_HA_ha %>%
       add_title("FAO agricultural harvested area by country, item, year") %>%
       add_units("t") %>%
-      add_precursors("aglu/FAO/FAO_ag_HA_ha_PRODSTAT", "aglu/AGLU_ctry") ->
+      add_precursors("aglu/FAO/L100.FAO_ag_HA_ha", "aglu/AGLU_ctry") ->
       L100.FAO_ag_HA_ha
-    L100.FAOlist[["L100.FAO_ag_Prod_t"]] %>%
+    L100.FAO_ag_Prod_t %>%
       add_title("FAO agricultural production by country, item, year") %>%
       add_units("t") %>%
-      add_precursors("aglu/FAO/FAO_ag_Prod_t_PRODSTAT", "aglu/AGLU_ctry") ->
+      add_precursors("aglu/FAO/L100.FAO_ag_Prod_t", "aglu/AGLU_ctry") ->
       L100.FAO_ag_Prod_t
-    L100.FAOlist[["L100.FAO_ag_Exp_t"]] %>%
-      add_title("FAO agricultural exports by country, item, year") %>%
-      add_units("t") %>%
-      add_precursors("aglu/FAO/FAO_ag_Exp_t_SUA", "aglu/AGLU_ctry") ->
-      L100.FAO_ag_Exp_t
-    L100.FAOlist[["L100.FAO_ag_Feed_t"]] %>%
+    L100.FAO_ag_Feed_t %>%
       add_title("FAO agricultural feed by country, item, year") %>%
       add_units("t") %>%
-      add_precursors("aglu/FAO/FAO_ag_Feed_t_SUA", "aglu/AGLU_ctry") ->
+      add_precursors("aglu/FAO/L100.FAO_ag_Feed_t", "aglu/AGLU_ctry") ->
       L100.FAO_ag_Feed_t
-    L100.FAOlist[["L100.FAO_ag_Food_t"]] %>%
+    L100.FAO_ag_Food_t %>%
       add_title("FAO agricultural food consumption by country, item, year") %>%
       add_units("t") %>%
-      add_precursors("aglu/FAO/FAO_ag_Food_t_SUA", "aglu/AGLU_ctry") ->
+      add_precursors("aglu/FAO/L100.FAO_ag_Food_t", "aglu/AGLU_ctry") ->
       L100.FAO_ag_Food_t
-    L100.FAOlist[["L100.FAO_ag_Imp_t"]] %>%
-      add_title("FAO agricultural imports by country, item, year") %>%
-      add_units("t") %>%
-      add_precursors("aglu/FAO/FAO_ag_Imp_t_SUA", "aglu/AGLU_ctry") ->
-      L100.FAO_ag_Imp_t
-    L100.FAOlist[["L100.FAO_an_Exp_t"]] %>%
-      add_title("FAO animal exports by country, item, year") %>%
-      add_units("t") %>%
-      add_precursors("aglu/FAO/FAO_an_Exp_t_SUA", "aglu/AGLU_ctry") ->
-      L100.FAO_an_Exp_t
-    L100.FAOlist[["L100.FAO_an_Food_t"]] %>%
+    L100.FAO_an_Food_t %>%
       add_title("FAO animal food consumption by country, item, year") %>%
       add_units("t") %>%
-      add_precursors("aglu/FAO/FAO_an_Food_t_SUA", "aglu/AGLU_ctry") ->
+      add_precursors("aglu/FAO/L100.FAO_an_Food_t", "aglu/AGLU_ctry") ->
       L100.FAO_an_Food_t
-    L100.FAOlist[["L100.FAO_an_Imp_t"]] %>%
-      add_title("FAO animal imports by country, item, year") %>%
-      add_units("t") %>%
-      add_precursors("aglu/FAO/FAO_an_Imp_t_SUA", "aglu/AGLU_ctry") ->
-      L100.FAO_an_Imp_t
-    L100.FAOlist[["L100.FAO_an_Prod_t"]] %>%
+    L100.FAO_an_Prod_t %>%
       add_title("FAO animal production by country, item, year") %>%
       add_units("t") %>%
-      add_precursors("aglu/FAO/FAO_an_Prod_t_SUA", "aglu/AGLU_ctry") ->
+      add_precursors("aglu/FAO/L100.FAO_an_Prod_t", "aglu/AGLU_ctry") ->
       L100.FAO_an_Prod_t
-    L100.FAOlist[["L100.FAO_an_Stocks"]] %>%
+    L100.FAO_an_Stocks %>%
       add_title("FAO animal stocks country, item, year") %>%
       add_units("number") %>%
-      add_precursors("aglu/FAO/FAO_an_Stocks", "aglu/AGLU_ctry") ->
+      add_precursors("aglu/FAO/L100.FAO_an_Stocks", "aglu/AGLU_ctry") ->
       L100.FAO_an_Stocks
-    L100.FAOlist[["L100.FAO_an_Dairy_Stocks"]] %>%
+    L100.FAO_an_Dairy_Stocks %>%
       add_title("FAO dairy producing animal stocks country, item, year") %>%
       add_units("number") %>%
-      add_precursors("aglu/FAO/FAO_an_Dairy_Stocks", "aglu/AGLU_ctry") ->
+      add_precursors("aglu/FAO/L100.FAO_an_Dairy_Stocks", "aglu/AGLU_ctry") ->
       L100.FAO_an_Dairy_Stocks
     L100.FAO_CL_kha %>%
       add_title("FAO cropland area by country, year") %>%
@@ -520,52 +531,175 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       add_precursors("aglu/FAO/FAO_For_Prod_m3_FORESTAT", "aglu/AGLU_ctry") ->
       L100.FAO_For_Prod_m3
 
-#----------------
-# adding L106
-    # Combine FAO-GCAM mapping files of primary agriculture goods and animal products
-    FAO_ag_items_cal_SUA %>%
-      select(item, GCAM_commodity) %>%
-      bind_rows(select(FAO_an_items_cal_SUA, item, GCAM_commodity)) ->
-      FAO_items_map
+# Moving LA101 to here for food ----------------
+# Only keep spatial downscale of prod and HA in LA101
 
-    # Calculate FAO primary agricultural goods and animal products net exports by GCAM region and commodity as exports minus imports.
-    L100.FAO_ag_Exp_t %>%
-      # Combine all FAO primary agricultural goods and animal products exports and imports data
-      bind_rows(L100.FAO_ag_Imp_t, L100.FAO_an_Exp_t, L100.FAO_an_Imp_t) %>%
-      left_join_error_no_match(iso_GCAM_regID, by = "iso") %>%                     # Map in GCAM regions
-      left_join(FAO_items_map, by = "item") %>%                                    # Map in GCAM commodities, creates NAs
-      filter(!is.na(GCAM_commodity)) %>%                                           # Remove commodities not included in GCAM
-      group_by(GCAM_region_ID, GCAM_commodity, element, year) %>%                  # Group by region, commodity, year
-      summarise(value = sum(value)) %>%                                            # Aggregate exports and imports
-      ungroup() %>%
-      mutate(element = sub("ag_", "", element),                                    # Change the element (export and import) name for wide format
-             element = sub("an_", "", element)) %>%
-      spread(element, value) %>%                                                   # Wide format for net export calculation
-      na.omit() %>%                                                                # Drop observations with missing export or import, fill in later
-      mutate(netExp = Exp_t - Imp_t) ->                                            # Calculate net exports as exports minus imports
-      L106.NetExp_t_R_C_Y
+    # Process FAO food consumption data (tons): remove unnecessary columns, convert units, aggregate to region and commodity
+    L100.FAO_ag_Food_t %>%
+      select(-countries, -country.codes, -item.codes, -element, -element.codes) %>%                               # Remove unnecessary columns
+      left_join_error_no_match(iso_GCAM_regID, by = "iso") %>%                                                   # Map in ISO codes
+      left_join(FAO_ag_items_cal_SUA, by = "item") %>%                                                           # Map in GCAM commodities
+      filter(!is.na(GCAM_commodity)) %>%                                                                          # Remove commodities not included in GCAM
+      mutate(value = value * CONV_TON_MEGATON) %>%                                                               # Convert from tons to Mt
+      group_by(GCAM_region_ID, GCAM_commodity, year) %>%                                                          # Group by region, commodity, year
+      summarise(value = sum(value)) %>%                                                                           # Aggregate then map to appropriate data frame
+      ungroup() %>%                                                                                               # Ungroup before complete
+      complete(GCAM_region_ID = unique(iso_GCAM_regID$GCAM_region_ID),
+               GCAM_commodity, year, fill = list(value = 0)) ->                                                   # Fill in missing region/commodity combinations with 0
+      L101.ag_Food_Mt_R_C_Y
 
-    # Net exports must add to zero globally, so adjust gross exports in all regions so that global net exports add to zero.
-    # NOTE: give precedence to imports (rather than exports) of each commodity. This is arbitrary but of little consequence, and generally reduces amount of trade.
-    L106.NetExp_t_R_C_Y %>%
-      group_by(GCAM_commodity, year) %>%                                           # Group by commodity and year
-      summarise(netExp = sum(netExp), Exp_t = sum(Exp_t)) %>%                      # Sum global total net exports and gross exports
-      ungroup() %>%
-      # Calculate the export scaler for each commodity/year - the ratio of adjusted gross exports relative to original gross exports
-      mutate(scaler = (Exp_t - netExp) / Exp_t) %>%
-      select(-Exp_t, -netExp) ->
-      L106.ExpScaler_C_Y
+    # Process FAO food consumption data (Pcal): remove unnecessary columns, convert units, aggregate to region and commodity
+    L100.FAO_ag_Food_t %>%
+      select(-countries, -country.codes, -item.codes, -element, -element.codes) %>%                               # Remove unnecessary columns
+      left_join_error_no_match(iso_GCAM_regID, by = "iso") %>%                                                   # Map in ISO codes
+      left_join(FAO_ag_items_cal_SUA, by = "item") %>%                                                           # Map in GCAM commodities
+      filter(!is.na(GCAM_commodity)) %>%                                                                          # Remove commodities not included in GCAM
+      mutate(value = value * Mcal_t * CONV_MCAL_PCAL) %>%                                                        # Convert from tons to Pcal
+      group_by(GCAM_region_ID, GCAM_commodity, year) %>%                                                          # Group by region, commodity, year
+      summarise(value = sum(value)) %>%                                                                           # Aggregate then map to appropriate data frame
+      ungroup() %>%                                                                                               # Ungroup before complete
+      complete(GCAM_region_ID = unique(iso_GCAM_regID$GCAM_region_ID),
+               GCAM_commodity, year, fill = list(value = 0)) ->                                                   # Fill in missing region/commodity combinations with 0
+      L101.ag_Food_Pcal_R_C_Y
 
-    # Adjust gross exports and recompile net exports table, convert unit, and fill in missing values
-    L106.NetExp_t_R_C_Y %>%
-      left_join_error_no_match(L106.ExpScaler_C_Y, by = c("GCAM_commodity", "year")) %>%     # Match in export scaler
-      mutate(value = Exp_t * scaler - Imp_t,                                                 # Calulate regional net exports as adjusted regional gross exports minus imports
-             value = value * CONV_T_MT) %>%                                                  # Convert unit from ton to megaton
-      select(GCAM_region_ID, GCAM_commodity, year, value) %>%
-      complete(GCAM_region_ID = unique(iso_GCAM_regID$GCAM_region_ID),                       # Fill in missing region/commodity combinations with 0
+    # Calculate average caloric content of consumed commodities (kcal/g)
+    L101.ag_Food_Pcal_R_C_Y %>%
+      left_join(L101.ag_Food_Mt_R_C_Y, by = c("GCAM_region_ID", "GCAM_commodity", "year")) %>%                  # Join food in Mt to food in Pcal
+      mutate(value = if_else(value.y == 0, 1, value.x / value.y)) %>%                                          # Calculate average caloric content, set NA values to 1
+      select(-value.x, -value.y) ->                                                                             # Remove extra columns
+      L101.ag_kcalg_R_C_Y
+
+    # Produce outputs
+    L101.ag_Food_Mt_R_C_Y %>%
+      add_title("FAO food consumption by GCAM region, commodity, and year") %>%
+      add_units("Mt/yr") %>%
+      add_comments("Aggregates FAO data by GCAM region, commodity, and year") %>%
+      add_comments("Data is also converted from tons to Mt") %>%
+      add_legacy_name("L101.ag_Food_Mt_R_C_Y") %>%
+      add_precursors("L100.FAO_ag_Food_t", "aglu/FAO/FAO_ag_items_cal_SUA", "common/iso_GCAM_regID") ->
+      L101.ag_Food_Mt_R_C_Y
+    L101.ag_Food_Pcal_R_C_Y %>%
+      add_title("FAO food consumption by GCAM region, commodity, and year") %>%
+      add_units("Pcal/yr") %>%
+      add_comments("Aggregates FAO data by GCAM region, commodity, and year") %>%
+      add_comments("Data is also converted from tons to Pcal") %>%
+      add_legacy_name("L101.ag_Food_Pcal_R_C_Y") %>%
+      add_precursors("L100.FAO_ag_Food_t", "aglu/FAO/FAO_ag_items_cal_SUA", "common/iso_GCAM_regID") ->
+      L101.ag_Food_Pcal_R_C_Y
+    L101.ag_kcalg_R_C_Y %>%
+      add_title("Weighted average commodity caloric content by GCAM region, commodity, and year") %>%
+      add_units("kcal/g") %>%
+      add_comments("Combines the L101.ag_Food_Mt_R_C_Y and L101.ag_Food_Pcal_R_C_Y data frames") %>%
+      add_legacy_name("L101.ag_kcalg_R_C_Y") %>%
+      add_precursors("L100.FAO_ag_Food_t", "aglu/FAO/FAO_ag_items_cal_SUA", "common/iso_GCAM_regID") ->
+      L101.ag_kcalg_R_C_Y
+
+
+# Moving L105 to here ----
+    # Process FAO animal products food consumption data: map in GCAM region and commodities, convert units, aggregate to region and commodity
+    L100.FAO_an_Food_t %>%
+      left_join_error_no_match(iso_GCAM_regID, by = "iso") %>%                               # Map in GCAM regions
+      left_join(FAO_an_items_cal_SUA, by = "item") %>%                                       # Map in GCAM commodities, creates NAs
+      filter(!is.na(GCAM_commodity)) %>%                                                      # Remove commodities not included in GCAM
+      mutate(Mt = value * CONV_TON_MEGATON, Pcal = value * Mcal_t * CONV_MCAL_PCAL) %>%      # Convert from tons to Mt and Pcal
+      group_by(GCAM_region_ID, GCAM_commodity, year) %>%                                      # Group by region, commodity, year
+      summarize(Mt = sum(Mt), Pcal = sum(Pcal)) %>%                                           # Aggregate food consumption in Mt and Pcal
+      ungroup() %>%                                                                           # Ungroup before complete
+      complete(GCAM_region_ID = unique(iso_GCAM_regID$GCAM_region_ID),                        # Fill in missing region/commodity combinations with 0
+               GCAM_commodity, year, fill = list(Mt = 0, Pcal = 0)) %>%
+      # Calculate average caloric content of consumed commodities (Pcal/Mt = 10e12 kcal / 10e12 g = kcal/g) for each region and animal type, set NA values to 1
+      mutate(value = if_else(Mt == 0, 1, Pcal / Mt))  ->
+      L105.an_Food_R_C_Y
+
+    # Build table of food consumption in Mt
+    L105.an_Food_R_C_Y %>%
+      select(GCAM_region_ID, GCAM_commodity, year, value = Mt) ->
+      L105.an_Food_Mt_R_C_Y
+    # Build table of food consumption in Pcal
+    L105.an_Food_R_C_Y %>%
+      select(GCAM_region_ID, GCAM_commodity, year, value = Pcal) ->
+      L105.an_Food_Pcal_R_C_Y
+    # Build table of caloric content in kcal/g
+    L105.an_Food_R_C_Y %>%
+      select(GCAM_region_ID, GCAM_commodity, year, value) ->
+      L105.an_kcalg_R_C_Y
+
+    # Process FAO animal products production data: map in GCAM region and commodities, convert units
+    L100.FAO_an_Prod_t %>%
+      left_join_error_no_match(iso_GCAM_regID, by = "iso") %>%                               # Map in GCAM regions
+      left_join(FAO_an_items_cal_SUA, by = "item") %>%                                       # Map in GCAM commodities, creates NAs
+      filter(!is.na(GCAM_commodity)) %>%                                                      # Remove commodities not included in GCAM
+      mutate(value = value * CONV_TON_MEGATON)  ->                                           # Convert from tons to Mt
+      L105.FAO_an_Prod_Mt
+    # Build country table, aggregate to iso and GCAM commodity
+    L105.FAO_an_Prod_Mt %>%
+      group_by(iso, GCAM_commodity, year) %>%                                                 # Group by iso, commodity, year
+      summarize(value = sum(value)) %>%                                                       # Aggregate food consumption in Mt
+      ungroup() %>%                                                                           # Ungroup before complete
+      complete(iso = unique(iso_GCAM_regID$iso),                                              # Fill in missing country/commodity combinations with 0
                GCAM_commodity, year, fill = list(value = 0)) ->
-      L106.NetExp_Mt_R_C_Y
-#------------------
+      L105.an_Prod_Mt_ctry_C_Y
+    # Build region table, aggregate to GCAM region and commodity
+    L105.FAO_an_Prod_Mt %>%
+      group_by(GCAM_region_ID, GCAM_commodity, year) %>%                                      # Group by region, commodity, year
+      summarize(value = sum(value)) %>%                                                       # Aggregate food consumption in Mt
+      ungroup() %>%                                                                           # Ungroup before complete
+      complete(GCAM_region_ID = unique(iso_GCAM_regID$GCAM_region_ID),                        # Fill in missing region/commodity combinations with 0
+               GCAM_commodity, year, fill = list(value = 0)) ->
+      L105.an_Prod_Mt_R_C_Y
+
+    # Produce outputs
+    L105.an_Food_Mt_R_C_Y %>%
+      add_title("Animal consumption by GCAM region / commodity / year") %>%
+      add_units("Mt") %>%
+      add_comments("Aggregate FAO country and item data by GCAM region, commodity, and year") %>%
+      add_comments("Convert data from ton to Mt") %>%
+      add_legacy_name("L105.an_Food_Mt_R_C_Y") %>%
+      add_precursors("common/iso_GCAM_regID",
+                     "aglu/FAO/FAO_an_items_cal_SUA",
+                     "L100.FAO_an_Food_t") ->
+      L105.an_Food_Mt_R_C_Y
+
+    L105.an_Food_Pcal_R_C_Y %>%
+      add_title("Animal consumption by GCAM region / commodity / year") %>%
+      add_units("Pcal") %>%
+      add_comments("Aggregate FAO country and item data by GCAM region, commodity, and year") %>%
+      add_comments("Convert data from ton to Pcal") %>%
+      add_legacy_name("L105.an_Food_Pcal_R_C_Y") %>%
+      same_precursors_as(L105.an_Food_Mt_R_C_Y) ->
+      L105.an_Food_Pcal_R_C_Y
+
+    L105.an_kcalg_R_C_Y %>%
+      add_title("Average caloric content of animal products by GCAM region / commodity / year") %>%
+      add_units("kcal/g") %>%
+      add_comments("Combine animal consumption in Mt (L105.an_Food_Mt_R_C_Y) and in Pcal (L105.an_Food_Pcal_R_C_Y)") %>%
+      add_comments("Calculate the average caloric content as Pcal devided by Mt") %>%
+      add_legacy_name("L105.an_kcalg_R_C_Y") %>%
+      same_precursors_as(L105.an_Food_Mt_R_C_Y) ->
+      L105.an_kcalg_R_C_Y
+
+    L105.an_Prod_Mt_R_C_Y %>%
+      add_title("Animal production by GCAM region / commodity / year") %>%
+      add_units("Mt") %>%
+      add_comments("Aggregate FAO country and item data by GCAM region commodity, and year") %>%
+      add_comments("Convert data from ton to Mt") %>%
+      add_legacy_name("L105.an_Prod_Mt_R_C_Y") %>%
+      add_precursors("common/iso_GCAM_regID",
+                     "aglu/FAO/FAO_an_items_cal_SUA",
+                     "L100.FAO_an_Prod_t") ->
+      L105.an_Prod_Mt_R_C_Y
+
+    L105.an_Prod_Mt_ctry_C_Y %>%
+      add_title("Animal production by country / commodity / year") %>%
+      add_units("Mt") %>%
+      add_comments("Aggregate FAO country and item data by GCAM commodity, and year") %>%
+      add_comments("Convert data from ton to Mt") %>%
+      add_legacy_name("L105.an_Prod_Mt_ctry_C_Y") %>%
+      same_precursors_as(L105.an_Prod_Mt_R_C_Y) ->
+      L105.an_Prod_Mt_ctry_C_Y
+
+# Moving L106 to here ----
+
     # Produce outputs
     L106.NetExp_Mt_R_C_Y %>%
       semi_join(select(FAO_ag_items_cal_SUA, GCAM_commodity), by = "GCAM_commodity") %>%
@@ -576,9 +710,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       add_comments("Re-calculate regional net exports using adjusted gross exports minus gross imports") %>%
       add_legacy_name("L106.ag_NetExp_Mt_R_C_Y") %>%
       add_precursors("common/iso_GCAM_regID",
-                     "aglu/FAO/FAO_ag_items_cal_SUA",
-                     "L100.FAO_ag_Exp_t",
-                     "L100.FAO_ag_Imp_t") ->
+                     "aglu/FAO/FAO_ag_items_cal_SUA") ->
       L106.ag_NetExp_Mt_R_C_Y
 
     L106.NetExp_Mt_R_C_Y %>%
@@ -590,20 +722,15 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       add_comments("Re-calculate regional net exports using adjusted gross exports minus gross imports") %>%
       add_legacy_name("L106.an_NetExp_Mt_R_C_Y") %>%
       add_precursors("common/iso_GCAM_regID",
-                     "aglu/FAO/FAO_an_items_cal_SUA",
-                     "L100.FAO_an_Exp_t",
-                     "L100.FAO_an_Imp_t") ->
+                     "aglu/FAO/FAO_an_items_cal_SUA") ->
       L106.an_NetExp_Mt_R_C_Y
 
+    # Return data ----
     return_data(L100.FAO_ag_HA_ha,
                 L100.FAO_ag_Prod_t,
-                L100.FAO_ag_Exp_t,
                 L100.FAO_ag_Feed_t,
                 L100.FAO_ag_Food_t,
-                L100.FAO_ag_Imp_t,
-                L100.FAO_an_Exp_t,
                 L100.FAO_an_Food_t,
-                L100.FAO_an_Imp_t,
                 L100.FAO_an_Prod_t,
                 L100.FAO_an_Stocks,
                 L100.FAO_an_Dairy_Stocks,
@@ -615,6 +742,9 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
                 L100.FAO_For_Exp_m3,
                 L100.FAO_For_Imp_m3,
                 L100.FAO_For_Prod_m3,
+
+                L101.ag_Food_Mt_R_C_Y, L101.ag_Food_Pcal_R_C_Y, L101.ag_kcalg_R_C_Y,
+                L105.an_Food_Mt_R_C_Y, L105.an_Food_Pcal_R_C_Y, L105.an_kcalg_R_C_Y, L105.an_Prod_Mt_R_C_Y, L105.an_Prod_Mt_ctry_C_Y,
                 L106.ag_NetExp_Mt_R_C_Y, L106.an_NetExp_Mt_R_C_Y)
   } else {
     stop("Unknown command")
