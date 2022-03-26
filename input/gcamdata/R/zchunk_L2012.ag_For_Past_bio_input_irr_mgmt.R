@@ -28,7 +28,6 @@ module_aglu_L2012.ag_For_Past_bio_input_irr_mgmt <- function(command, ...) {
              "L122.ag_HA_to_CropLand_R_Y_GLU",
              "L123.ag_Prod_Mt_R_Past_Y_GLU",
              "L123.For_Prod_bm3_R_Y_GLU",
-             "L132.ag_an_For_Prices",
              "L1321.ag_prP_R_C_75USDkg",
              "L1321.expP_R_F_75USDm3",
              "L163.ag_irrBioYield_GJm2_R_GLU",
@@ -64,7 +63,6 @@ module_aglu_L2012.ag_For_Past_bio_input_irr_mgmt <- function(command, ...) {
     L122.ag_HA_to_CropLand_R_Y_GLU <- get_data(all_data, "L122.ag_HA_to_CropLand_R_Y_GLU", strip_attributes = TRUE)
     L123.ag_Prod_Mt_R_Past_Y_GLU <- get_data(all_data, "L123.ag_Prod_Mt_R_Past_Y_GLU", strip_attributes = TRUE)
     L123.For_Prod_bm3_R_Y_GLU <- get_data(all_data, "L123.For_Prod_bm3_R_Y_GLU", strip_attributes = TRUE)
-    L132.ag_an_For_Prices <- get_data(all_data, "L132.ag_an_For_Prices", strip_attributes = TRUE)
     L1321.ag_prP_R_C_75USDkg <- get_data(all_data, "L1321.ag_prP_R_C_75USDkg", strip_attributes = TRUE)
     L1321.expP_R_F_75USDm3 <- get_data(all_data, "L1321.expP_R_F_75USDm3", strip_attributes = TRUE)
     L163.ag_irrBioYield_GJm2_R_GLU <- get_data(all_data, "L163.ag_irrBioYield_GJm2_R_GLU", strip_attributes = TRUE)
@@ -87,10 +85,9 @@ module_aglu_L2012.ag_For_Past_bio_input_irr_mgmt <- function(command, ...) {
                            GCAM_region_names = GCAM_region_names) %>%
       select(-calPrice) %>%
       # Join calibration price data, there are missing value for biomass, use left_join instead
-      left_join(L132.ag_an_For_Prices, by = c("AgSupplySector" = "GCAM_commodity")) %>%
       left_join(L2012.P_R_C, by = c("region", AgSupplySector = "GCAM_commodity")) %>%
-      mutate(calPrice = replace(calPrice, AgSupplySector == "biomass", 1), # value irrelevant
-             calPrice = if_else(is.na(reg_calPrice), calPrice, reg_calPrice),
+      mutate(calPrice = reg_calPrice,
+             calPrice = replace(calPrice, AgSupplySector == "biomass", 1), # value irrelevant
              # For regional commodities, specify market names with region names
              market = replace(market, market == "regional", region[market == "regional"])) %>%
       select(LEVEL2_DATA_NAMES[["AgSupplySector"]], LOGIT_TYPE_COLNAME) %>%
@@ -365,7 +362,6 @@ module_aglu_L2012.ag_For_Past_bio_input_irr_mgmt <- function(command, ...) {
       add_precursors("common/GCAM_region_names",
                      "water/basin_to_country_mapping",
                      "aglu/A_agSupplySector",
-                     "L132.ag_an_For_Prices",
                      "L1321.ag_prP_R_C_75USDkg",
                      "L1321.expP_R_F_75USDm3") ->
       L2012.AgSupplySector

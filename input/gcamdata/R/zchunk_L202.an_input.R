@@ -41,7 +41,6 @@ module_aglu_L202.an_input <- function(command, ...) {
              "L107.an_Feed_Mt_R_C_Sys_Fd_Y",
              "L108.ag_Feed_Mt_R_C_Y",
              "L109.ag_ALL_Mt_R_C_Y",
-             "L132.ag_an_For_Prices",
              "L1321.ag_prP_R_C_75USDkg",
              "L1321.an_prP_R_C_75USDkg"))
   } else if(command == driver.DECLARE_OUTPUTS) {
@@ -97,7 +96,6 @@ module_aglu_L202.an_input <- function(command, ...) {
     A_an_supplysector <- get_data(all_data, "aglu/A_an_supplysector", strip_attributes = TRUE)
     A_an_subsector <- get_data(all_data, "aglu/A_an_subsector", strip_attributes = TRUE)
     A_an_technology <- get_data(all_data, "aglu/A_an_technology", strip_attributes = TRUE)
-    L132.ag_an_For_Prices <- get_data(all_data, "L132.ag_an_For_Prices")
     L109.ag_ALL_Mt_R_C_Y <- get_data(all_data, "L109.ag_ALL_Mt_R_C_Y")
     L1321.ag_prP_R_C_75USDkg <- get_data(all_data, "L1321.ag_prP_R_C_75USDkg", strip_attributes = TRUE)
     L1321.an_prP_R_C_75USDkg <- get_data(all_data, "L1321.an_prP_R_C_75USDkg")
@@ -362,6 +360,7 @@ module_aglu_L202.an_input <- function(command, ...) {
 
     # Calculate the weighted average regional crop prices, as the global traded crop price times the
     # import share plus the local producer price times the domestic source share (1 - ImpShare)
+    # For aglu.IWM_TRADED_COMM (e.g., FodderHerb), single world price won't be affected
     L202.ag_consP_R_C_75USDkg <- L1321.ag_prP_R_C_75USDkg %>%
       rename(PrP = value) %>%
       left_join_error_no_match(L202.ag_ImpShare_Mt_R_C_Y, by = c("GCAM_region_ID", "GCAM_commodity")) %>%
@@ -380,14 +379,23 @@ module_aglu_L202.an_input <- function(command, ...) {
       select(GCAM_commodity = sub.renewable.resource, calPrice = extractioncost)
 
     # Here we are using USA prices for all regions for FodderHerb, Residue, Scavenging_Other
-    L202.ag_Feed_Prices <- L132.ag_an_For_Prices %>%
-      filter(GCAM_commodity %in% unique(L202.ag_Feed_P_share_R_C$subsector)) %>%
-      bind_rows(L202.rsrcP_R_C_75USDkg) %>%
-      write_to_all_regions(c("region", "GCAM_commodity", "calPrice"), GCAM_region_names) %>%
-      rename(default_price = calPrice) %>%
-      left_join(L202.prP_R_C_75USDkg, by = c("region", "GCAM_commodity")) %>%
-      mutate(price = if_else(is.na(price), default_price, price)) %>%
-      select(region, GCAM_commodity, price)
+    # L202.ag_Feed_Prices <- L132.ag_an_For_Prices %>%
+    #   filter(GCAM_commodity %in% unique(L202.ag_Feed_P_share_R_C$subsector)) %>%
+    #   bind_rows(L202.rsrcP_R_C_75USDkg) %>%
+    #   write_to_all_regions(c("region", "GCAM_commodity", "calPrice"), GCAM_region_names) %>%
+    #   rename(default_price = calPrice) %>%
+    #   left_join(L202.prP_R_C_75USDkg, by = c("region", "GCAM_commodity")) %>%
+    #   mutate(price = if_else(is.na(price), default_price, price)) %>%
+    #   select(region, GCAM_commodity, price)
+
+    # The above code will be removed
+    # The new calculation is more consistent as the missing Taiwan prices were filled in earlier in LB1321
+    # This is important as they are need for calculating world/trade prices and thus consumer prices
+    # Also L132 is no longer needed here
+    L202.ag_Feed_Prices <- L202.prP_R_C_75USDkg %>%
+      bind_rows(L202.rsrcP_R_C_75USDkg%>% rename(price = calPrice) %>%
+                  write_to_all_regions(c("region", "GCAM_commodity", "price"), GCAM_region_names))
+    setdiff(L202.ag_Feed_Prices1, L202.ag_Feed_Prices)
 
     L202.ag_Feed_P_share_R_C %>%
       # not all stub.technology values are present as commodities in the price data; DDGS and feedcakes return NA and are dropped
@@ -700,7 +708,7 @@ module_aglu_L202.an_input <- function(command, ...) {
       add_comments("This is the non-feed cost; i.e., all costs of producing animal commodities except for the feed.") %>%
       add_legacy_name("L202.StubTechCost_an") %>%
       same_precursors_as(L202.StubTechCoef_an) %>%
-      add_precursors("L132.ag_an_For_Prices", "L1321.ag_prP_R_C_75USDkg", "L1321.an_prP_R_C_75USDkg",
+      add_precursors("L1321.ag_prP_R_C_75USDkg", "L1321.an_prP_R_C_75USDkg",
                      "L107.an_Feed_Mt_R_C_Sys_Fd_Y", "L109.ag_ALL_Mt_R_C_Y") ->
       L202.StubTechCost_an
 

@@ -19,6 +19,7 @@
 module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
     return(c(FILE = "common/iso_GCAM_regID",
+             FILE = "common/GCAM_region_names",
              FILE = "aglu/AGLU_ctry",
              FILE = "aglu/FAO/FAO_ag_items_TRADE",
              FILE = "aglu/FAO/FAO_ag_an_ProducerPrice",
@@ -45,6 +46,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
 
     # Load required inputs
     iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
+    GCAM_region_names <- get_data(all_data, "common/GCAM_region_names")
     AGLU_ctry <- get_data(all_data, "aglu/AGLU_ctry")
     FAO_ag_items_TRADE <- get_data(all_data, "aglu/FAO/FAO_ag_items_TRADE")
     FAO_ag_an_ProducerPrice <- get_data(all_data, "aglu/FAO/FAO_ag_an_ProducerPrice")
@@ -276,13 +278,31 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
       filter(GCAM_commodity %in% unique(L1321.an_prP_ctry_item_75USDkg$GCAM_commodity))
 
     # Addendum - to improve feed prices and meat price calibration, compute and include regionally adjusted foddergrass and pasture prices
-    L1321.ag_prP_R_Grass_75USDkg <- L1321.prPmult_R %>%
-      repeat_add_columns(tibble(GCAM_commodity = c("Pasture", "FodderGrass"))) %>%
+    # Add aglu.IWM_TRADED_COMM ("FodderHerb", "OtherMeat_Fish") prices into L1321.ag_prP_R_C_75USDkg from L132.ag_an_For_Prices
+    # This will reduce further dependency on L132.ag_an_For_Prices
+    L1321.ag_prP_R_Other_75USDkg <- L1321.prPmult_R %>%
+      repeat_add_columns(tibble(GCAM_commodity = c("Pasture", "FodderGrass", "FodderHerb"))) %>%
       left_join_error_no_match(L132.ag_an_For_Prices, by = "GCAM_commodity") %>%
-      mutate(value = calPrice * prPmult_R) %>%
+      # Single price for FodderHerb
+      mutate(value = if_else(!GCAM_commodity %in% aglu.IWM_TRADED_COMM, calPrice * prPmult_R, calPrice)) %>%
       select(GCAM_region_ID, GCAM_commodity, value)
 
-    L1321.ag_prP_R_C_75USDkg <- bind_rows(L1321.ag_prP_R_C_75USDkg, L1321.ag_prP_R_Grass_75USDkg)
+    L1321.ag_prP_R_C_75USDkg <- bind_rows(L1321.ag_prP_R_C_75USDkg, L1321.ag_prP_R_Other_75USDkg)
+
+    # Set Taiwan Ag price to China's prices here for now ----
+    # This was the assumption used before in later stages
+    L1321.ag_prP_R_C_75USDkg <- GCAM_region_names %>%
+      repeat_add_columns(tibble(GCAM_commodity = c(unique(L1321.ag_prP_R_C_75USDkg$GCAM_commodity)))) %>%
+      left_join(L1321.ag_prP_R_C_75USDkg, by = c("GCAM_region_ID", "GCAM_commodity")) %>%
+        left_join_error_no_match(
+          L1321.ag_prP_R_C_75USDkg %>%
+            left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
+            filter(region == "China") %>%
+            select(GCAM_commodity, ChinaPrice = value),
+          by = "GCAM_commodity") %>%
+        mutate(value = if_else(is.na(value) & region == "Taiwan", ChinaPrice, value))%>%
+      select(GCAM_region_ID, GCAM_commodity, value)
+
 
     # Forest export price by country, analysis year, and crop
     L1321.expP_ctry_item_75kUSDm3 <- FAO_For_Exp_m3_USD_FORESTAT %>%
@@ -351,6 +371,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
       add_units("1975$/kg") %>%
       add_comments("Region-specific calibration prices by GCAM commodity and region") %>%
       add_precursors("common/iso_GCAM_regID",
+                     "common/GCAM_region_names",
                      "aglu/AGLU_ctry",
                      "aglu/FAO/FAO_ag_items_TRADE",
                      "aglu/FAO/FAO_ag_an_ProducerPrice",
