@@ -30,7 +30,7 @@ module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
              FILE = "aglu/USDA_cost_data",
              "L100.LDS_ag_HA_ha",
              "L100.LDS_ag_prod_t",
-             "L132.ag_an_For_Prices"))
+             "L1321.ag_prP_R_C_75USDkg"))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L133.USDA_cost_data",
              "L133.ag_Cost_75USDkg_C"))
@@ -51,7 +51,7 @@ module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
     USDA_cost_data <- get_data(all_data, "aglu/USDA_cost_data")
     L100.LDS_ag_HA_ha <- get_data(all_data, "L100.LDS_ag_HA_ha")
     L100.LDS_ag_prod_t <- get_data(all_data, "L100.LDS_ag_prod_t")
-    L132.ag_an_For_Prices <- get_data(all_data, "L132.ag_an_For_Prices")
+    L1321.ag_prP_R_C_75USDkg <- get_data(all_data, "L1321.ag_prP_R_C_75USDkg")
 
     # convert USDA_cost_data to long form
     # Next, Take USDA item cost data from input table USDA_cost_data, and add GCAM commodity and GTAP crop mapping info
@@ -244,9 +244,16 @@ module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
     # Agricultural Prices in table L132.ag_an_For_Prices are joined to the Commodity Cost table, L133.ag_Cost_75USDm2_C,
     # and used to ensure that Costs in 1975USD/kg don't lead to profits below a minimum profit margin, aglu.MIN_PROFIT_MARGIN
     # Finally, revenue in Billion 1975 USD is calculated as Production * Price.
+
+    # US prices are now retrieved from L1321.ag_prP_R_C_75USDkg
+
+    L1321.ag_prP_R_C_75USDkg_USA <- L1321.ag_prP_R_C_75USDkg %>%
+      filter(GCAM_region_ID == 1) %>%  # USA prices
+      select(GCAM_commodity, calPrice = value)
+
     L133.ag_Cost_75USDm2_C %>%
       # Join Agricultural Prices table to get a calPrice column:
-      left_join_error_no_match(select(L132.ag_an_For_Prices, -unit), by = c("GCAM_commodity")) %>%
+      left_join_error_no_match(L1321.ag_prP_R_C_75USDkg_USA, by = c("GCAM_commodity")) %>%
       # Keep the minimum of Cost_75USDkg and calPrice*(1-aglu.MIN_PROFIT_MARGIN) to insure that the minimum profit margin is met:
       mutate(Cost_75USDkg = if_else(Cost_75USDkg < calPrice * (1 - aglu.MIN_PROFIT_MARGIN),
                                     Cost_75USDkg,
@@ -255,7 +262,9 @@ module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
       mutate(Revenue_bil75USD = Prod_Mt * calPrice) ->
       # store:
       L133.ag_Cost_75USDm2_C
+    # The safeguard of aglu.MIN_PROFIT_MARGIN here only work for a subset of crop with available USDA data
 
+# Estimate and interpolate cost for crops with no US data ----
 
     # Line 107 in original file
     # calculate the Average Profit in 1975USD/m2. This is a scaler quantity, the average profit across all
@@ -300,7 +309,7 @@ module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
       # 2. calculate Yield in kg/square meter for each commodity:
       mutate(Yield_kgm2 = Prod_t / HA_ha * CONV_THA_KGM2) %>%
       # 3. join in price information for these commodities:
-      left_join_error_no_match(select(L132.ag_an_For_Prices, -unit), by = c("GCAM_commodity")) %>%
+      left_join_error_no_match(L1321.ag_prP_R_C_75USDkg_USA, by = c("GCAM_commodity")) %>%
       # 4. Use the average profit to calculate cost for these missing commodities
       #    Cost_75USDkg = calPrice - (AvgProfit) / Yield:
       mutate(Cost_75USDkg = calPrice - L133.AvgProfit_75USDm2$AvgProfit_75USDm2 / Yield_kgm2) %>%
@@ -309,6 +318,7 @@ module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
       # store in a table of Costs for other commodities:
       L133.ag_Cost_75USDkg_Cothr
 
+    # Fixed profit per area (m2) was used above to infer cost ----
 
     # Lines 125 - 127
     # Join the two tables of cost information to get Cost in 1975 USD/kg for each GCAM Commodity
@@ -316,6 +326,18 @@ module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
       select(GCAM_commodity, Cost_75USDkg) %>%
       bind_rows(L133.ag_Cost_75USDkg_Cothr) ->
       L133.ag_Cost_75USDkg_C
+
+
+    # Consider adding safegaurd again later for all crops ----
+    # L133.ag_Cost_75USDkg_C %>%
+    #   # Join Agricultural Prices table to get a calPrice column:
+    #   left_join_error_no_match(L1321.ag_prP_R_C_75USDkg_USA, by = c("GCAM_commodity")) %>%
+    #   # Keep the minimum of Cost_75USDkg and calPrice*(1-aglu.MIN_PROFIT_MARGIN) to insure that the minimum profit margin is met:
+    #   mutate(Cost_75USDkg = if_else(Cost_75USDkg < calPrice * (1 - aglu.MIN_PROFIT_MARGIN),
+    #                                 Cost_75USDkg,
+    #                                 calPrice * (1 - aglu.MIN_PROFIT_MARGIN))) %>%
+    #   select(GCAM_commodity, Cost_75USDkg) ->
+    #   L133.ag_Cost_75USDkg_C
 
 
     # Produce outputs
@@ -344,7 +366,7 @@ module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
                      "aglu/USDA_cost_data",
                      "L100.LDS_ag_HA_ha",
                      "L100.LDS_ag_prod_t",
-                     "L132.ag_an_For_Prices") ->
+                     "L1321.ag_prP_R_C_75USDkg") ->
       L133.ag_Cost_75USDkg_C
 
     return_data(L133.USDA_cost_data, L133.ag_Cost_75USDkg_C)

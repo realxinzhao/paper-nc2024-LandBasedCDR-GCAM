@@ -46,7 +46,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
 
     # Load required inputs
     iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
-    GCAM_region_names <- get_data(all_data, "common/GCAM_region_names")
+    GCAM_region_names <- get_data(all_data, "common/GCAM_region_names", strip_attributes = T)
     AGLU_ctry <- get_data(all_data, "aglu/AGLU_ctry")
     FAO_ag_items_TRADE <- get_data(all_data, "aglu/FAO/FAO_ag_items_TRADE")
     FAO_ag_an_ProducerPrice <- get_data(all_data, "aglu/FAO/FAO_ag_an_ProducerPrice")

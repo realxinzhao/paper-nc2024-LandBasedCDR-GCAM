@@ -395,7 +395,7 @@ module_aglu_L202.an_input <- function(command, ...) {
     L202.ag_Feed_Prices <- L202.prP_R_C_75USDkg %>%
       bind_rows(L202.rsrcP_R_C_75USDkg%>% rename(price = calPrice) %>%
                   write_to_all_regions(c("region", "GCAM_commodity", "price"), GCAM_region_names))
-    setdiff(L202.ag_Feed_Prices1, L202.ag_Feed_Prices)
+
 
     L202.ag_Feed_P_share_R_C %>%
       # not all stub.technology values are present as commodities in the price data; DDGS and feedcakes return NA and are dropped
