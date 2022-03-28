@@ -40,6 +40,7 @@ MODEL_FINAL_BASE_YEAR   <- 2015
 
 gcam.USA_CODE            <- 1
 gcam.USA_REGION          <- "USA"
+gcam.REGION_NUMBER       <- 32  # Use for assertion in data processing to ensure all region has data
 gcam.WESTERN_EUROPE_CODE <- 13
 gcam.LOGIT_TYPES         <- c("relative-cost-logit", "absolute-cost-logit")
 gcam.EQUIV_TABLE         <- "EQUIV_TABLE"
@@ -167,8 +168,8 @@ CONV_FT2_M2 <- 0.0929 # Square feet to square meters
 # AgLU constants ======================================================================
 
 # Time
-aglu.AGLU_HISTORICAL_YEARS  <- 1971:2015
-aglu.BASE_YEAR_IFA          <- 2006      # Base year of International Fertilizer Industry Association (IFA) fertilizer application data KD does this belong here???
+aglu.AGLU_HISTORICAL_YEARS  <- 1973:2015
+aglu.BASE_YEAR_IFA          <- 2006      # Base year of International Fertilizer Industry Association (IFA) fertilizer application data
 aglu.BIO_START_YEAR         <- 2025      # Also set in aglu/A_bio_ghost_share
 aglu.CROSIT_HISTORICAL_YEAR <- 2005      # Historical year from the CROSIT data
 aglu.DIET_YEARS             <- seq(max(aglu.AGLU_HISTORICAL_YEARS), 2050, by = 5)
