@@ -27,7 +27,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
              FILE = "common/FAO_GDP_Deflators",
              FILE = "aglu/FAO/FAO_an_Prod_t_PRODSTAT",
              FILE = "aglu/FAO/FAO_For_Exp_m3_USD_FORESTAT",
-             "L132.ag_an_For_Prices"))
+             FILE = "aglu/USDA_Alfalfa_prices_USDt"))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L1321.ag_prP_R_C_75USDkg",
              "L1321.an_prP_R_C_75USDkg",
@@ -53,15 +53,15 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
     FAO_ag_Prod_t_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_Prod_t_PRODSTAT")
     FAO_GDP_Deflators <- get_data(all_data, "common/FAO_GDP_Deflators")
     FAO_an_Prod_t_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_an_Prod_t_PRODSTAT")
-    L132.ag_an_For_Prices <- get_data(all_data,"L132.ag_an_For_Prices")
+    USDA_Alfalfa_prices_USDt <- get_data(all_data, "aglu/USDA_Alfalfa_prices_USDt")
     # kbn 2019/09/23 added AGLU_Ctry_Unique since using AGLU_Ctry was causing extra rows to be added.
     AGLU_Ctry_Unique<-distinct(AGLU_ctry,FAO_country,.keep_all = TRUE)
     # xz 2021/4/14 added regional forest export prices
     FAO_For_Exp_m3_USD_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Exp_m3_USD_FORESTAT")
 
 
-    # 1. Producer prices
-    # 1.1 GDP deflators (to 2005) by country and analysis year
+    # 1. Producer prices ----
+    ## 1.1 GDP deflators (to 2005) by country and analysis year ----
 
     # GDP deflators are used to convert each reported year- and country- values to a common unit of measure
     # This step filters years, sets iso codes to countries, and converts all deflators from an index-100 with a base
@@ -85,7 +85,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
                                by = c(countries= "FAO_country")) %>%
       select(iso, countries, year, currentUSD_per_baseyearUSD)
 
-    # 1.2. Producer prices by country, analysis year, and crop
+    ## 1.2. Producer prices by country, analysis year, and crop ----
 
     # filter analysis years, re-name items for merging with other datasets w/different item lists
     # inner_join producer prices and deflators in order to drop any countries and years w/o available price or deflator data
@@ -112,7 +112,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
       mutate(value = replace_na(value, mean(value, na.rm=TRUE))) %>%
       ungroup()
 
-    # 1.2.1 Revise cotton prices to cover for gaps in the data
+    ### 1.2.1 Revise cotton prices to cover for gaps in the data ----
 
     # The "items" of cotton lint and cottonseed vary in price significantly (~7x), and where countries only report one
     # or the other, the producer price of "seed cotton" (i.e., the total, averaged) is biased accordingly. This is
@@ -140,7 +140,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
                                                     !pp_commod %in% c("Cotton lint", "Cottonseed")),
                                              L1321.prP_ctry_Cttn_75USDkg)
 
-    # 1.3. Country- and FAO commodity-level production weights
+    ## 1.3. Country- and FAO commodity-level production weights ----
 
     # Average producer prices, aggregated from countries and FAO items by regions and commodities using production as
     # the weighting factor. The pipeline below is mostly just filtering and cleaning data, and preparing a table to be
@@ -153,7 +153,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
                                 by = c(countries = "FAO_country")) %>%
       select(iso, item, item.code = item.codes, year, production)
 
-    # 1.3.1 Revising cotton production weights to cover for data gaps
+    ### 1.3.1 Revising cotton production weights to cover for data gaps ----
 
     # The cotton commodity in the PRODSTAT database (Seed cotton) does not match the two in the price database
     # (Cotton lint and Cottonseed). The former is broken into the latter using default ratios.
@@ -178,7 +178,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
                                 by = c(countries = "FAO_country")) %>%
       select(iso, item, item.code = `item codes`, year, production)
 
-    # 1.4. Join production weights into the producer price data
+    ## 1.4. Join production weights into the producer price data ----
     # Subset only the items that map to GCAM commodities that are modeled as traded,
     # and only the ones that FAO includes in the producer prices database.
     FAO_ag_items_TRADE_pp <- filter(FAO_ag_items_TRADE, !is.na(pp_commod)) %>%
@@ -200,7 +200,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
       # some of the country/crop combinations have no production weights. Drop em.
       drop_na(production)
 
-    # 1.5. Calculate producer prices by GCAM region and GCAM commodity
+    ## 1.5. Calculate producer prices by GCAM region and GCAM commodity ----
 
     # Weighted average producer prices are calculated as total revenue (price times quantity, aggregated) divided by
     # production weight volumes. Note that at this stage, years are included in the average prices. Averages between
@@ -222,7 +222,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
     # Missing GCAM region and commodity observations are replaced with the average producer price of the given crop
     # times the regional average producer price multiplier.
 
-    # 1.5.1 Calculate default global average producer prices by crop (weighted by production)
+    ### 1.5.1 Calculate default global average producer prices by crop (weighted by production) ----
     L1321.prP_C_75USDkg <- L1321.prP_R_C_Y_75USDkg %>%
       group_by(GCAM_commodity) %>%
       summarise(revenue = sum(revenue),
@@ -231,7 +231,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
       mutate(avg_prP_C = revenue / production) %>%
       select(GCAM_commodity, avg_prP_C)
 
-    # 1.5.2 Calculate default regional price multipliers
+    ### 1.5.2 Calculate default regional price multipliers ----
 
     # Regional default price multipliers are calculated as the sum of production-weighted price multipliers for each
     # crop (production_wt_prPmult), divided by the sum of production.
@@ -248,7 +248,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
       mutate(prPmult_R = production_wt_prPmult / production) %>%
       select(GCAM_region_ID, prPmult_R)
 
-    # 1.5.3. Using defaults, fill out missing values for all necessary regions and commodities and years
+    ### 1.5.3. Using defaults, fill out missing values for all necessary regions and commodities and years ----
 
     # complete() the table to fill out missing values for all years
     # Need this annual data to calculate regional pasture prices
@@ -277,12 +277,32 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
     L1321.an_prP_R_C_75USDkg <- L1321.prP_R_C_75USDkg %>%
       filter(GCAM_commodity %in% unique(L1321.an_prP_ctry_item_75USDkg$GCAM_commodity))
 
+    # Moved from origional module_aglu_LB132.ag_an_For_Prices_USA_C_2005 which was removed
+    # This will reduce further dependency on L132.ag_an_For_Prices
+    # Calculate average FodderHerb prices from alfalfa prices
+    L1321.Fodder_USA_Prices <-
+      USDA_Alfalfa_prices_USDt %>%
+      select(year, avg) %>%
+      filter(year %in% aglu.MODEL_PRICE_YEARS) %>%
+      # Convert nominal dollar year to constant 1975$
+      mutate(deflator = gdp_deflator(1975, year)) %>%
+      mutate(avg  = avg * deflator) %>%
+      select(-deflator) %>%
+      # Calculate a single unweighted average price of Alfalfa over the price years
+      summarise_at(vars(avg), mean, na.rm = TRUE) %>%
+      rename(FodderHerb = avg) %>%
+      # Note: Setting FodderGrass price as a ratio to FodderHerb
+      mutate(FodderGrass = FodderHerb * aglu.PRICERATIO_GRASS_ALFALFA,
+             # NOTE: Setting Pasture price equal to FodderGrass price
+             Pasture = FodderGrass * aglu.PRICERATIO_PASTURE_HAY) %>%
+      gather(GCAM_commodity, calPrice)
+
     # Addendum - to improve feed prices and meat price calibration, compute and include regionally adjusted foddergrass and pasture prices
     # Add aglu.IWM_TRADED_COMM ("FodderHerb", "OtherMeat_Fish") prices into L1321.ag_prP_R_C_75USDkg from L132.ag_an_For_Prices
-    # This will reduce further dependency on L132.ag_an_For_Prices
+
     L1321.ag_prP_R_Other_75USDkg <- L1321.prPmult_R %>%
       repeat_add_columns(tibble(GCAM_commodity = c("Pasture", "FodderGrass", "FodderHerb"))) %>%
-      left_join_error_no_match(L132.ag_an_For_Prices, by = "GCAM_commodity") %>%
+      left_join_error_no_match(L1321.Fodder_USA_Prices, by = "GCAM_commodity") %>%
       # Single price for FodderHerb
       mutate(value = if_else(!GCAM_commodity %in% aglu.IWM_TRADED_COMM, calPrice * prPmult_R, calPrice)) %>%
       select(GCAM_region_ID, GCAM_commodity, value)
@@ -377,7 +397,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
                      "aglu/FAO/FAO_ag_an_ProducerPrice",
                      "aglu/FAO/FAO_ag_Prod_t_PRODSTAT",
                      "common/FAO_GDP_Deflators",
-                     "L132.ag_an_For_Prices") ->
+                     "aglu/USDA_Alfalfa_prices_USDt") ->
       L1321.ag_prP_R_C_75USDkg
 
     L1321.an_prP_R_C_75USDkg %>%
