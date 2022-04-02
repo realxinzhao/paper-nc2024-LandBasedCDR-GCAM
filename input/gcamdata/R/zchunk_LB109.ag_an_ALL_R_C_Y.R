@@ -243,8 +243,7 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
       # feed crops
       mutate(GrossExp_Mt = if_else(is.na(GrossExp_Mt) & NetExp_Mt > 0, NetExp_Mt, GrossExp_Mt),
              GrossExp_Mt = if_else(is.na(GrossExp_Mt) & NetExp_Mt <= 0, 0, GrossExp_Mt),
-             GrossImp_Mt = if_else(is.na(GrossImp_Mt) & NetExp_Mt < 0, -NetExp_Mt, GrossImp_Mt),
-             GrossImp_Mt = if_else(is.na(GrossImp_Mt) & NetExp_Mt >= 0, 0, GrossImp_Mt)) ->
+             GrossImp_Mt = GrossExp_Mt - NetExp_Mt) ->
       L109.ag_ALL_Mt_R_C_Y
 
     L109.an_ALL_Mt_R_C_Y %>%
@@ -252,8 +251,7 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
                 by = c("GCAM_region_ID", "GCAM_commodity", "year")) %>%
       mutate(GrossExp_Mt = if_else(is.na(GrossExp_Mt) & NetExp_Mt > 0, NetExp_Mt, GrossExp_Mt),
              GrossExp_Mt = if_else(is.na(GrossExp_Mt) & NetExp_Mt <= 0, 0, GrossExp_Mt),
-             GrossImp_Mt = if_else(is.na(GrossImp_Mt) & NetExp_Mt < 0, -NetExp_Mt, GrossImp_Mt),
-             GrossImp_Mt = if_else(is.na(GrossImp_Mt) & NetExp_Mt >= 0, 0, GrossImp_Mt)) ->
+             GrossImp_Mt = GrossExp_Mt - NetExp_Mt) ->
       L109.an_ALL_Mt_R_C_Y
 
 

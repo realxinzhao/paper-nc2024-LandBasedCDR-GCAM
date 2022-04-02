@@ -47,8 +47,8 @@ module_aglu_LB164.ag_Costs_USA_C_2005_irr <- function(command, ...) {
 
     # Load required inputs
     iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
-    USDA_crops <- get_data(all_data, "aglu/USDA_crops")
-    USDA_item_cost <- get_data(all_data, "aglu/USDA_item_cost")
+    USDA_crops <- get_data(all_data, "aglu/USDA/USDA_crops")
+    USDA_item_cost <- get_data(all_data, "aglu/USDA/USDA_item_cost")
     L133.USDA_cost_data <- get_data(all_data, "L133.USDA_cost_data")
     L100.LDS_ag_HA_ha <- get_data(all_data, "L100.LDS_ag_HA_ha")
     L133.ag_Cost_75USDkg_C <- get_data(all_data, "L133.ag_Cost_75USDkg_C", strip_attributes = TRUE)
@@ -164,8 +164,8 @@ module_aglu_LB164.ag_Costs_USA_C_2005_irr <- function(command, ...) {
       add_comments("is adjusted as LB133_cost * (1 - water cost fraction) = production cost - purchased irrigation water for each commodity.") %>%
       add_legacy_name("L164.ag_Cost_75USDkg_C") %>%
       add_precursors("common/iso_GCAM_regID",
-                     "aglu/USDA_crops",
-                     "aglu/USDA_item_cost",
+                     "aglu/USDA/USDA_crops",
+                     "aglu/USDA/USDA_item_cost",
                      "L133.USDA_cost_data",
                      "L100.LDS_ag_HA_ha",
                      "L133.ag_Cost_75USDkg_C",

@@ -53,7 +53,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
     FAO_ag_Prod_t_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_Prod_t_PRODSTAT")
     FAO_GDP_Deflators <- get_data(all_data, "common/FAO_GDP_Deflators")
     FAO_an_Prod_t_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_an_Prod_t_PRODSTAT")
-    USDA_Alfalfa_prices_USDt <- get_data(all_data, "aglu/USDA_Alfalfa_prices_USDt")
+    USDA_Alfalfa_prices_USDt <- get_data(all_data, "aglu/USDA/USDA_Alfalfa_prices_USDt")
     # kbn 2019/09/23 added AGLU_Ctry_Unique since using AGLU_Ctry was causing extra rows to be added.
     AGLU_Ctry_Unique<-distinct(AGLU_ctry,FAO_country,.keep_all = TRUE)
     # xz 2021/4/14 added regional forest export prices
@@ -399,7 +399,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
                      "aglu/FAO/FAO_ag_an_ProducerPrice",
                      "aglu/FAO/FAO_ag_Prod_t_PRODSTAT",
                      "common/FAO_GDP_Deflators",
-                     "aglu/USDA_Alfalfa_prices_USDt") ->
+                     "aglu/USDA/USDA_Alfalfa_prices_USDt") ->
       L1321.ag_prP_R_C_75USDkg
 
     L1321.an_prP_R_C_75USDkg %>%

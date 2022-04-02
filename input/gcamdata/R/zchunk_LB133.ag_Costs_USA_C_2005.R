@@ -45,10 +45,10 @@ module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
     all_data <- list(...)[[1]]
 
     # Load required inputs
-    USDA_crops <- get_data(all_data, "aglu/USDA_crops")
-    USDA_item_cost <- get_data(all_data, "aglu/USDA_item_cost")
+    USDA_crops <- get_data(all_data, "aglu/USDA/USDA_crops")
+    USDA_item_cost <- get_data(all_data, "aglu/USDA/USDA_item_cost")
     FAO_ag_items_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_items_PRODSTAT")
-    USDA_cost_data <- get_data(all_data, "aglu/USDA_cost_data")
+    USDA_cost_data <- get_data(all_data, "aglu/USDA/USDA_cost_data")
     L100.LDS_ag_HA_ha <- get_data(all_data, "L100.LDS_ag_HA_ha")
     L100.LDS_ag_prod_t <- get_data(all_data, "L100.LDS_ag_prod_t")
     L1321.ag_prP_R_C_75USDkg <- get_data(all_data, "L1321.ag_prP_R_C_75USDkg")
@@ -348,9 +348,9 @@ module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
       add_comments("reported year (2007) using the average growth rate from 2000-2007.") %>%
       add_comments("Note: USDA_crops and USDA_item_cost are already mapped in") %>%
       add_legacy_name("L133.USDA_cost_data") %>%
-      add_precursors("aglu/USDA_cost_data",
-                     "aglu/USDA_crops",
-                     "aglu/USDA_item_cost") ->
+      add_precursors("aglu/USDA/USDA_cost_data",
+                     "aglu/USDA/USDA_crops",
+                     "aglu/USDA/USDA_item_cost") ->
       L133.USDA_cost_data
 
     L133.ag_Cost_75USDkg_C %>%
@@ -360,10 +360,10 @@ module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
       add_comments("Commodities without USDA cost data have costs calculated using the average profit") %>%
       add_comments("among USDA commodities and LDS harvested area and production data.") %>%
       add_legacy_name("L133.ag_Cost_75USDkg_C") %>%
-      add_precursors("aglu/USDA_crops",
-                     "aglu/USDA_item_cost",
+      add_precursors("aglu/USDA/USDA_crops",
+                     "aglu/USDA/USDA_item_cost",
                      "aglu/FAO/FAO_ag_items_PRODSTAT",
-                     "aglu/USDA_cost_data",
+                     "aglu/USDA/USDA_cost_data",
                      "L100.LDS_ag_HA_ha",
                      "L100.LDS_ag_prod_t",
                      "L1321.ag_prP_R_C_75USDkg") ->
