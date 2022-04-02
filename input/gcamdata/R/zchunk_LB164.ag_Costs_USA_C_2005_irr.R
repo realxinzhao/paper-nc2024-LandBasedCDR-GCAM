@@ -26,8 +26,8 @@
 module_aglu_LB164.ag_Costs_USA_C_2005_irr <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
     return(c(FILE = "common/iso_GCAM_regID",
-             FILE = "aglu/USDA_crops",
-             FILE = "aglu/USDA_item_cost",
+             FILE = "aglu/USDA/USDA_crops",
+             FILE = "aglu/USDA/USDA_item_cost",
              "L133.USDA_cost_data",
              "L100.LDS_ag_HA_ha",
              "L133.ag_Cost_75USDkg_C",

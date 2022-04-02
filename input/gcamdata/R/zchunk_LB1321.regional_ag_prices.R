@@ -27,7 +27,7 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
              FILE = "common/FAO_GDP_Deflators",
              FILE = "aglu/FAO/FAO_an_Prod_t_PRODSTAT",
              FILE = "aglu/FAO/FAO_For_Exp_m3_USD_FORESTAT",
-             FILE = "aglu/USDA_Alfalfa_prices_USDt"))
+             FILE = "aglu/USDA/USDA_Alfalfa_prices_USDt"))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L1321.ag_prP_R_C_75USDkg",
              "L1321.an_prP_R_C_75USDkg",
@@ -295,7 +295,9 @@ module_aglu_LB1321.regional_ag_prices <- function(command, ...) {
       mutate(FodderGrass = FodderHerb * aglu.PRICERATIO_GRASS_ALFALFA,
              # NOTE: Setting Pasture price equal to FodderGrass price
              Pasture = FodderGrass * aglu.PRICERATIO_PASTURE_HAY) %>%
-      gather(GCAM_commodity, calPrice)
+      gather(GCAM_commodity, calPrice) %>%
+      mutate(calPrice = round(calPrice / CONV_T_KG, digits = aglu.DIGITS_CALPRICE),
+             unit = "1975$/kg")
 
     # Addendum - to improve feed prices and meat price calibration, compute and include regionally adjusted foddergrass and pasture prices
     # Add aglu.IWM_TRADED_COMM ("FodderHerb", "OtherMeat_Fish") prices into L1321.ag_prP_R_C_75USDkg from L132.ag_an_For_Prices

@@ -62,6 +62,27 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
     L1091.GrossTrade_Mt_R_C_Y <- get_data(all_data, "aglu/FAO/L1091_GrossTrade_Mt_R_C_Y")
 
 
+# Here, when other use is negative, net trade is adjusted
+# There will be concerns on primary vs. secondary trade and trade within or across aggregated regions.
+    # L101.ag_Food_Mt_R_C_Y %>% left_join(L109.ag_ALL_Mt_R_C_Y %>% select(GCAM_region_ID, GCAM_commodity, year, Food_Mt)) %>%
+    #   mutate(diff=Food_Mt - value ) %>% filter(abs(diff) > 0.01) -> A
+    # L101.ag_Prod_Mt_R_C_Y %>% left_join(L109.ag_ALL_Mt_R_C_Y %>% select(GCAM_region_ID, GCAM_commodity, year, Prod_Mt)) %>%
+    #   mutate(diff=Prod_Mt - value ) %>% filter(abs(diff) > 0.01) -> A
+    # L122.in_Mt_R_C_Yh %>% left_join(L109.ag_ALL_Mt_R_C_Y %>% select(GCAM_region_ID, GCAM_commodity, year, Biofuels_Mt)) %>%
+    #   mutate(diff=Biofuels_Mt - value ) %>% filter(abs(diff) > 0.01) -> A
+    # L108.ag_Feed_Mt_R_C_Y %>% left_join(L109.ag_ALL_Mt_R_C_Y %>% select(GCAM_region_ID, GCAM_commodity, year, Feed_Mt)) %>%
+    #   mutate(diff=Feed_Mt - value ) %>% filter(abs(diff) > 0.01) -> A
+    # L106.ag_NetExp_Mt_R_C_Y %>% left_join(L109.ag_ALL_Mt_R_C_Y %>% select(GCAM_region_ID, GCAM_commodity, year, NetExp_Mt)) %>%
+    #   mutate(diff=NetExp_Mt - value ) %>% filter(abs(diff) > 0.01) -> A
+    #
+    # L105.an_Food_Mt_R_C_Y %>% left_join(L109.an_ALL_Mt_R_C_Y %>% select(GCAM_region_ID, GCAM_commodity, year, Food_Mt)) %>%
+    #   mutate(diff=Food_Mt - value ) %>% filter(abs(diff) > 0.01) -> A
+    # L105.an_Prod_Mt_R_C_Y %>% left_join(L109.an_ALL_Mt_R_C_Y %>% select(GCAM_region_ID, GCAM_commodity, year, Prod_Mt)) %>%
+    #   mutate(diff=Prod_Mt - value ) %>% filter(abs(diff) > 0.01) -> A
+    # L106.an_NetExp_Mt_R_C_Y %>% left_join(L109.an_ALL_Mt_R_C_Y %>% select(GCAM_region_ID, GCAM_commodity, year, NetExp_Mt)) %>%
+    #   mutate(diff=NetExp_Mt - value ) %>% filter(abs(diff) > 0.01) -> A
+    # unique(L109.ag_ALL_Mt_R_C_Y$GCAM_commodity)
+    # unique(L109.an_ALL_Mt_R_C_Y$GCAM_commodity)
 
     # Part 1: Primary agricultural goods
     # List of all flows for primary agricultural good balances

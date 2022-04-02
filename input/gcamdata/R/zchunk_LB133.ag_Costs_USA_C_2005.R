@@ -24,10 +24,10 @@
 #' @author ACS May 2017
 module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
-    return(c(FILE = "aglu/USDA_crops",
-             FILE = "aglu/USDA_item_cost",
+    return(c(FILE = "aglu/USDA/USDA_crops",
+             FILE = "aglu/USDA/USDA_item_cost",
              FILE = "aglu/FAO/FAO_ag_items_PRODSTAT",
-             FILE = "aglu/USDA_cost_data",
+             FILE = "aglu/USDA/USDA_cost_data",
              "L100.LDS_ag_HA_ha",
              "L100.LDS_ag_prod_t",
              "L1321.ag_prP_R_C_75USDkg"))
