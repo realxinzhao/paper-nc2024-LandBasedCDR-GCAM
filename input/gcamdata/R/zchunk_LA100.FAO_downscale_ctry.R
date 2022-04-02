@@ -58,7 +58,8 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
              FILE = "aglu/FAO/L100.FAO_an_Dairy_Stocks",
 
              FILE = "aglu/A_recent_feed_modifications",
-             FILE = "aglu/FAO/L132.ag_an_For_Prices"
+
+             FILE = "aglu/FAO/FAO_ag_items_PRODSTAT"
              ))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L100.FAO_ag_HA_ha",
@@ -95,10 +96,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
              # test adding L108 here
              "L101.ag_Feed_Mt_R_C_Y",
 
-             "L132.ag_an_For_Prices",
-
              "L100.FAO_PRODSTAT_TO_DOWNSCAL"
-
 
              ))
   } else if(command == driver.MAKE) {
@@ -137,8 +135,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
     L100.FAO_an_Dairy_Stocks <- get_data(all_data, "aglu/FAO/L100.FAO_an_Dairy_Stocks", strip_attributes = T)
 
     A_recent_feed_modifications <- get_data(all_data, "aglu/A_recent_feed_modifications")
-    L132.ag_an_For_Prices <- get_data(all_data,"aglu/FAO/L132.ag_an_For_Prices", strip_attributes = T)
-
+    FAO_ag_items_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_items_PRODSTAT")
     # assert FAO_an_Stocks has unit of head
 
     # The new data has consistent Production between PRODSTAT and SUA
@@ -649,7 +646,9 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
     L100.FAO_PRODSTAT_TO_DOWNSCAL %>%
       add_title("FAO agricultural production and harvested area by country, item, year", overwrite = T) %>%
       add_units("Ha and t") %>%
-      add_precursors("aglu/FAO/L100.FAO_ag_HA_ha", "aglu/FAO/L100.FAO_ag_Prod_t",
+      add_precursors("aglu/FAO/L100.FAO_ag_HA_ha",
+                     "aglu/FAO/L100.FAO_ag_Prod_t",
+                     "aglu/FAO/FAO_ag_items_PRODSTAT",
                      "aglu/AGLU_ctry") ->
       L100.FAO_PRODSTAT_TO_DOWNSCAL
 
@@ -810,14 +809,6 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
     # Read in L132 prices and remove the chunk ----
 
     # Produce outputs
-    L132.ag_an_For_Prices %>%
-      add_title("Prices for all GCAM AGLU commodities") %>%
-      add_units("1975$/kg and 1975$/m3") %>%
-      add_comments("Calculate average prices over calibration years by GCAM commodity.") %>%
-      add_comments("Averages across years are unweighted; averages over FAO item are weighted by production.") %>%
-      add_legacy_name("L132.ag_an_For_Prices") %>%
-      add_precursors("aglu/FAO/L132.ag_an_For_Prices")->
-      L132.ag_an_For_Prices
 
     # Return data ----
     return_data(L100.FAO_ag_HA_ha,
@@ -841,7 +832,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
                 L105.an_Food_Mt_R_C_Y, L105.an_Food_Pcal_R_C_Y, L105.an_kcalg_R_C_Y, L105.an_Prod_Mt_R_C_Y, L105.an_Prod_Mt_ctry_C_Y,
                 L106.ag_NetExp_Mt_R_C_Y, L106.an_NetExp_Mt_R_C_Y,
                 L101.ag_Feed_Mt_R_C_Y,
-                L132.ag_an_For_Prices
+                L100.FAO_PRODSTAT_TO_DOWNSCAL
                 )
   } else {
     stop("Unknown command")
