@@ -435,6 +435,26 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
 
     # Amendment ----
 
+    #' Moving average
+    #' @description function to calculate moving average
+    #'
+    #' @param x A data frame contain the variable for calculation
+    #' @param periods An odd number of the periods in MA. The default is 5, i.e., 2 lags and 2 leads
+    #'
+    #' @return A data frame
+    #' @export
+
+    Moving_average <- function(x, periods = 5){
+      if ((periods %% 2) == 0) {
+        stop("Periods should be an odd value")
+      } else{
+        (x +
+           Reduce(`+`, lapply(seq(1, (periods -1 )/2), function(a){lag(x, n = a)})) +
+           Reduce(`+`,lapply(seq(1, (periods -1 )/2), function(a){lead(x, n = a)}))
+        )/periods
+      }
+    }
+
 
     # FAO_ag_Prod_t_HA_ha_PRODSTAT ----
     ## region map to iso ----
@@ -443,6 +463,11 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       gather_years() %>%
       # NA area values that should not exist, e.g., USSR after 1991
       filter(!is.na(value)) %>%
+      # Adding 5-year moving average here for testing
+      group_by(across(setdiff(names(.), c("year", "value")))) %>%
+      mutate(value = if_else(is.na(Moving_average(value, periods = 5)),
+                             value, Moving_average(value, periods = 5))) %>%
+      ungroup() %>%
       # disaggregate dissolved region
       FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL %>%
       left_join_error_no_match(AGLU_ctry %>% select(area = FAO_country, iso), by = "area") %>%
