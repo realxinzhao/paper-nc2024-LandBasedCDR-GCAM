@@ -40,7 +40,6 @@ MODEL_FINAL_BASE_YEAR   <- 2015
 
 gcam.USA_CODE            <- 1
 gcam.USA_REGION          <- "USA"
-gcam.REGION_NUMBER       <- 32  # Use for assertion in data processing to ensure all region has data
 gcam.WESTERN_EUROPE_CODE <- 13
 gcam.LOGIT_TYPES         <- c("relative-cost-logit", "absolute-cost-logit")
 gcam.EQUIV_TABLE         <- "EQUIV_TABLE"
@@ -49,9 +48,10 @@ GCAM_REGION_ID      <- "GCAM_region_ID"
 # The default market price GCAM will use to start solving from if it has no other info
 # If users do not have an estimate for a starting price this is a safe one to set
 gcam.DEFAULT_PRICE <- 1.0
-gcam.DEFAULT_SUBSECTOR_LOGIT <- -3
-gcam.DEFAULT_TECH_LOGIT      <- -6
-
+gcam.DEFAULT_SUBSECTOR_LOGIT  <- -3
+gcam.DEFAULT_TECH_LOGIT       <- -6
+gcam.REGION_NUMBER            <- 32    # Use for assertion in data processing to ensure all region has data
+gcam.REAL_PRICE_BASE_YEAR     <- 1975  # This is only used in AgLU prices now.
 
 # Driver constants ======================================================================
 
@@ -168,7 +168,7 @@ CONV_FT2_M2 <- 0.0929 # Square feet to square meters
 # AgLU constants ======================================================================
 
 # Time
-aglu.AGLU_HISTORICAL_YEARS  <- 1971:2015
+aglu.AGLU_HISTORICAL_YEARS  <- 1973:2015
 aglu.BASE_YEAR_IFA          <- 2006      # Base year of International Fertilizer Industry Association (IFA) fertilizer application data
 aglu.BIO_START_YEAR         <- 2025      # Also set in aglu/A_bio_ghost_share
 aglu.CROSIT_HISTORICAL_YEAR <- 2005      # Historical year from the CROSIT data
@@ -179,7 +179,7 @@ aglu.GTAP_HISTORICAL_YEAR   <- 2000      # Is the year that the GTAP data is bas
 aglu.LAND_HISTORY_YEARS     <- c(1700, 1750, 1800, 1850, 1900, 1950, 1975)
 aglu.LAND_COVER_YEARS       <- sort(unique(c(aglu.LAND_HISTORY_YEARS, aglu.AGLU_HISTORICAL_YEARS)))
 aglu.MODEL_COST_YEARS       <- 2008:2016
-aglu.MODEL_PRICE_YEARS      <- 2008:2016
+aglu.MODEL_PRICE_YEARS      <- 2013:2017
 aglu.PREAGLU_YEARS          <- c(1700, 1750,1800, 1850, 1900, 1950)          # Cropland cover years prior to first aglu historical year to use in climate model component
 aglu.DEFLATOR_BASE_YEAR     <- 2015                                          # year used as the basis for computing regional price deflators
 aglu.SPEC_AG_PROD_YEARS     <- seq(max(aglu.AGLU_HISTORICAL_YEARS), 2050, by = 5) # Specified ag productivity years, KD i think this might need a better comment
