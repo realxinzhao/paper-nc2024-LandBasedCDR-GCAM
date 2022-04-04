@@ -640,6 +640,119 @@ downscale_FAO_country <- function(data, country_name, dissolution_year, years = 
   data_new
 }
 
+# Function to dissaggregate dissolved regions in historical years ----
+# copyed in gcamdata
+
+#' FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION
+#'
+#' @param .DF dataframe to disaggregate
+#' @param AFFECTED_AREA_CODE  FAO area codes for regions affected; first one should be pre-dissolved region (e.g., USSR) followed by post-dissolved regions.
+#' @param YEAR_DISSOLVE_DONE  First year after dissolution
+#' @param YEAR_AFTER_DISSOLVE_ACCOUNT Number of years of data after dissolution used for sharing historical data
+#'
+#' @return Disaggregated data for the historical period for of the dissolved region
+#'
+FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION <-
+  function(.DF,
+           AFFECTED_AREA_CODE, #first one should be dissolved area
+           YEAR_DISSOLVE_DONE,
+           # using 3 year data after dissolution for sharing
+           YEAR_AFTER_DISSOLVE_ACCOUNT = 3){
+
+    .DF %>%
+      # filter dissolved region related areas by their years
+      filter((area_code %in% AFFECTED_AREA_CODE[-1] & year >= YEAR_DISSOLVE_DONE)|
+               (area_code %in% AFFECTED_AREA_CODE[1] & year <= YEAR_DISSOLVE_DONE)) ->
+      .DF1
+
+    .DF1 %>% filter(year < YEAR_DISSOLVE_DONE) %>%
+      select(-area_code, -area) %>%
+      right_join(
+        .DF1 %>% filter(year %in% c(YEAR_DISSOLVE_DONE:YEAR_DISSOLVE_DONE + YEAR_AFTER_DISSOLVE_ACCOUNT)) %>%
+          group_by(across(names(.) %>% setdiff(c("year", "value")))) %>%
+          summarise(value = sum(value)) %>% ungroup() %>%
+          mutate(Share = value /sum(value)) %>% select(-value),
+        by = names(.) %>% setdiff(c("year", "value", "area", "area_code"))
+      ) %>% mutate(value = value * Share) %>% select(-Share) ->
+      .DF2
+
+    return(.DF2)
+  }
+
+
+#' FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL
+#'
+#' @param input FAO data frame including all regions including area and area_code by FAO definition
+#'
+#' @return data with historical periods of dissolved region disaggregated to small pieces.
+
+FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL <- function(.DF){
+
+  assertthat::assert_that("area_code" %in% names(.DF),
+                          msg = "Date frame is required and need a col of area_code")
+
+  # Define area code based on FAO ----
+  # first one is dissolved area
+  # In 1991 USSR(228) collapsed into 15 countries
+  area_code_USSR = c(228, 1, 52, 57, 63, 73, 108, 113, 119, 126, 146, 185, 208, 213, 230, 235)
+  # first one is Russia
+
+  # In 1992 Yugoslav SFR dissolved into 5 countries
+  # Yugoslav SFR (248)
+  # Croatia (98)
+  # North Macedonia (154)
+  # Slovenia (198)
+  # Bosnia and Herzegovina (80)
+  # Serbia and Montenegro (186)
+  # In 2006 further broke into 2:
+  # Montenegro (273)
+  # Serbia (272)
+  # These regions will be merged for all years in data as most models aggregated them into a single region
+  area_code_Yugoslav <- c(248, 98, 154, 198, 80, 186)
+  area_code_SerbiaandMontenegro <- c(186, 273, 272)
+  # In 1999/2000 Belgium-Luxembourg (15) partitioned in 1999 to 255 (Belgium) and 256 (Luxembourg)
+  area_code_Belgium_Luxembourg <- c(15, 255, 256)
+  # In 1993 Czechoslovakia (51) to Czechia (167) and Slovakia (199)
+  area_code_Czechoslovakia <- c(51, 167, 199)
+  # In 2011 Sudan (former) (206) broke into South Sudan (277) and Sudan (276)
+  area_code_Sudan <- c(206, 276, 277)
+  # Ethiopia PDR (62) dissolved into Ethiopia (238) and Eritrea (178) in 1993
+  area_code_Ethiopia <- c(62, 238, 178)
+
+  .DF %>%
+    # remove Yugoslav by their years first and area_code_SerbiaandMontenegro later
+    filter(!(area_code %in% area_code_Yugoslav[1] )) %>%
+    bind_rows(FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION(.DF, area_code_Yugoslav, 1992, 3))->
+    .DF1
+
+
+  FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION(.DF1, area_code_USSR, 1992, 3) %>%
+    bind_rows(FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION(.DF1, area_code_SerbiaandMontenegro, 2006, 3)) %>%
+    bind_rows(FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION(.DF1, area_code_Belgium_Luxembourg, 2000, 3)) %>%
+    bind_rows(FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION(.DF1, area_code_Czechoslovakia, 1993, 3)) %>%
+    bind_rows(FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION(.DF1, area_code_Sudan, 2012, 3)) %>%
+    bind_rows(FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION(.DF1, area_code_Ethiopia, 1993, 3)) ->
+    DF_FAO_AREA_DISAGGREGATE_HIST
+
+  .DF1 %>%
+    # remove USSR by their years
+    filter(!(area_code %in% area_code_USSR[1])) %>%
+    # remove Serbia & Montenegro by their years
+    filter(!(area_code %in% area_code_SerbiaandMontenegro[1] )) %>%
+    # remove Belgium_Luxembourg by their years
+    filter(!(area_code %in% area_code_Belgium_Luxembourg[1])) %>%
+    # remove area_code_Czechoslovakia by their years
+    filter(!(area_code %in% area_code_Czechoslovakia[1] )) %>%
+    # remove area_code_Sudan by their years
+    filter(!(area_code %in% area_code_Sudan[1] )) %>%
+    # remove area_code_Ethiopia by their years
+    filter(!(area_code %in% area_code_Ethiopia[1] )) %>%
+    bind_rows(DF_FAO_AREA_DISAGGREGATE_HIST) ->
+    .DF2
+
+  return(.DF2)
+
+}
 
 #' evaluate_smooth_res_curve
 #'
