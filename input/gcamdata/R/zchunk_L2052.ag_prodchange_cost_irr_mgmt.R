@@ -112,7 +112,6 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
     # L132.ag_an_For_Prices %>% filter(GCAM_commodity %in% L164.ag_Cost_75USDkg_C$GCAM_commodity) %>% mutate(region = gcam.USA_REGION)
     # L132.ag_an_For_Prices is replaced with L1321.ag_prP_R_C_75USDkg for consistency
     L1321.ag_prP_R_C_75USDkg %>%
-      left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
       filter(region == gcam.USA_REGION) %>%
       filter(GCAM_commodity %in% L164.ag_Cost_75USDkg_C$GCAM_commodity) %>%
       select(region, GCAM_commodity, calPrice = value) %>%
@@ -161,7 +160,7 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
       mutate(AgSupplySector = GCAM_commodity,
              AgSupplySubsector = paste(GCAM_commodity, GLU_name, sep = aglu.CROP_GLU_DELIMITER),
              AgProductionTechnology = AgSupplySubsector) %>%
-      left_join(L1321.expP_R_F_75USDm3, by = c("GCAM_region_ID", "GCAM_commodity")) %>%
+      left_join(L1321.expP_R_F_75USDm3, by = c("GCAM_region_ID", "GCAM_commodity", "region")) %>%
                   mutate(nonLandVariableCost = value * aglu.FOR_COST_SHARE) %>%
       select(names_AgCost) ->
       L2052.AgCost_For

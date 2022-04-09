@@ -640,6 +640,28 @@ downscale_FAO_country <- function(data, country_name, dissolution_year, years = 
   data_new
 }
 
+
+
+#' Moving average
+#' @description function to calculate moving average
+#'
+#' @param x A data frame contain the variable for calculation
+#' @param periods An odd number of the periods in MA. The default is 5, i.e., 2 lags and 2 leads
+#'
+#' @return A data frame
+#' @export
+
+Moving_average <- function(x, periods = 5){
+  if ((periods %% 2) == 0) {
+    stop("Periods should be an odd value")
+  } else{
+    (x +
+       Reduce(`+`, lapply(seq(1, (periods -1 )/2), function(a){lag(x, n = a)})) +
+       Reduce(`+`,lapply(seq(1, (periods -1 )/2), function(a){lead(x, n = a)}))
+    )/periods
+  }
+}
+
 # Function to dissaggregate dissolved regions in historical years ----
 # copyed in gcamdata
 
@@ -665,28 +687,38 @@ FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION <-
                (area_code %in% AFFECTED_AREA_CODE[1] & year <= YEAR_DISSOLVE_DONE)) ->
       .DF1
 
+    Number_of_Regions_After_Dissolution <- AFFECTED_AREA_CODE %>% length -1
+
     .DF1 %>% filter(year < YEAR_DISSOLVE_DONE) %>%
       select(-area_code, -area) %>%
       right_join(
-        .DF1 %>% filter(year %in% c(YEAR_DISSOLVE_DONE:YEAR_DISSOLVE_DONE + YEAR_AFTER_DISSOLVE_ACCOUNT)) %>%
+        .DF1 %>% filter(year %in% c(YEAR_DISSOLVE_DONE:(YEAR_DISSOLVE_DONE + YEAR_AFTER_DISSOLVE_ACCOUNT))) %>%
           group_by(across(names(.) %>% setdiff(c("year", "value")))) %>%
+          replace_na(list(value = 0)) %>%
           summarise(value = sum(value)) %>% ungroup() %>%
-          mutate(Share = value /sum(value)) %>% select(-value),
+          group_by(across(names(.) %>% setdiff(c("value", "area", "area_code")))) %>%
+          mutate(Share = value/sum(value)) %>%
+          # using average share if data after dissolved does not exist
+          mutate(NODATA = if_else(sum(value) == 0, T, F)) %>%
+          mutate(Share = if_else(NODATA == T, 1/Number_of_Regions_After_Dissolution, Share)) %>%
+          ungroup() %>%select(-value, -NODATA),
         by = names(.) %>% setdiff(c("year", "value", "area", "area_code"))
-      ) %>% mutate(value = value * Share) %>% select(-Share) ->
-      .DF2
+      ) %>% mutate(value = value * Share) %>% select(-Share)
 
-    return(.DF2)
   }
 
 
 #' FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL
 #'
-#' @param input FAO data frame including all regions including area and area_code by FAO definition
+#' @param .DF
+#' @param SUDAN2012_BREAK If T break Sudan before 2012 based on 2013- 2016 data
+#' @param SUDAN2012_MERGE If T merge South Sudan into Sudan
 #'
 #' @return data with historical periods of dissolved region disaggregated to small pieces.
 
-FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL <- function(.DF){
+FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL <- function(.DF,
+                                                       SUDAN2012_BREAK = F,
+                                                       SUDAN2012_MERGE = T){
 
   assertthat::assert_that("area_code" %in% names(.DF),
                           msg = "Date frame is required and need a col of area_code")
@@ -730,7 +762,6 @@ FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL <- function(.DF){
     bind_rows(FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION(.DF1, area_code_SerbiaandMontenegro, 2006, 3)) %>%
     bind_rows(FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION(.DF1, area_code_Belgium_Luxembourg, 2000, 3)) %>%
     bind_rows(FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION(.DF1, area_code_Czechoslovakia, 1993, 3)) %>%
-    bind_rows(FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION(.DF1, area_code_Sudan, 2012, 3)) %>%
     bind_rows(FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION(.DF1, area_code_Ethiopia, 1993, 3)) ->
     DF_FAO_AREA_DISAGGREGATE_HIST
 
@@ -743,12 +774,27 @@ FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL <- function(.DF){
     filter(!(area_code %in% area_code_Belgium_Luxembourg[1])) %>%
     # remove area_code_Czechoslovakia by their years
     filter(!(area_code %in% area_code_Czechoslovakia[1] )) %>%
-    # remove area_code_Sudan by their years
-    filter(!(area_code %in% area_code_Sudan[1] )) %>%
     # remove area_code_Ethiopia by their years
     filter(!(area_code %in% area_code_Ethiopia[1] )) %>%
     bind_rows(DF_FAO_AREA_DISAGGREGATE_HIST) ->
     .DF2
+
+  if (SUDAN2012_BREAK == T) {
+    .DF2 %>%
+      # remove area_code_Sudan by their years
+      filter(!(area_code %in% area_code_Sudan[1] )) %>%
+      bind_rows(FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION(.DF1, area_code_Sudan, 2012, 3)) ->
+      .DF2
+  }
+
+  if (SUDAN2012_MERGE == T) {
+
+    .DF2 %>%
+      mutate(area_code = replace(area_code, area_code %in% area_code_Sudan, area_code_Sudan[1])) %>%
+      group_by(across(names(.) %>% setdiff(c("value")))) %>%
+      summarise(value = sum(value, na.rm = T), .groups = "drop") %>%
+      ungroup() -> .DF2
+  }
 
   return(.DF2)
 

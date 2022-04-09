@@ -116,6 +116,8 @@ module_aglu_L202.an_input <- function(command, ...) {
     L202.an_Feed_Mt_R_C_Sys_Fd_Y.mlt <- get_join_filter("L107.an_Feed_Mt_R_C_Sys_Fd_Y")
     L202.ag_Feed_Mt_R_C_Y.mlt <- get_join_filter("L108.ag_Feed_Mt_R_C_Y")
 
+
+
     # L202.RenewRsrc: generic resource attributes
     # Here, and in general below, we extend data across all GCAM regions for a particular set of
     # level 2 output columns; here also substitute region data when market is "regional"
@@ -170,9 +172,7 @@ module_aglu_L202.an_input <- function(command, ...) {
       L202.UnlimitedRenewRsrcCurves
 
     # L202.UnlimitedRenewRsrcPrice (105-112)
-    L202.an_prP_R_C_75USDkg <- left_join_error_no_match(L1321.an_prP_R_C_75USDkg,
-                                                         GCAM_region_names, by = "GCAM_region_ID") %>%
-      select(-GCAM_region_ID)
+    L202.an_prP_R_C_75USDkg <- L1321.an_prP_R_C_75USDkg
 
     A_agUnlimitedRsrcCurves %>%
       select(unlimited.resource, price) %>%
@@ -277,10 +277,11 @@ module_aglu_L202.an_input <- function(command, ...) {
       write_to_all_regions(LEVEL2_DATA_NAMES[["Tech"]], GCAM_region_names) %>%
       rename(stub.technology = technology) %>%
       repeat_add_columns(tibble(year = MODEL_BASE_YEARS)) %>%
-      left_join_error_no_match(L202.an_Prod_Mt_R_C_Sys_Fd_Y.mlt,
-                               by = c("region", "supplysector" = "GCAM_commodity",
-                                      "subsector" = "system", "stub.technology" = "feed",
-                                      "year")) %>%
+      left_join(L202.an_Prod_Mt_R_C_Sys_Fd_Y.mlt %>%
+                  select(region, supplysector = GCAM_commodity, year,
+                         subsector = system, stub.technology = feed, value),
+                by = c("region", "supplysector", "subsector", "stub.technology", "year")) %>%
+      replace_na(list(value = 0)) %>%
       mutate(calOutputValue = round(value, aglu.DIGITS_CALOUTPUT),
              # subsector and technology shareweights (subsector requires the year as well)
              share.weight.year = year,
@@ -372,7 +373,7 @@ module_aglu_L202.an_input <- function(command, ...) {
 
     # Remove meat prices here since meat is not used as feed. And even if it does, regional prices should be used!
     # This will need to be updated if meat outputs are included in the feed.
-    L202.prP_R_C_75USDkg <- bind_rows(L202.ag_consP_R_C_75USDkg) %>%
+    L202.prP_R_C_75USDkg <- L202.ag_consP_R_C_75USDkg %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
       select(region, GCAM_commodity, price = value)
     L202.rsrcP_R_C_75USDkg <- filter(A_agRsrcCurves, grade == "grade 2") %>%
@@ -434,7 +435,7 @@ module_aglu_L202.an_input <- function(command, ...) {
                                by = c("GCAM_region_ID", "GCAM_commodity", "system", "feed", "year")) %>%
       left_join_error_no_match(L202.ag_FeedCost_USDkg_R_F, by = c("region", "feed" = "supplysector")) %>%
       rename(FeedPrice_USDkg = price) %>%
-      left_join(L1321.an_prP_R_C_75USDkg, by = c("GCAM_region_ID", "GCAM_commodity")) %>%
+      left_join(L1321.an_prP_R_C_75USDkg, by = c("GCAM_region_ID", "GCAM_commodity", "region")) %>%
       # gpk 2020-08-05 We don't have animal commodity price data for Taiwan here. Set that to China's data, and for any
       # other regions that may have missing data, use the median values computed above as defaults
       left_join_error_no_match(L202.ChinaAnPrices, by = "GCAM_commodity") %>%

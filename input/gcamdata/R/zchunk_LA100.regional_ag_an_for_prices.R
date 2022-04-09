@@ -215,9 +215,14 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
         bind_rows(
           L100.FAO_ag_an_ProducerPrice_R_C_Y %>%
             filter(region == "China") %>%
-            mutate(region = "Taiwan")
+            mutate(region = "Taiwan") %>%
+            mutate(GCAM_region_ID = c(GCAM_region_names %>%
+                                        filter(region == "Taiwan") %>%
+                                        pull(GCAM_region_ID)))
         )
     }
+
+
 
 
     ## clean more ----

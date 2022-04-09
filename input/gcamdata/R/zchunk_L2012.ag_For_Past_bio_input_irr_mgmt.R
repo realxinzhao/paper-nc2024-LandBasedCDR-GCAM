@@ -72,10 +72,8 @@ module_aglu_L2012.ag_For_Past_bio_input_irr_mgmt <- function(command, ...) {
 
     # L2012.AgSupplySector: Generic AgSupplySector characteristics (units, calprice, market, logit)
     # Set up the regional price data to be joined in to the ag supplysector table
-    L2012.P_R_C <- left_join_error_no_match(L1321.ag_prP_R_C_75USDkg%>%
-                                                bind_rows(L1321.expP_R_F_75USDm3),
-                                              GCAM_region_names,
-                                              by = "GCAM_region_ID") %>%
+    L2012.P_R_C <- L1321.ag_prP_R_C_75USDkg%>%
+      bind_rows(L1321.expP_R_F_75USDm3) %>%
       mutate(reg_calPrice = round(value, aglu.DIGITS_CALPRICE)) %>%
       select(region, GCAM_commodity, reg_calPrice)
 
