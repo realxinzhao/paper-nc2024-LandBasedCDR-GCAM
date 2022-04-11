@@ -59,6 +59,16 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
     FAO_For_Exp_m3_USD_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Exp_m3_USD_FORESTAT")
 
 
+    # Note that all AgLU prices are derived here
+    # Alfalfa price (Fodder) is unweighted average over aglu.MODEL_PRICE_YEARS
+    # Producer prices are used if available. Export price is used for forest
+    # Regional prices are deflated to aglu.DEFLATOR_BASE_YEAR which should be nominal price of MODEL_FINAL_BASE_YEAR
+    # Nominal prices are then converted to gcam.REAL_PRICE_BASE_YEAR using US deflators
+    # All other prices are weighted average over aglu.MODEL_PRICE_YEARS
+    # If changing price year, only aglu.MODEL_PRICE_YEARS needs to be changed
+    # since only aglu.MODEL_PRICE_YEARS is used for prices and historical prices are not used in GCAM
+
+
     # 1. Process region-specific GDP deflator ----
     #    used for deflating regional ag an for prices
 
@@ -117,7 +127,7 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
     L100.ag_an_ProducerPrice_R_C_Y_nofodder <-
       L100.FAO_ag_an_ProducerPrice %>%
       ##* Price is a weighted averge across aglu.MODEL_PRICE_YEARS ----
-      #  and not including year in group-by
+      #  so not including year in group-by
       group_by(GCAM_region_ID, GCAM_commodity) %>%
       # Weighted average real prices in base year
       summarise(value = sum(Prod_Value_USD /currentUSD_per_baseyearUSD) / sum(Prod_Q_t),
@@ -271,7 +281,7 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
     L100.FAO_for_ExpPrice_R_C_Y <-
       L100.FAO_for_ExpPrice %>%
       ##* Price is a weighted average across aglu.MODEL_PRICE_YEARS ----
-      #  and not including year in group-by
+      #  so not including year in group-by
       group_by(GCAM_region_ID, GCAM_commodity) %>%
       # Weighted average real prices in base year
       summarise(value = sum(ExpV_kUSD /currentUSD_per_baseyearUSD) / sum(Exp_m3)) %>%

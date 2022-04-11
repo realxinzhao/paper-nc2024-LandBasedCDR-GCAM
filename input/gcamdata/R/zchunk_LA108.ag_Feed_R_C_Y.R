@@ -177,38 +177,34 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
     # PASTURE & FODDERGRASS
     # Part 3: Calculating Pasture and FodderGrass feed inputs by region and year
 
-    # First, compute pasture feed, which is equal to Pasture_FodderGrass demand minus FodderGrass production within each region
+    # compute pasture feed, which is equal to Pasture_FodderGrass demand minus FodderGrass production within each region
+    # adding minimum pasture share over Pasture_FodderGrass to avoid zero pasture adjustments
+    # that is more FodderGrass is moved to other uses when minimium is reached in historical data
+    # This share is ~30% in the USA. But using 10% to be conservative
+    # Other use of FodderGrass will be reflected in L109 balance
+
     an_Feed_Mt_R_C_Y %>%
       filter(feed == "Pasture_FodderGrass") %>%                                                                 # Start with Pasture_FodderGrass demand
       rename(PastFodderGrass_Demand = value) %>%
       left_join(filter(L101.ag_Prod_Mt_R_C_Y, GCAM_commodity == "FodderGrass"),
                 by = c("GCAM_region_ID", "year")) %>%                                                          # Map in FodderGrass production
-      mutate(value = PastFodderGrass_Demand - value, GCAM_commodity = "Pasture") %>%                            # Compute Pasture supply as difference
-      select(-feed, -PastFodderGrass_Demand) ->
-      ag_Feed_Mt_R_Past_Y
+      mutate(MinPasture = PastFodderGrass_Demand * Min_Share_PastureFeed_in_PastureFodderGrass,
+             Pasture = if_else(PastFodderGrass_Demand - value < MinPasture, MinPasture,
+                             PastFodderGrass_Demand - value),
+             FodderGrass = PastFodderGrass_Demand - Pasture) %>%
+      select(-MinPasture, -value, -PastFodderGrass_Demand) ->
+      an_Feed_Mt_R_C_Y_Pasture_FodderGrass
 
-    # If pasture demands are negative, this means FodderGrass production exceeds Pasture_FodderGrass demands
-    # When this occurs, set pasture to zero and treat this quantity of foddergrass demand as an other use
-    ag_Feed_Mt_R_Past_Y %>%
-      mutate(value = -value,
-             GCAM_commodity = "FodderGrass",                                            # Compute other uses of FodderGrass as excess supply
-             value = if_else(value < 0, 0, value)) ->                                                           # Zero out all other entries
-      ag_OtherUses_Mt_R_FodderGrass_Y
+    ag_Feed_Mt_R_Past_Y <-
+      an_Feed_Mt_R_C_Y_Pasture_FodderGrass %>%
+      transmute(GCAM_region_ID, year, value = Pasture) %>%
+      mutate(GCAM_commodity = "Pasture")
 
-    # Now, adjust the pasture feeds to remove these other uses.
-    ag_Feed_Mt_R_Past_Y %>%
-      mutate(value = if_else(value < 0, 0, value)) ->
-      ag_Feed_Mt_R_Past_Y
+    ag_Feed_Mt_R_FodderGrass_Y <-
+      an_Feed_Mt_R_C_Y_Pasture_FodderGrass %>%
+      transmute(GCAM_region_ID, year, value = FodderGrass) %>%
+      mutate(GCAM_commodity = "FodderGrass")
 
-    # Adjust FodderGrass feed to reflect the shift in production from feed to other uses (calculated above)
-    # FodderGrass used as feed = FodderGrass production - other uses
-    L101.ag_Prod_Mt_R_C_Y %>%
-      filter(GCAM_commodity == "FodderGrass") %>%                                                          # Start with production of FodderGrass
-      rename(Production = value) %>%
-      left_join(ag_OtherUses_Mt_R_FodderGrass_Y, by = c("GCAM_commodity", "GCAM_region_ID", "year")) %>%   # Map in other uses
-      mutate(value = Production - value) %>%                                                               # Adjust feed supply from FodderGrass
-      select(-Production) ->
-      ag_Feed_Mt_R_FodderGrass_Y
 
     # SCAVENGING & OTHER
     # Part 4: Scavenging and other inputs

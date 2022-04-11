@@ -152,6 +152,7 @@ module_aglu_LA101.ag_FAO_R_C_Y <- function(command, ...) {
 
 
     # Process FAO production data: convert units, aggregate to region, commodity, and GLU
+    ##* L101.ag_Prod_Mt_R_C_Y_GLU ----
     FAO_PRODSTAT_DOWNSCALED_new %>%
       select(GCAM_region_ID, GCAM_commodity, GCAM_subsector, GLU, year, Prod_t) %>%                                                    # Select relevant columns (not harvested.area)
       rename(value = Prod_t) %>%                                                                            # Rename column since tests are expecting "value"                                                                     # Aggregate then map to appropriate data frame
@@ -160,6 +161,7 @@ module_aglu_LA101.ag_FAO_R_C_Y <- function(command, ...) {
       L101.ag_Prod_Mt_R_C_Y_GLU
 
     # Also write out the production volumes without basin-level detail, or subsector differentiation (i.e. by region, crop, year)
+    ##* L101.ag_Prod_Mt_R_C_Y_GLU ----
     L101.ag_Prod_Mt_R_C_Y_GLU %>%
       group_by(GCAM_region_ID, GCAM_commodity, year) %>%
       summarise(value = sum(value)) %>%
@@ -170,6 +172,7 @@ module_aglu_LA101.ag_FAO_R_C_Y <- function(command, ...) {
 
 
     # Now, Process FAO harvested area data: convert units, aggregate to region, commodity, and GLU
+    ##* L101.ag_HA_bm2_R_C_Y_GLU ----
     FAO_PRODSTAT_DOWNSCALED_new %>%
       select(GCAM_region_ID, GCAM_commodity, GCAM_subsector, GLU, year, Area_harvested_ha) %>%                                              # Select relevant columns (not production)
       rename(value = Area_harvested_ha) %>%                                                                      # Rename column since tests are expecting "value"
@@ -177,6 +180,7 @@ module_aglu_LA101.ag_FAO_R_C_Y <- function(command, ...) {
       ungroup() ->                                                                                           # Ungroup before complete
       L101.ag_HA_bm2_R_C_Y_GLU
 
+    ##* L101.ag_HA_bm2_R_C_Y ----
     L101.ag_HA_bm2_R_C_Y_GLU %>%
       group_by(GCAM_region_ID, GCAM_commodity, year) %>%
       summarise(value = sum(value)) %>%
@@ -188,6 +192,7 @@ module_aglu_LA101.ag_FAO_R_C_Y <- function(command, ...) {
 
     # Calculate initial yield estimates in kilograms per square meter by region, crop, year, and GLU
     # Yield in kilograms per square meter
+    ##* L101.ag_Yield_kgm2_R_C_Y_GLU ----
     L101.ag_Prod_Mt_R_C_Y_GLU %>% rename(Prod = value) %>%
       left_join(L101.ag_HA_bm2_R_C_Y_GLU %>% rename(Area = value),
                 by = c("GCAM_region_ID", "GCAM_commodity", "GCAM_subsector", "GLU", "year")) %>%
