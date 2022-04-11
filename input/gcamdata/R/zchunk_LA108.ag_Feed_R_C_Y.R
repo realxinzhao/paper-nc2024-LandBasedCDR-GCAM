@@ -188,8 +188,10 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
       rename(PastFodderGrass_Demand = value) %>%
       left_join(filter(L101.ag_Prod_Mt_R_C_Y, GCAM_commodity == "FodderGrass"),
                 by = c("GCAM_region_ID", "year")) %>%                                                          # Map in FodderGrass production
-      mutate(MinPasture = PastFodderGrass_Demand * Min_Share_PastureFeed_in_PastureFodderGrass,
-             Pasture = if_else(PastFodderGrass_Demand - value < MinPasture, MinPasture,
+      mutate(MinPasture = if_else(GCAM_region_ID %in% aglu.Zero_Min_PastureFeed_Share_region_ID, 0,
+                                  PastFodderGrass_Demand * aglu.Min_Share_PastureFeed_in_PastureFodderGrass),
+             Pasture = if_else(PastFodderGrass_Demand - value < MinPasture,
+                               MinPasture,
                              PastFodderGrass_Demand - value),
              FodderGrass = PastFodderGrass_Demand - Pasture) %>%
       select(-MinPasture, -value, -PastFodderGrass_Demand) ->
