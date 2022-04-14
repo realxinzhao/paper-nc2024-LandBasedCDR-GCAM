@@ -21,19 +21,21 @@
 #' @author BBL
 module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
-    return(c(FILE = "aglu/AGLU_ctry",
+    return(c(
 
-             FILE = "aglu/FAO/FAO_CL_kha_RESOURCESTAT",
-             FILE = "aglu/FAO/FAO_fallowland_kha_RESOURCESTAT",
-             FILE = "aglu/FAO/FAO_harv_CL_kha_RESOURCESTAT",
-             FILE = "aglu/FAO/FAO_Fert_Cons_tN_RESOURCESTAT_archv",
-             FILE = "aglu/FAO/FAO_Fert_Cons_tN_RESOURCESTAT",
-             FILE = "aglu/FAO/FAO_Fert_Prod_tN_RESOURCESTAT_archv",
-             FILE = "aglu/FAO/FAO_Fert_Prod_tN_RESOURCESTAT",
+             # Updated data
+             FILE = "aglu/AGLU_ctry",
+             FILE = "common/iso_GCAM_regID",
              FILE = "aglu/FAO/FAO_For_Exp_m3_FORESTAT",
              FILE = "aglu/FAO/FAO_For_Imp_m3_FORESTAT",
              FILE = "aglu/FAO/FAO_For_Prod_m3_FORESTAT",
-             FILE = "common/iso_GCAM_regID",
+             FILE = "aglu/FAO/FAO_an_Stocks",
+             FILE = "aglu/FAO/FAO_an_Dairy_Stocks",
+             FILE = "aglu/FAO/FAO_CL_kha_RESOURCESTAT",
+             FILE = "aglu/FAO/FAO_fallowland_kha_RESOURCESTAT",
+             FILE = "aglu/FAO/FAO_harv_CL_kha_RESOURCESTAT",
+             FILE = "aglu/FAO/FAO_Fert_Cons_tN_RESOURCESTAT",
+             FILE = "aglu/FAO/FAO_Fert_Prod_tN_RESOURCESTAT",
 
              # New data
              FILE = "aglu/FAO/FAO_ag_items_PRODSTAT",
@@ -41,14 +43,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
              FILE = "aglu/FAO/FAO_ag_Prod_t_HA_ha_PRODSTAT",
              FILE = "aglu/FAO/GCAM_AgLU_SUA_1973_2019",
              FILE = "aglu/FAO/FAO_an_Prod_t_1973_2019",
-             FILE = "aglu/FAO/SUA_food_MKcal_APE",
-
-             # Updated data
-             FILE = "aglu/FAO/FAO_an_Stocks",
-             FILE = "aglu/FAO/FAO_an_Dairy_Stocks"
-
-
-
+             FILE = "aglu/FAO/SUA_food_MKcal_APE"
              ))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c(
@@ -88,21 +83,12 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
 
     # Load required inputs ----
 
-    FAO_CL_kha_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_CL_kha_RESOURCESTAT")
-    FAO_fallowland_kha_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_fallowland_kha_RESOURCESTAT")
-    FAO_harv_CL_kha_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_harv_CL_kha_RESOURCESTAT")
-    FAO_Fert_Cons_tN_RESOURCESTAT_archv <- get_data(all_data, "aglu/FAO/FAO_Fert_Cons_tN_RESOURCESTAT_archv")
-    FAO_Fert_Cons_tN_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_Fert_Cons_tN_RESOURCESTAT")
-    FAO_Fert_Prod_tN_RESOURCESTAT_archv <- get_data(all_data, "aglu/FAO/FAO_Fert_Prod_tN_RESOURCESTAT_archv")
-    FAO_Fert_Prod_tN_RESOURCESTAT<- get_data(all_data, "aglu/FAO/FAO_Fert_Prod_tN_RESOURCESTAT")
-    FAO_For_Exp_m3_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Exp_m3_FORESTAT")
-    FAO_For_Imp_m3_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Imp_m3_FORESTAT")
-    FAO_For_Prod_m3_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Prod_m3_FORESTAT")
+
+    AGLU_ctry <- get_data(all_data, "aglu/AGLU_ctry") %>% select(iso, FAO_country) #%>% distinct
+    iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
 
     FAO_ag_items_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_items_PRODSTAT")
     FAO_an_items_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_an_items_PRODSTAT")
-    AGLU_ctry <- get_data(all_data, "aglu/AGLU_ctry") %>% select(iso, FAO_country) #%>% distinct
-    iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
     FAO_ag_Prod_t_HA_ha_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_Prod_t_HA_ha_PRODSTAT", strip_attributes = T)
     GCAM_AgLU_SUA_1973_2019 <- get_data(all_data, "aglu/FAO/GCAM_AgLU_SUA_1973_2019", strip_attributes = T)
     SUA_food_MKcal_APE <- get_data(all_data, "aglu/FAO/SUA_food_MKcal_APE", strip_attributes = T)
@@ -110,6 +96,36 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
     FAO_an_Stocks <- get_data(all_data, "aglu/FAO/FAO_an_Stocks")
     FAO_an_Dairy_Stocks <- get_data(all_data, "aglu/FAO/FAO_an_Dairy_Stocks")
 
+    # update forest data
+    FAO_For_Exp_m3_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Exp_m3_FORESTAT")
+    FAO_For_Imp_m3_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Imp_m3_FORESTAT")
+    FAO_For_Prod_m3_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Prod_m3_FORESTAT")
+
+    FAO_CL_kha_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_CL_kha_RESOURCESTAT")
+    FAO_fallowland_kha_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_fallowland_kha_RESOURCESTAT")
+    FAO_harv_CL_kha_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_harv_CL_kha_RESOURCESTAT")
+
+    FAO_Fert_Cons_tN_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_Fert_Cons_tN_RESOURCESTAT")
+    FAO_Fert_Prod_tN_RESOURCESTAT<- get_data(all_data, "aglu/FAO/FAO_Fert_Prod_tN_RESOURCESTAT")
+
+
+    # A helper function to disaggregate dissolved region and join iso & GCAM region mappings ----
+    # moving average over aglu.MODEL_MEAN_PERIOD_LENGTH
+    # and keep years in aglu.AGLU_HISTORICAL_YEARS
+    FAO_REG_YEAR_MAP <- function(.DF, MA_period = aglu.MODEL_MEAN_PERIOD_LENGTH){
+      .DF %>%
+        # disaggregate dissolved region
+        FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL %>%
+        # the iso mapping in AGLU_ctry works good now
+        left_join_error_no_match(AGLU_ctry %>% select(area = FAO_country, iso), by = "area") %>%
+        left_join_error_no_match(iso_GCAM_regID %>% select(iso, GCAM_region_ID), by = "iso") %>%
+        # Adding moving average
+        group_by(across(setdiff(names(.), c("year", "value")))) %>%
+        mutate(value = if_else(is.na(Moving_average(value, periods = MA_period)),
+                               value, Moving_average(value, periods = MA_period))) %>%
+        ungroup() %>%
+        filter(year %in% aglu.AGLU_HISTORICAL_YEARS)
+    }
 
     # Get Ag and An commodities
     # Note that fodder crops are included in COMM_AG though SUA did not have them;
@@ -119,7 +135,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
 
     # 0. Supply-utilization accounting balance ----
     # Change unit and year for later uses
-    # data was balanced already
+    # data was balanced already and in GCAM regions
     FAO_SUA_APE_balance <-
       GCAM_AgLU_SUA_1973_2019 %>%
       mutate(Net_Export = Export - Import) %>%
@@ -128,8 +144,8 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       mutate(element = replace(element, element %in% c("Stock Variation"), "Other uses")) %>%
     # Adding 5-year moving average here
       group_by(across(setdiff(names(.), c("year", "value")))) %>%
-      mutate(value = if_else(is.na(Moving_average(value, periods = 5)),
-                             value, Moving_average(value, periods = 5))) %>%
+      mutate(value = if_else(is.na(Moving_average(value, periods = aglu.MODEL_MEAN_PERIOD_LENGTH)),
+                             value, Moving_average(value, periods = aglu.MODEL_MEAN_PERIOD_LENGTH))) %>%
       ungroup() %>%
       filter(year %in% aglu.AGLU_HISTORICAL_YEARS) %>%
       # change unit to Mt
@@ -145,23 +161,12 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       # NA area values that should not exist, e.g., USSR after 1991
       filter(!is.na(value)) %>%
       # disaggregate dissolved region
-      FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL %>%
-      left_join_error_no_match(AGLU_ctry %>% select(area = FAO_country, iso), by = "area") %>%
-      left_join_error_no_match(iso_GCAM_regID %>% select(iso, GCAM_region_ID), by = "iso")
-
-    ## AgLU years or average ----
-    FAO_ag_Prod_t_HA_ha_PRODSTAT_1 <-
-      FAO_ag_Prod_t_HA_ha_PRODSTAT_0 %>%
-      # Adding 5-year moving average
-      group_by(across(setdiff(names(.), c("year", "value")))) %>%
-      mutate(value = if_else(is.na(Moving_average(value, periods = 5)),
-                             value, Moving_average(value, periods = 5))) %>%
-      ungroup() %>%
-      filter(year %in% aglu.AGLU_HISTORICAL_YEARS)
+      ## AgLU years average
+      FAO_REG_YEAR_MAP
 
     ## spread production and area ----
-    FAO_ag_Prod_t_HA_ha_PRODSTAT_2 <-
-      FAO_ag_Prod_t_HA_ha_PRODSTAT_1 %>%
+    FAO_ag_Prod_t_HA_ha_PRODSTAT_1 <-
+      FAO_ag_Prod_t_HA_ha_PRODSTAT_0 %>%
       select(-element_code, -unit) %>%
       spread(element, value) %>%
       # rename to add units
@@ -174,17 +179,17 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
 
     ##* L100.FAO_ag_HA_ha ----
     L100.FAO_ag_HA_ha <-
-      FAO_ag_Prod_t_HA_ha_PRODSTAT_2 %>%
+      FAO_ag_Prod_t_HA_ha_PRODSTAT_1 %>%
       transmute(iso, GCAM_region_ID, item, item_code, year,
                 element = "Area_harvested_ha", value = Area_harvested_ha)
     ##* L100.FAO_ag_Prod_t ----
     L100.FAO_ag_Prod_t <-
-      FAO_ag_Prod_t_HA_ha_PRODSTAT_2 %>%
+      FAO_ag_Prod_t_HA_ha_PRODSTAT_1 %>%
       transmute(iso, GCAM_region_ID, item, item_code, year,
                 element = "Prod_t", value = Prod_t)
     ##* L100.FAO_PRODSTAT_TO_DOWNSCAL ----
     L100.FAO_PRODSTAT_TO_DOWNSCAL <-
-      FAO_ag_Prod_t_HA_ha_PRODSTAT_2 %>%
+      FAO_ag_Prod_t_HA_ha_PRODSTAT_1 %>%
       # Join item mapping and aggregate to GCAM items
       left_join(
         select(FAO_ag_items_PRODSTAT, item_code, GCAM_commodity, GCAM_subsector) %>%
@@ -197,7 +202,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
                 Prod_t = sum(Prod_t)) %>%
       ungroup()
     ### clean ----
-    rm(FAO_ag_Prod_t_HA_ha_PRODSTAT_2,
+    rm(FAO_ag_Prod_t_HA_ha_PRODSTAT_0,
        FAO_ag_Prod_t_HA_ha_PRODSTAT_1)
 
     ### Produce outputs ----
@@ -233,16 +238,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
     ## Process data with FAO region information ----
     FAO_an_Prod_Mt_ctry_C_Y <-
       FAO_an_Prod_t_1973_2019 %>%
-      FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL %>%
-      # the iso mapping in AGLU_ctry works good now
-      gcamdata::left_join_error_no_match(AGLU_ctry %>% select(area = FAO_country, iso), by = "area") %>%
-      gcamdata::left_join_error_no_match(iso_GCAM_regID %>% select(iso, GCAM_region_ID), by = "iso") %>%
-      # Adding 5-year moving average here
-      group_by(across(setdiff(names(.), c("year", "value")))) %>%
-      mutate(value = if_else(is.na(Moving_average(value, periods = 5)),
-                             value, Moving_average(value, periods = 5))) %>%
-      ungroup() %>%
-      filter(year %in% aglu.AGLU_HISTORICAL_YEARS) %>%
+      FAO_REG_YEAR_MAP %>%
       # change unit to Mt
       mutate(value = value * CONV_TON_MEGATON)
 
@@ -288,19 +284,9 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
     FAO_FOOD_MKcal <-
       SUA_food_MKcal_APE %>%
       rename(value = MKcal) %>%
-      # get consistent regions across time first
-      FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL %>%
-      # the iso mapping in AGLU_ctry works good now
-      gcamdata::left_join_error_no_match(AGLU_ctry %>% select(area = FAO_country, iso), by = "area") %>%
-      gcamdata::left_join_error_no_match(iso_GCAM_regID %>% select(iso, GCAM_region_ID), by = "iso") %>%
+      FAO_REG_YEAR_MAP %>%
       group_by(GCAM_region_ID, GCAM_commodity, year, element) %>%
-      summarise(value = sum(value)) %>% ungroup() %>%
-      # Adding 5-year moving average here
-      group_by(across(setdiff(names(.), c("year", "value")))) %>%
-      mutate(value = if_else(is.na(Moving_average(value, periods = 5)),
-                             value, Moving_average(value, periods = 5))) %>%
-      ungroup() %>%
-      filter(year %in% aglu.AGLU_HISTORICAL_YEARS)
+      summarise(value = sum(value)) %>% ungroup()
 
     ## Further aggregate and process FAO_SUA_APE_balance ----
     # Only keep spatial downscale of prod and HA in LA101
@@ -406,7 +392,8 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       add_comments("Convert data from ton to Mt") %>%
       add_legacy_name("L105.an_Food_Mt_R_C_Y") %>%
       add_precursors("common/iso_GCAM_regID",
-                     "aglu/FAO/GCAM_AgLU_SUA_1973_2019") ->
+                     "aglu/FAO/GCAM_AgLU_SUA_1973_2019",
+                     "aglu/FAO/FAO_an_items_PRODSTAT") ->
       L105.an_Food_Mt_R_C_Y
     L105.an_Food_Pcal_R_C_Y %>%
       add_title("Animal consumption by GCAM region / commodity / year") %>%
@@ -474,16 +461,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       # change unit if 1000 head to head
       mutate(value = if_else(unit == "1000 Head", value * 1000, value)) %>%
       mutate(unit = if_else(unit == "1000 Head", "Head", unit)) %>%
-      FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL %>%
-      # the iso mapping in AGLU_ctry works good now
-      gcamdata::left_join_error_no_match(AGLU_ctry %>% select(area = FAO_country, iso), by = "area") %>%
-      gcamdata::left_join_error_no_match(iso_GCAM_regID %>% select(iso, GCAM_region_ID), by = "iso") %>%
-      # Adding 5-year moving average here
-      group_by(across(setdiff(names(.), c("year", "value")))) %>%
-      mutate(value = if_else(is.na(Moving_average(value, periods = 5)),
-                             value, Moving_average(value, periods = 5))) %>%
-      ungroup() %>%
-      filter(year %in% aglu.AGLU_HISTORICAL_YEARS)
+      FAO_REG_YEAR_MAP
 
     ##* L100.FAO_an_Dairy_Stocks ----
     L100.FAO_an_Dairy_Stocks <-
@@ -491,319 +469,124 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       gather_years()%>%
       # filter out nonexist regions years due to gather e.g., USSR after 1991
       filter(!is.na(value)) %>%
-      FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL %>%
-      # the iso mapping in AGLU_ctry works good now
-      gcamdata::left_join_error_no_match(AGLU_ctry %>% select(area = FAO_country, iso), by = "area") %>%
-      gcamdata::left_join_error_no_match(iso_GCAM_regID %>% select(iso, GCAM_region_ID), by = "iso") %>%
-      # Adding 5-year moving average here
-      group_by(across(setdiff(names(.), c("year", "value")))) %>%
-      mutate(value = if_else(is.na(Moving_average(value, periods = 5)),
-                             value, Moving_average(value, periods = 5))) %>%
-      ungroup() %>%
-      filter(year %in% aglu.AGLU_HISTORICAL_YEARS)
+      FAO_REG_YEAR_MAP
+
     ### Produce outputs ----
     L100.FAO_an_Stocks %>%
       add_title("FAO animal stocks country, item, year", overwrite = T) %>%
       add_units("number") %>%
       add_comments("FAO animal stocks; unit of 1000 head were converted to head") %>%
-      add_precursors("aglu/FAO/FAO_an_Stocks", "aglu/AGLU_ctry") ->
+      add_precursors("aglu/FAO/FAO_an_Stocks", "aglu/AGLU_ctry","common/iso_GCAM_regID") ->
       L100.FAO_an_Stocks
     L100.FAO_an_Dairy_Stocks %>%
       add_title("FAO dairy producing animal stocks country, item, year", overwrite = T) %>%
       add_units("Head") %>%
       add_comments("FAO dairy cow stocks") %>%
-      add_precursors("aglu/FAO/FAO_an_Dairy_Stocks", "aglu/AGLU_ctry") ->
+      add_precursors("aglu/FAO/FAO_an_Dairy_Stocks", "aglu/AGLU_ctry","common/iso_GCAM_regID") ->
       L100.FAO_an_Dairy_Stocks
 
+    # 6. Forest supply and trade ----
 
-    # Well done ----
-
-
-    itel_colnames <- c("item", "item codes", "element", "element codes")
-    coitel_colnames <- c("countries", "country codes", itel_colnames)
-    FAO_histyear_cols <- as.character(aglu.FAO_HISTORICAL_YEARS)
-
-
-    #kbn 2019/11/04 Write function to fill holes for base year-
-    #This function will fill holes from the specified cut-off year to the base year for any region, comoditty combination
-    #that is missing data in any year. It will not fill in data if no data exists for a region commoditty combination before the cut-off year.
-    #It will not add new commoditties or regions.If Printlog is set to TRUE, the function will print out,how many data points you are missing in the
-    #base year, how many points could be filled in and how many points could not be filled in.Current cut-off year is set to 2007. 1961 is the first year of FAO
-    #data.
-
-    get_baseyear_or_mostrecent_FAO<-function(df,BaseYear=MODEL_FINAL_BASE_YEAR,StartYear=1961,CutOff=2007,Printlog=FALSE){
-
-      #Step 1: Get values for start year, last year and dataset name
-      StartYear<-toString(StartYear)
-      LastYear<-colnames(df)[ncol(df)]
-      name<-deparse(substitute(df))
-
-      #Step 2: Convert from tibble to dataframe for processing.Will convert back to tibble in the last step.
-     df<-as.data.frame(df)
-
-     #Step 3: Create a list of required years
-    Yrs<-seq(CutOff+1,BaseYear,1)
-
-      #Step 4: If there is no column, create it.
-      for (i in Yrs){
-        if (!toString(i) %in% c(colnames(df))){
-          df[,toString(i)]<-NA_integer_
-        }
-      }
-
-      #Step 5: Print first warning message
-      if (Printlog==TRUE){
-
-        print(paste("No data found in dataset ",name," for ",(sum(is.na((df[,toString(BaseYear)]))))," values.",sep = ""))}
+    FAO_For_Prod_m3_FORESTAT %>%
+      bind_rows(FAO_For_Exp_m3_FORESTAT) %>%
+      bind_rows(FAO_For_Imp_m3_FORESTAT) %>%
+      gather_years() %>%
+      # NA area values that should not exist, e.g., USSR after 1991
+      filter(!is.na(value)) %>%
+      FAO_REG_YEAR_MAP ->
+      L100.For_bal
 
 
-      #Step 6: Fill with neighbor
+    ##* L100.FAO_For_Prod_m3 ----
+    L100.For_bal %>%
+      filter(element == "Production")  %>%
+      add_title("FAO forestry production by country, year") %>%
+      add_comments("FAO primary roundwood production") %>%
+      add_units("m3") %>%
+      add_precursors("aglu/FAO/FAO_For_Prod_m3_FORESTAT", "aglu/AGLU_ctry",
+                     "common/iso_GCAM_regID") ->
+      L100.FAO_For_Prod_m3
 
-      for (i in Yrs){
-        df[,toString(i)]<-if_else(is.na(df[,toString(i)]),df[,toString(i-1)],df[,toString(i)])
-      }
+    ##* L100.FAO_For_Prod_m3 ----
+    L100.For_bal %>%
+      filter(element == "Export")  %>%
+      add_title("FAO forestry export by country, year") %>%
+      add_comments("FAO primary roundwood gross export") %>%
+      add_units("m3") %>%
+      add_precursors("aglu/FAO/FAO_For_Exp_m3_FORESTAT", "aglu/AGLU_ctry",
+                     "common/iso_GCAM_regID") ->
+      L100.FAO_For_Exp_m3
 
+    ##* L100.FAO_For_Imp_m3 ----
+    L100.For_bal %>%
+      filter(element == "Import")  %>%
+      add_title("FAO forestry import by country, year") %>%
+      add_comments("FAO primary roundwood gross import") %>%
+      add_units("m3") %>%
+      add_precursors("aglu/FAO/FAO_For_Imp_m3_FORESTAT",
+                     "aglu/AGLU_ctry",
+                     "common/iso_GCAM_regID") ->
+      L100.FAO_For_Imp_m3
 
-      if (Printlog==TRUE){
-        #Step7: Print second warning message
-        print(paste("Could not fill in data for base year ",name," for ",sum(is.na(df[,toString(BaseYear)]))," values. There was no data available after ", CutOff,sep = ""))}
+    rm(L100.For_bal)
 
-    #Step 8: Convert back to tibble
+    #7 Fertilizer and Land cover ----
 
-    df<-as_tibble(df)
+    ##* L100.FAO_Fert_Cons_tN ----
+    FAO_Fert_Cons_tN_RESOURCESTAT %>%
+      gather_years() %>% filter(!is.na(value)) %>%
+      FAO_REG_YEAR_MAP %>%
+      add_title("FAO fertilizer consumption by country, year") %>%
+      add_comments("FAO nitrogen N (total) consumption") %>%
+      add_units("tonnes N") %>%
+      add_precursors("aglu/FAO/FAO_Fert_Cons_tN_RESOURCESTAT",
+                     "aglu/AGLU_ctry") ->
+      L100.FAO_Fert_Cons_tN
 
-      return(df)
-    }
+    ##* L100.FAO_Fert_Prod_tN ----
+    FAO_Fert_Prod_tN_RESOURCESTAT %>%
+      gather_years() %>% filter(!is.na(value)) %>%
+      FAO_REG_YEAR_MAP %>%
+      add_title("FAO fertilizer production by country, year") %>%
+      add_comments("FAO nitrogen N (total) production") %>%
+      add_units("tonnes N") %>%
+      add_precursors("aglu/FAO/FAO_Fert_Prod_tN_RESOURCESTAT",
+                     "aglu/AGLU_ctry") ->
+      L100.FAO_Fert_Prod_tN
 
-
-    #kbn 2019/12/16 Adding in hole-filling for all FAO data.
-    FAO_fallowland_kha_RESOURCESTAT <- get_baseyear_or_mostrecent_FAO(FAO_fallowland_kha_RESOURCESTAT)
-    FAO_harv_CL_kha_RESOURCESTAT <- get_baseyear_or_mostrecent_FAO(FAO_harv_CL_kha_RESOURCESTAT)
-    FAO_Fert_Cons_tN_RESOURCESTAT <- get_baseyear_or_mostrecent_FAO(FAO_Fert_Cons_tN_RESOURCESTAT)
-    FAO_Fert_Prod_tN_RESOURCESTAT<- get_baseyear_or_mostrecent_FAO(FAO_Fert_Prod_tN_RESOURCESTAT)
-
-
-    # Replace the item and element code names with what is used in the more recent datasets
-    FAO_Fert_Cons_tN_RESOURCESTAT_archv[itel_colnames] <- FAO_Fert_Cons_tN_RESOURCESTAT[1, itel_colnames]
-    FAO_Fert_Prod_tN_RESOURCESTAT_archv[itel_colnames] <- FAO_Fert_Prod_tN_RESOURCESTAT[1, itel_colnames]
-
-    # Merge resourcestat fertilizer databases with 'archive' years (1961-2002) and more recent
-    # years (2002-2010). FAOSTAT notes that the methods changed between the two datasets; we
-    # ignore this discrepancy but use the 2002 data from the more recent dataset
-    FAO_Fert_Cons_tN_RESOURCESTAT_archv$`2002` <- NULL
-    FAO_Fert_Prod_tN_RESOURCESTAT_archv$`2002` <- NULL
-
-    # Interesting: dplyr can't go as fast as the approach taken in the original data system
-    # A number of dplyr operations are *considerably* slower with this big dataset, and take more lines
-    # So most of this function, the slowest in the entire data system, retains the original
-    # code (though cleaned up considerably) and logic
-    cons <- full_join(FAO_Fert_Cons_tN_RESOURCESTAT_archv,
-                      FAO_Fert_Cons_tN_RESOURCESTAT, by = c("countries", "country codes", "item", "item codes", "element", "element codes"))
-    prod <- full_join(FAO_Fert_Prod_tN_RESOURCESTAT_archv,
-                      FAO_Fert_Prod_tN_RESOURCESTAT, by = c("countries", "country codes", "item", "item codes", "element", "element codes"))
-
-    # Aggregate to complete the merge of the two datasets
-    FAO_Fert_Cons_tN_RESOURCESTAT <- aggregate(cons[names(cons) %in% FAO_histyear_cols],
-                                               by = as.list(cons[coitel_colnames]),
-                                               sum, na.rm = TRUE) %>% as_tibble()
-    FAO_Fert_Prod_tN_RESOURCESTAT <- aggregate(prod[names(prod) %in% FAO_histyear_cols],
-                                               by = as.list(prod[coitel_colnames]),
-                                               sum, na.rm = TRUE) %>% as_tibble()
-
-
-
-    # Not all databases go to 2012. Extrapolate each dataset to 2012, repeating
-    # the data for 2009/10. Where missing 1961, substitute 1962
-    list(
-         "FAO_Fert_Cons_tN_RESOURCESTAT" = FAO_Fert_Cons_tN_RESOURCESTAT,
-         "FAO_Fert_Prod_tN_RESOURCESTAT" = FAO_Fert_Prod_tN_RESOURCESTAT,
-         "FAO_For_Exp_m3_FORESTAT" = FAO_For_Exp_m3_FORESTAT,
-         "FAO_For_Imp_m3_FORESTAT" = FAO_For_Imp_m3_FORESTAT,
-         "FAO_For_Prod_m3_FORESTAT" = FAO_For_Prod_m3_FORESTAT) %>%
-      # apply the following function over all list elements
-      lapply(FUN = function(df) {
-        if(!"1961" %in% colnames(df)) df$`1961` <- df$`1962`
-        if(!"2013" %in% colnames(df)) df$`2013` <- df$`2012`
-        if(!"2014" %in% colnames(df)) df$`2014` <- df$`2013`
-        if(!"2015" %in% colnames(df)) df$`2015` <- df$`2014`
-        df$element <- NULL
-        df
-      }) %>%
-      # combine everything together
-      bind_rows(.id = "element") ->
-      FAO_data_ALL
-
-    # Replace all missing numeric values with 0
-    FAO_data_ALL <- dplyr::mutate_if(FAO_data_ALL, is.numeric, replace_na, replace = 0)
-
-    # Match the iso names
-    FAO_data_ALL %>%
-      left_join(distinct(AGLU_ctry, FAO_country, .keep_all = TRUE), by = c("countries" = "FAO_country")) ->
-      FAO_data_ALL
-
-    # Downscale countries individually NOTE: This is complicated. The FAO data need to be downscaled
-    # to all FAO historical years (i.e. back to 1961 regardless of when we are starting our
-    # historical time series). Otherwise the early historical years will get averaged with zeroes.
-    # Czechoslovakia
-    FAO_data_ALL %>%
-      filter(iso %in% AGLU_ctry$iso[AGLU_ctry$FAO_country == "Czechoslovakia"]) %>%
-      downscale_FAO_country("Czechoslovakia", 1993L, years = aglu.FAO_HISTORICAL_YEARS) ->
-      FAO_data_ALL_cze
-
-    # USSR
-    FAO_data_ALL %>%
-      filter(iso %in% AGLU_ctry$iso[AGLU_ctry$FAO_country == "USSR"]) %>%
-      downscale_FAO_country("USSR", 1992L, years = aglu.FAO_HISTORICAL_YEARS) ->
-      FAO_data_ALL_ussr
-
-    # Yugoslavia
-    FAO_data_ALL %>%
-      filter(iso %in% AGLU_ctry$iso[AGLU_ctry$FAO_country == "Yugoslav SFR"]) %>%
-      downscale_FAO_country("Yugoslav SFR", 1992L, years = aglu.FAO_HISTORICAL_YEARS) ->
-      FAO_data_ALL_yug
-
-    # Drop these countries from the full database and combine
-    FAO_data_ALL %>%
-      filter(!iso %in% unique(c(FAO_data_ALL_cze$iso, FAO_data_ALL_ussr$iso, FAO_data_ALL_yug$iso))) %>%
-      # combine these downscaled databases
-      bind_rows(FAO_data_ALL_cze, FAO_data_ALL_ussr, FAO_data_ALL_yug) ->
-      FAO_data_ALL
-
-    # Make sure histyear_cols uses only names in our data set
-    FAO_histyear_cols <- intersect(FAO_histyear_cols, names(FAO_data_ALL))
-    # Drop observations where all years are zero
-    FAO_data_ALL <- FAO_data_ALL[rowSums(FAO_data_ALL[FAO_histyear_cols]) != 0, ]
-
-    # Calculate rolling five-year averages from available data
-    FAO_data_ALL_5yr <- FAO_data_ALL
-
-    # In the first and last two years, use the 3 and 4 available years
-    FAO_data_ALL_5yr[FAO_histyear_cols][1] <- rowMeans(FAO_data_ALL[FAO_histyear_cols][1:3])
-    FAO_data_ALL_5yr[FAO_histyear_cols][2] <- rowMeans(FAO_data_ALL[FAO_histyear_cols][1:4])
-
-    # Precalculate a few things for loop speed
-    lastcol <- ncol(FAO_data_ALL_5yr[FAO_histyear_cols]) - 2
-    x <- FAO_data_ALL[FAO_histyear_cols]
-    lenXFAO <- length(FAO_histyear_cols)
-
-    # Main calculation loop
-    for(i in 3:lastcol) {
-      FAO_data_ALL_5yr[FAO_histyear_cols][, i] <- rowMeans(x[i + -2:2])
-    }
-    FAO_data_ALL_5yr[FAO_histyear_cols][lenXFAO - 1] <-
-      rowMeans(FAO_data_ALL[FAO_histyear_cols][(lenXFAO - 3):lenXFAO])
-    FAO_data_ALL_5yr[FAO_histyear_cols][lenXFAO] <-
-      rowMeans(FAO_data_ALL[FAO_histyear_cols][(lenXFAO - 2):lenXFAO])
-
-    # From here on, only use the specified AGLU historical years
-    FAO_data_ALL_5yr <- FAO_data_ALL_5yr[c(coitel_colnames, "iso", as.character(aglu.AGLU_HISTORICAL_YEARS))]
-
-    # Rename columns to old names
-    FAO_data_ALL_5yr %>%
-      rename(country.codes = `country codes`,
-             element.codes = `element codes`,
-             item.codes = `item codes`) ->
-      FAO_data_ALL_5yr
-
-    # Change `element` columns to match old data and reshape
-    #    FAO_data_ALL_5yr <- FAO_data_ALL_5yr[c(1:6,8:47,7)]
-    FAO_data_ALL_5yr$element <- gsub(pattern = "_[A-Z]*$", "", FAO_data_ALL_5yr$element)
-    FAO_data_ALL_5yr$element <- gsub(pattern = "^FAO_", "", FAO_data_ALL_5yr$element)
-    FAO_data_ALL_5yr <- gather_years(FAO_data_ALL_5yr)
-
-    # Re-split into separate tables for each element
-    L100.FAOlist <- split(seq(1, nrow(FAO_data_ALL_5yr)), FAO_data_ALL_5yr$element)
-    names(L100.FAOlist) <- lapply(names(L100.FAOlist), function(x) { paste0("L100.FAO_", x) })
-    # change list names to match the legacy
-    # names
-    fixup <- function(irows, legacy.name) {
-        FAO_data_ALL_5yr[irows,] %>%
-          add_comments("Downscale countries; calculate 5-yr averages") %>%
-          add_legacy_name(legacy.name)
-    }
-    L100.FAOlist <- Map(fixup, L100.FAOlist, names(L100.FAOlist))
-
-    # Fallow land data sets are missing lots of years, so we don't include them in the 5yr average
-    # They need to be reshaped and written out now for use downstream
+    ##* L100.FAO_CL_kha ----
     FAO_CL_kha_RESOURCESTAT %>%
-      left_join(distinct(AGLU_ctry, FAO_country, .keep_all = TRUE), by = c("countries" = "FAO_country")) %>%
-      rename(country.codes = `country codes`,
-             element.codes = `element codes`,
-             item.codes = `item codes`) %>%
-      gather_years() %>%
-      add_legacy_name("L100.FAO_CL_kha") %>%
-      na.omit() %>%
-      mutate(value = as.numeric(value)) %>%
-      add_comments("Downscale countries") ->
-      L100.FAO_CL_kha
-    FAO_fallowland_kha_RESOURCESTAT %>%
-      left_join(distinct(AGLU_ctry, FAO_country, .keep_all = TRUE), by = c("countries" = "FAO_country")) %>%
-      rename(country.codes = `country codes`,
-             element.codes = `element codes`,
-             item.codes = `item codes`) %>%
-      gather_years()  %>%
-      add_legacy_name("L100.FAO_fallowland_kha") %>%
-      na.omit() %>%
-      mutate(value = as.numeric(value)) %>%
-      add_comments("Downscale countries") ->
-      L100.FAO_fallowland_kha
-    FAO_harv_CL_kha_RESOURCESTAT %>%
-      left_join(distinct(AGLU_ctry, FAO_country, .keep_all = TRUE), by = c("countries" = "FAO_country")) %>%
-      rename(country.codes = `country codes`,
-             element.codes = `element codes`,
-             item.codes = `item codes`) %>%
-      gather_years() %>%
-      add_legacy_name("L100.FAO_harv_CL_kha") %>%
-      na.omit() %>%
-      mutate(value = as.numeric(value)) %>%
-      add_comments("Downscale countries") ->
-      L100.FAO_harv_CL_kha
-
-
-    L100.FAO_CL_kha %>%
+      gather_years() %>% filter(!is.na(value)) %>%
+      FAO_REG_YEAR_MAP %>%
       add_title("FAO cropland area by country, year") %>%
+      add_comments("FAO arable land") %>%
       add_units("kha") %>%
       add_precursors("aglu/FAO/FAO_CL_kha_RESOURCESTAT", "aglu/AGLU_ctry") ->
       L100.FAO_CL_kha
-    L100.FAO_fallowland_kha %>%
+
+    ##* L100.FAO_fallowland_kha ----
+    FAO_fallowland_kha_RESOURCESTAT %>%
+      gather_years() %>% filter(!is.na(value)) %>%
+      FAO_REG_YEAR_MAP %>%
       add_title("FAO fallow land area by country, year") %>%
+      add_comments("FAO and with temporary fallow") %>%
       add_units("kha") %>%
-      add_precursors("aglu/FAO/FAO_fallowland_kha_RESOURCESTAT", "aglu/AGLU_ctry") ->
+      add_precursors("aglu/FAO/FAO_fallowland_kha_RESOURCESTAT", "aglu/AGLU_ctry")->
       L100.FAO_fallowland_kha
-    L100.FAO_harv_CL_kha %>%
+
+    ##* L100.FAO_harv_CL_kha ----
+    FAO_harv_CL_kha_RESOURCESTAT %>%
+      gather_years() %>% filter(!is.na(value)) %>%
+      FAO_REG_YEAR_MAP %>%
       add_title("FAO harvested cropland (temporary crops) area by country, year") %>%
       add_units("kha") %>%
-      add_precursors("aglu/FAO/FAO_harv_CL_kha_RESOURCESTAT", "aglu/AGLU_ctry") ->
+      add_precursors("aglu/FAO/FAO_harv_CL_kha_RESOURCESTAT", "aglu/AGLU_ctry")->
       L100.FAO_harv_CL_kha
-    L100.FAOlist[["L100.FAO_Fert_Cons_tN"]] %>%
-      add_title("FAO fertilizer consumption by country, year") %>%
-      add_units("tonnes N") %>%
-      add_precursors("aglu/FAO/FAO_Fert_Cons_tN_RESOURCESTAT",
-                     "aglu/FAO/FAO_Fert_Cons_tN_RESOURCESTAT_archv",
-                     "aglu/AGLU_ctry") ->
-      L100.FAO_Fert_Cons_tN
-    L100.FAOlist[["L100.FAO_Fert_Prod_tN"]] %>%
-      add_title("FAO fertilizer production by country, year") %>%
-      add_units("tonnes N") %>%
-      add_precursors("aglu/FAO/FAO_Fert_Prod_tN_RESOURCESTAT",
-                     "aglu/FAO/FAO_Fert_Prod_tN_RESOURCESTAT_archv",
-                     "aglu/AGLU_ctry") ->
-      L100.FAO_Fert_Prod_tN
-    L100.FAOlist[["L100.FAO_For_Exp_m3"]] %>%
-      add_title("FAO forestry exports by country, year") %>%
-      add_units("m3") %>%
-      add_precursors("aglu/FAO/FAO_For_Exp_m3_FORESTAT", "aglu/AGLU_ctry") ->
-      L100.FAO_For_Exp_m3
-    L100.FAOlist[["L100.FAO_For_Imp_m3"]] %>%
-      add_title("FAO forestry imports by country, year") %>%
-      add_units("m3") %>%
-      add_precursors("aglu/FAO/FAO_For_Imp_m3_FORESTAT", "aglu/AGLU_ctry") ->
-      L100.FAO_For_Imp_m3
-    L100.FAOlist[["L100.FAO_For_Prod_m3"]] %>%
-      add_title("FAO forestry production by country, year") %>%
-      add_units("m3") %>%
-      add_precursors("aglu/FAO/FAO_For_Prod_m3_FORESTAT", "aglu/AGLU_ctry") ->
-      L100.FAO_For_Prod_m3
+
+
+    # Well done ----
+    #*********************************************************
+
 
     # Produce outputs
 
@@ -825,6 +608,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
                 L100.FAO_harv_CL_kha,
                 L100.FAO_Fert_Cons_tN,
                 L100.FAO_Fert_Prod_tN,
+
                 L100.FAO_For_Exp_m3,
                 L100.FAO_For_Imp_m3,
                 L100.FAO_For_Prod_m3
@@ -999,3 +783,243 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
 #   add_precursors("common/iso_GCAM_regID",
 #                  "aglu/FAO/GCAM_AgLU_SUA_1973_2019") ->
 #   L106.an_NetExp_Mt_R_C_Y
+
+# old other code for fertilizer and land ----
+
+# itel_colnames <- c("item", "item codes", "element", "element codes")
+# coitel_colnames <- c("countries", "country codes", itel_colnames)
+# FAO_histyear_cols <- as.character(aglu.FAO_HISTORICAL_YEARS)
+#
+#
+# #kbn 2019/11/04 Write function to fill holes for base year-
+# #This function will fill holes from the specified cut-off year to the base year for any region, comoditty combination
+# #that is missing data in any year. It will not fill in data if no data exists for a region commoditty combination before the cut-off year.
+# #It will not add new commoditties or regions.If Printlog is set to TRUE, the function will print out,how many data points you are missing in the
+# #base year, how many points could be filled in and how many points could not be filled in.Current cut-off year is set to 2007. 1961 is the first year of FAO
+# #data.
+#
+# get_baseyear_or_mostrecent_FAO<-function(df,BaseYear=MODEL_FINAL_BASE_YEAR,StartYear=1961,CutOff=2007,Printlog=FALSE){
+#
+#   #Step 1: Get values for start year, last year and dataset name
+#   StartYear<-toString(StartYear)
+#   LastYear<-colnames(df)[ncol(df)]
+#   name<-deparse(substitute(df))
+#
+#   #Step 2: Convert from tibble to dataframe for processing.Will convert back to tibble in the last step.
+#   df<-as.data.frame(df)
+#
+#   #Step 3: Create a list of required years
+#   Yrs<-seq(CutOff+1,BaseYear,1)
+#
+#   #Step 4: If there is no column, create it.
+#   for (i in Yrs){
+#     if (!toString(i) %in% c(colnames(df))){
+#       df[,toString(i)]<-NA_integer_
+#     }
+#   }
+#
+#   #Step 5: Print first warning message
+#   if (Printlog==TRUE){
+#
+#     print(paste("No data found in dataset ",name," for ",(sum(is.na((df[,toString(BaseYear)]))))," values.",sep = ""))}
+#
+#
+#   #Step 6: Fill with neighbor
+#
+#   for (i in Yrs){
+#     df[,toString(i)]<-if_else(is.na(df[,toString(i)]),df[,toString(i-1)],df[,toString(i)])
+#   }
+#
+#
+#   if (Printlog==TRUE){
+#     #Step7: Print second warning message
+#     print(paste("Could not fill in data for base year ",name," for ",sum(is.na(df[,toString(BaseYear)]))," values. There was no data available after ", CutOff,sep = ""))}
+#
+#   #Step 8: Convert back to tibble
+#
+#   df<-as_tibble(df)
+#
+#   return(df)
+# }
+#
+#
+# #kbn 2019/12/16 Adding in hole-filling for all FAO data.
+# FAO_fallowland_kha_RESOURCESTAT <- get_baseyear_or_mostrecent_FAO(FAO_fallowland_kha_RESOURCESTAT)
+# FAO_harv_CL_kha_RESOURCESTAT <- get_baseyear_or_mostrecent_FAO(FAO_harv_CL_kha_RESOURCESTAT)
+# FAO_Fert_Cons_tN_RESOURCESTAT <- get_baseyear_or_mostrecent_FAO(FAO_Fert_Cons_tN_RESOURCESTAT)
+# FAO_Fert_Prod_tN_RESOURCESTAT<- get_baseyear_or_mostrecent_FAO(FAO_Fert_Prod_tN_RESOURCESTAT)
+#
+#
+# # Replace the item and element code names with what is used in the more recent datasets
+# FAO_Fert_Cons_tN_RESOURCESTAT_archv[itel_colnames] <- FAO_Fert_Cons_tN_RESOURCESTAT[1, itel_colnames]
+# FAO_Fert_Prod_tN_RESOURCESTAT_archv[itel_colnames] <- FAO_Fert_Prod_tN_RESOURCESTAT[1, itel_colnames]
+#
+# # Merge resourcestat fertilizer databases with 'archive' years (1961-2002) and more recent
+# # years (2002-2010). FAOSTAT notes that the methods changed between the two datasets; we
+# # ignore this discrepancy but use the 2002 data from the more recent dataset
+# FAO_Fert_Cons_tN_RESOURCESTAT_archv$`2002` <- NULL
+# FAO_Fert_Prod_tN_RESOURCESTAT_archv$`2002` <- NULL
+#
+# # Interesting: dplyr can't go as fast as the approach taken in the original data system
+# # A number of dplyr operations are *considerably* slower with this big dataset, and take more lines
+# # So most of this function, the slowest in the entire data system, retains the original
+# # code (though cleaned up considerably) and logic
+# cons <- full_join(FAO_Fert_Cons_tN_RESOURCESTAT_archv,
+#                   FAO_Fert_Cons_tN_RESOURCESTAT, by = c("countries", "country codes", "item", "item codes", "element", "element codes"))
+# prod <- full_join(FAO_Fert_Prod_tN_RESOURCESTAT_archv,
+#                   FAO_Fert_Prod_tN_RESOURCESTAT, by = c("countries", "country codes", "item", "item codes", "element", "element codes"))
+#
+# # Aggregate to complete the merge of the two datasets
+# FAO_Fert_Cons_tN_RESOURCESTAT <- aggregate(cons[names(cons) %in% FAO_histyear_cols],
+#                                            by = as.list(cons[coitel_colnames]),
+#                                            sum, na.rm = TRUE) %>% as_tibble()
+# FAO_Fert_Prod_tN_RESOURCESTAT <- aggregate(prod[names(prod) %in% FAO_histyear_cols],
+#                                            by = as.list(prod[coitel_colnames]),
+#                                            sum, na.rm = TRUE) %>% as_tibble()
+#
+#
+#
+# # Not all databases go to 2012. Extrapolate each dataset to 2012, repeating
+# # the data for 2009/10. Where missing 1961, substitute 1962
+# list(
+#   "FAO_Fert_Cons_tN_RESOURCESTAT" = FAO_Fert_Cons_tN_RESOURCESTAT,
+#   "FAO_Fert_Prod_tN_RESOURCESTAT" = FAO_Fert_Prod_tN_RESOURCESTAT) %>%
+#   # apply the following function over all list elements
+#   lapply(FUN = function(df) {
+#     if(!"1961" %in% colnames(df)) df$`1961` <- df$`1962`
+#     if(!"2013" %in% colnames(df)) df$`2013` <- df$`2012`
+#     if(!"2014" %in% colnames(df)) df$`2014` <- df$`2013`
+#     if(!"2015" %in% colnames(df)) df$`2015` <- df$`2014`
+#     df$element <- NULL
+#     df
+#   }) %>%
+#   # combine everything together
+#   bind_rows(.id = "element") ->
+#   FAO_data_ALL
+#
+# # Replace all missing numeric values with 0
+# FAO_data_ALL <- dplyr::mutate_if(FAO_data_ALL, is.numeric, replace_na, replace = 0)
+#
+# # Match the iso names
+# FAO_data_ALL %>%
+#   left_join(distinct(AGLU_ctry, FAO_country, .keep_all = TRUE), by = c("countries" = "FAO_country")) ->
+#   FAO_data_ALL
+#
+# # Downscale countries individually NOTE: This is complicated. The FAO data need to be downscaled
+# # to all FAO historical years (i.e. back to 1961 regardless of when we are starting our
+# # historical time series). Otherwise the early historical years will get averaged with zeroes.
+# # Czechoslovakia
+# FAO_data_ALL %>%
+#   filter(iso %in% AGLU_ctry$iso[AGLU_ctry$FAO_country == "Czechoslovakia"]) %>%
+#   downscale_FAO_country("Czechoslovakia", 1993L, years = aglu.FAO_HISTORICAL_YEARS) ->
+#   FAO_data_ALL_cze
+#
+# # USSR
+# FAO_data_ALL %>%
+#   filter(iso %in% AGLU_ctry$iso[AGLU_ctry$FAO_country == "USSR"]) %>%
+#   downscale_FAO_country("USSR", 1992L, years = aglu.FAO_HISTORICAL_YEARS) ->
+#   FAO_data_ALL_ussr
+#
+# # Yugoslavia
+# FAO_data_ALL %>%
+#   filter(iso %in% AGLU_ctry$iso[AGLU_ctry$FAO_country == "Yugoslav SFR"]) %>%
+#   downscale_FAO_country("Yugoslav SFR", 1992L, years = aglu.FAO_HISTORICAL_YEARS) ->
+#   FAO_data_ALL_yug
+#
+# # Drop these countries from the full database and combine
+# FAO_data_ALL %>%
+#   filter(!iso %in% unique(c(FAO_data_ALL_cze$iso, FAO_data_ALL_ussr$iso, FAO_data_ALL_yug$iso))) %>%
+#   # combine these downscaled databases
+#   bind_rows(FAO_data_ALL_cze, FAO_data_ALL_ussr, FAO_data_ALL_yug) ->
+#   FAO_data_ALL
+#
+# # Make sure histyear_cols uses only names in our data set
+# FAO_histyear_cols <- intersect(FAO_histyear_cols, names(FAO_data_ALL))
+# # Drop observations where all years are zero
+# FAO_data_ALL <- FAO_data_ALL[rowSums(FAO_data_ALL[FAO_histyear_cols]) != 0, ]
+#
+# # Calculate rolling five-year averages from available data
+# FAO_data_ALL_5yr <- FAO_data_ALL
+#
+# # In the first and last two years, use the 3 and 4 available years
+# FAO_data_ALL_5yr[FAO_histyear_cols][1] <- rowMeans(FAO_data_ALL[FAO_histyear_cols][1:3])
+# FAO_data_ALL_5yr[FAO_histyear_cols][2] <- rowMeans(FAO_data_ALL[FAO_histyear_cols][1:4])
+#
+# # Precalculate a few things for loop speed
+# lastcol <- ncol(FAO_data_ALL_5yr[FAO_histyear_cols]) - 2
+# x <- FAO_data_ALL[FAO_histyear_cols]
+# lenXFAO <- length(FAO_histyear_cols)
+#
+# # Main calculation loop
+# for(i in 3:lastcol) {
+#   FAO_data_ALL_5yr[FAO_histyear_cols][, i] <- rowMeans(x[i + -2:2])
+# }
+# FAO_data_ALL_5yr[FAO_histyear_cols][lenXFAO - 1] <-
+#   rowMeans(FAO_data_ALL[FAO_histyear_cols][(lenXFAO - 3):lenXFAO])
+# FAO_data_ALL_5yr[FAO_histyear_cols][lenXFAO] <-
+#   rowMeans(FAO_data_ALL[FAO_histyear_cols][(lenXFAO - 2):lenXFAO])
+#
+# # From here on, only use the specified AGLU historical years
+# FAO_data_ALL_5yr <- FAO_data_ALL_5yr[c(coitel_colnames, "iso", as.character(aglu.AGLU_HISTORICAL_YEARS))]
+#
+# # Rename columns to old names
+# FAO_data_ALL_5yr %>%
+#   rename(country.codes = `country codes`,
+#          element.codes = `element codes`,
+#          item.codes = `item codes`) ->
+#   FAO_data_ALL_5yr
+#
+# # Change `element` columns to match old data and reshape
+# #    FAO_data_ALL_5yr <- FAO_data_ALL_5yr[c(1:6,8:47,7)]
+# FAO_data_ALL_5yr$element <- gsub(pattern = "_[A-Z]*$", "", FAO_data_ALL_5yr$element)
+# FAO_data_ALL_5yr$element <- gsub(pattern = "^FAO_", "", FAO_data_ALL_5yr$element)
+# FAO_data_ALL_5yr <- gather_years(FAO_data_ALL_5yr)
+#
+# # Re-split into separate tables for each element
+# L100.FAOlist <- split(seq(1, nrow(FAO_data_ALL_5yr)), FAO_data_ALL_5yr$element)
+# names(L100.FAOlist) <- lapply(names(L100.FAOlist), function(x) { paste0("L100.FAO_", x) })
+# # change list names to match the legacy
+# # names
+# fixup <- function(irows, legacy.name) {
+#   FAO_data_ALL_5yr[irows,] %>%
+#     add_comments("Downscale countries; calculate 5-yr averages") %>%
+#     add_legacy_name(legacy.name)
+# }
+# L100.FAOlist <- Map(fixup, L100.FAOlist, names(L100.FAOlist))
+#
+# # Fallow land data sets are missing lots of years, so we don't include them in the 5yr average
+# # They need to be reshaped and written out now for use downstream
+# FAO_CL_kha_RESOURCESTAT %>%
+#   left_join(distinct(AGLU_ctry, FAO_country, .keep_all = TRUE), by = c("countries" = "FAO_country")) %>%
+#   rename(country.codes = `country codes`,
+#          element.codes = `element codes`,
+#          item.codes = `item codes`) %>%
+#   gather_years() %>%
+#   add_legacy_name("L100.FAO_CL_kha") %>%
+#   na.omit() %>%
+#   mutate(value = as.numeric(value)) %>%
+#   add_comments("Downscale countries") ->
+#   L100.FAO_CL_kha
+# FAO_fallowland_kha_RESOURCESTAT %>%
+#   left_join(distinct(AGLU_ctry, FAO_country, .keep_all = TRUE), by = c("countries" = "FAO_country")) %>%
+#   rename(country.codes = `country codes`,
+#          element.codes = `element codes`,
+#          item.codes = `item codes`) %>%
+#   gather_years()  %>%
+#   add_legacy_name("L100.FAO_fallowland_kha") %>%
+#   na.omit() %>%
+#   mutate(value = as.numeric(value)) %>%
+#   add_comments("Downscale countries") ->
+#   L100.FAO_fallowland_kha
+# FAO_harv_CL_kha_RESOURCESTAT %>%
+#   left_join(distinct(AGLU_ctry, FAO_country, .keep_all = TRUE), by = c("countries" = "FAO_country")) %>%
+#   rename(country.codes = `country codes`,
+#          element.codes = `element codes`,
+#          item.codes = `item codes`) %>%
+#   gather_years() %>%
+#   add_legacy_name("L100.FAO_harv_CL_kha") %>%
+#   na.omit() %>%
+#   mutate(value = as.numeric(value)) %>%
+#   add_comments("Downscale countries") ->
+#   L100.FAO_harv_CL_kha
+

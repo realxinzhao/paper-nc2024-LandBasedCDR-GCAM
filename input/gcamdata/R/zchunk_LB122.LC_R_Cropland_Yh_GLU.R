@@ -121,19 +121,18 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
     # joining by iso and countries (or country.codes) instead of simply iso. Alternatively, aggregating to the iso level in each
     # FAO table (L100.FAO_X) BEFORE doing further joins and calculations should also lead to the correct answer.
 
+    # Most (if not all) of what described above has been fixed in earlier steps
     # Take the FAO cropland table, L100.FAO_CL_kha:
     L100.FAO_CL_kha %>%
       # only include data in the right fallow land year range
       filter(year %in% aglu.FALLOW_YEARS) %>%
       # keep only the iso country and the value for each:
-      select(iso, countries, cropland = value, year) %>%
+      select(iso, area_code, cropland = value, year) %>%
       # append in fallow land data in aglu.FALLOW_YEARS from FAO, L100.FAO_fallowland_kha, keeping NA values:
-      left_join(L100.FAO_fallowland_kha, by = c("iso", "countries", "year")) %>%
+      left_join(L100.FAO_fallowland_kha, by = c("iso", "area_code", "year")) %>%
       # rename value to fallow and remove NAs:
       rename(fallow = value) %>%
       na.omit() %>%
-      # add GCAM region information from iso_GCAM_regID
-      mutate(GCAM_region_ID = left_join(., iso_GCAM_regID, by = "iso")[['GCAM_region_ID']]) %>%
       select(GCAM_region_ID, cropland, fallow) %>%
       ungroup() %>%
       # aggregate cropland and fallow values to the GCAM region level:
@@ -158,14 +157,12 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
       # only include data in the right fallow land year range
       filter(year %in% aglu.FALLOW_YEARS) %>%
       # keep only the iso country and the value for each:
-      select(iso, countries, cropland = value, year) %>%
+      select(iso, area_code, cropland = value, year) %>%
       # append in cropped land data in aglu.FALLOW_YEARS from FAO, L100.FAO_harv_CL_kha, keeping NA values:
-      left_join(L100.FAO_harv_CL_kha, by = c("iso", "countries", "year")) %>%
+      left_join(L100.FAO_harv_CL_kha, by = c("iso", "area_code", "year")) %>%
       # rename value to cropped and remove NAs:
       rename(cropped = value) %>%
       na.omit() %>%
-      # add GCAM region information from iso_GCAM_regID
-      mutate(GCAM_region_ID = left_join(., iso_GCAM_regID, by = "iso")[['GCAM_region_ID']]) %>%
       # remove all columns that are not GCAM_region_ID, cropland, and cropped values:
       select(GCAM_region_ID, cropland, cropped) %>%
       ungroup() %>%

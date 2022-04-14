@@ -1,6 +1,7 @@
 # File: AGLU_ctry.csv
 # Title: Mapping of countries in AGLU databases to ISO codes
 # Units: NA
+# Description: Note that both French Guiana and French Guyana are added for now and  Saint Helena, Ascension and Tristan da Cunha is added. Area_code should be used later, though they are the same region. Function FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL deals with region changes over time in gcamdata.
 # Last update: 4-2-2022 (XZ)
 # Column types: ccccicccicc
 # ----------
@@ -92,6 +93,7 @@ Fiji,fji,xoc,FIJI,155,Fiji,FIJI,Rest of world,24,Oceania,South Asia
 Finland,fin,fin,EU15,195,Finland,FINLAND,EU-27,11,Western Europe,Industrial countries
 France,fra,fra,EU15,195,France,FRANCE,EU-27,11,Western Europe,Industrial countries
 French Guiana,guf,xsm,FGUI,140,French Guiana,,Rest of world,6,Rest South America,Latin America and Caribbean
+French Guyana,guf,xsm,FGUI,140,French Guiana,,Rest of world,6,Rest South America,Latin America and Caribbean
 French Polynesia,pyf,xoc,FPOL,156,French Polynesia,,Rest of world,24,Oceania,South Asia
 Gabon,gab,xss,GABO,23,Gabon,,Rest of world,8,Western Africa,sub-Saharan Africa
 The Gambia,gmb,xss,GAMB,5,The Gambia,,Rest of world,8,Western Africa,sub-Saharan Africa
@@ -201,6 +203,7 @@ Romania,rom,rom,EUN9,196,Romania,,EU-27,12,Central Europe,Transition countries
 Russian Federation,rus,rus,RUSS,188,Russia,,Russia,16,Russia plus,Transition countries
 Rwanda,rwa,xss,RWAN,33,Rwanda,,Rest of world,9,Eastern Africa,sub-Saharan Africa
 Saint Helena,shn,xss,,,,,Rest of world,8,Western Africa,sub-Saharan Africa
+"Saint Helena, Ascension and Tristan da Cunha",shn,xss,,,,,Rest of world,8,Western Africa,sub-Saharan Africa
 Saint Kitts and Nevis,kna,xfa,,,Saint Kitts and Nevis,,Rest of world,4,Rest Central America,Latin America and Caribbean
 Saint Lucia,lca,xfa,,,Saint Lucia,,Rest of world,4,Rest Central America,Latin America and Caribbean
 Saint Pierre and Miquelon,spm,xna,,,Saint Pierre and Miquelon,,Rest of world,2,USA,Industrial countries
