@@ -21,10 +21,7 @@
 #' @author BBL
 module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
-    return(c(
-
-             # Updated data
-             FILE = "aglu/AGLU_ctry",
+    return(c(FILE = "aglu/AGLU_ctry",
              FILE = "common/iso_GCAM_regID",
              FILE = "aglu/FAO/FAO_For_Exp_m3_FORESTAT",
              FILE = "aglu/FAO/FAO_For_Imp_m3_FORESTAT",
@@ -36,27 +33,14 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
              FILE = "aglu/FAO/FAO_harv_CL_kha_RESOURCESTAT",
              FILE = "aglu/FAO/FAO_Fert_Cons_tN_RESOURCESTAT",
              FILE = "aglu/FAO/FAO_Fert_Prod_tN_RESOURCESTAT",
-
-             # New data
              FILE = "aglu/FAO/FAO_ag_items_PRODSTAT",
              FILE = "aglu/FAO/FAO_an_items_PRODSTAT",
              FILE = "aglu/FAO/FAO_ag_Prod_t_HA_ha_PRODSTAT",
              FILE = "aglu/FAO/GCAM_AgLU_SUA_1973_2019",
              FILE = "aglu/FAO/FAO_an_Prod_t_1973_2019",
-             FILE = "aglu/FAO/SUA_food_MKcal_APE"
-             ))
+             FILE = "aglu/FAO/SUA_food_MKcal_APE"))
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c(
-             "L100.FAO_CL_kha",
-             "L100.FAO_fallowland_kha",
-             "L100.FAO_harv_CL_kha",
-             "L100.FAO_Fert_Cons_tN",
-             "L100.FAO_Fert_Prod_tN",
-             "L100.FAO_For_Exp_m3",
-             "L100.FAO_For_Imp_m3",
-             "L100.FAO_For_Prod_m3",
-
-             "L100.FAO_ag_HA_ha",
+    return(c("L100.FAO_ag_HA_ha",
              "L100.FAO_ag_Prod_t",
              "L100.FAO_an_Stocks",
              "L100.FAO_an_Dairy_Stocks",
@@ -70,8 +54,15 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
              "L105.an_Prod_Mt_R_C_Y",
              "L105.an_Prod_Mt_ctry_C_Y",
              "L101.ag_Feed_Mt_R_C_Y",
-             "L1091.GrossTrade_Mt_R_C_Y"
-             ))
+             "L1091.GrossTrade_Mt_R_C_Y",
+             "L100.FAO_CL_kha",
+             "L100.FAO_fallowland_kha",
+             "L100.FAO_harv_CL_kha",
+             "L100.FAO_Fert_Cons_tN",
+             "L100.FAO_Fert_Prod_tN",
+             "L100.FAO_For_Exp_m3",
+             "L100.FAO_For_Imp_m3",
+             "L100.FAO_For_Prod_m3"))
   } else if(command == driver.MAKE) {
 
     iso <- FAO_country <- `country codes` <- `element codes` <- `item codes` <-
@@ -82,11 +73,8 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
     all_data <- list(...)[[1]]
 
     # Load required inputs ----
-
-
     AGLU_ctry <- get_data(all_data, "aglu/AGLU_ctry") %>% select(iso, FAO_country) #%>% distinct
     iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
-
     FAO_ag_items_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_items_PRODSTAT")
     FAO_an_items_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_an_items_PRODSTAT")
     FAO_ag_Prod_t_HA_ha_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_Prod_t_HA_ha_PRODSTAT", strip_attributes = T)
@@ -95,18 +83,14 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
     FAO_an_Prod_t_1973_2019 <- get_data(all_data, "aglu/FAO/FAO_an_Prod_t_1973_2019", strip_attributes = T)
     FAO_an_Stocks <- get_data(all_data, "aglu/FAO/FAO_an_Stocks")
     FAO_an_Dairy_Stocks <- get_data(all_data, "aglu/FAO/FAO_an_Dairy_Stocks")
-
-    # update forest data
     FAO_For_Exp_m3_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Exp_m3_FORESTAT")
     FAO_For_Imp_m3_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Imp_m3_FORESTAT")
     FAO_For_Prod_m3_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Prod_m3_FORESTAT")
-
+    FAO_Fert_Cons_tN_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_Fert_Cons_tN_RESOURCESTAT")
+    FAO_Fert_Prod_tN_RESOURCESTAT<- get_data(all_data, "aglu/FAO/FAO_Fert_Prod_tN_RESOURCESTAT")
     FAO_CL_kha_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_CL_kha_RESOURCESTAT")
     FAO_fallowland_kha_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_fallowland_kha_RESOURCESTAT")
     FAO_harv_CL_kha_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_harv_CL_kha_RESOURCESTAT")
-
-    FAO_Fert_Cons_tN_RESOURCESTAT <- get_data(all_data, "aglu/FAO/FAO_Fert_Cons_tN_RESOURCESTAT")
-    FAO_Fert_Prod_tN_RESOURCESTAT<- get_data(all_data, "aglu/FAO/FAO_Fert_Prod_tN_RESOURCESTAT")
 
 
     # A helper function to disaggregate dissolved region and join iso & GCAM region mappings ----
@@ -120,7 +104,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
         left_join_error_no_match(AGLU_ctry %>% select(area = FAO_country, iso), by = "area") %>%
         left_join_error_no_match(iso_GCAM_regID %>% select(iso, GCAM_region_ID), by = "iso") %>%
         # Adding moving average
-        group_by(across(setdiff(names(.), c("year", "value")))) %>%
+        group_by_at(setdiff(names(.), c("year", "value"))) %>%
         mutate(value = if_else(is.na(Moving_average(value, periods = MA_period)),
                                value, Moving_average(value, periods = MA_period))) %>%
         ungroup() %>%
@@ -143,7 +127,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       # clean and aggregate elements
       mutate(element = replace(element, element %in% c("Stock Variation"), "Other uses")) %>%
     # Adding 5-year moving average here
-      group_by(across(setdiff(names(.), c("year", "value")))) %>%
+      group_by_at(setdiff(names(.), c("year", "value"))) %>%
       mutate(value = if_else(is.na(Moving_average(value, periods = aglu.MODEL_MEAN_PERIOD_LENGTH)),
                              value, Moving_average(value, periods = aglu.MODEL_MEAN_PERIOD_LENGTH))) %>%
       ungroup() %>%
@@ -175,7 +159,6 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       # only safegaurd here as data was cleaned and area and prod are matched
       mutate(Area_harvested_ha = if_else(Prod_t == 0, 0, Area_harvested_ha),
              Prod_t = if_else(Area_harvested_ha == 0, 0, Prod_t))
-
 
     ##* L100.FAO_ag_HA_ha ----
     L100.FAO_ag_HA_ha <-
@@ -524,8 +507,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       add_comments("FAO primary roundwood gross import") %>%
       add_units("m3") %>%
       add_precursors("aglu/FAO/FAO_For_Imp_m3_FORESTAT",
-                     "aglu/AGLU_ctry",
-                     "common/iso_GCAM_regID") ->
+                     "aglu/AGLU_ctry", "common/iso_GCAM_regID") ->
       L100.FAO_For_Imp_m3
 
     rm(L100.For_bal)
@@ -540,7 +522,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       add_comments("FAO nitrogen N (total) consumption") %>%
       add_units("tonnes N") %>%
       add_precursors("aglu/FAO/FAO_Fert_Cons_tN_RESOURCESTAT",
-                     "aglu/AGLU_ctry") ->
+                     "aglu/AGLU_ctry", "common/iso_GCAM_regID") ->
       L100.FAO_Fert_Cons_tN
 
     ##* L100.FAO_Fert_Prod_tN ----
@@ -551,7 +533,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       add_comments("FAO nitrogen N (total) production") %>%
       add_units("tonnes N") %>%
       add_precursors("aglu/FAO/FAO_Fert_Prod_tN_RESOURCESTAT",
-                     "aglu/AGLU_ctry") ->
+                     "aglu/AGLU_ctry", "common/iso_GCAM_regID") ->
       L100.FAO_Fert_Prod_tN
 
     ##* L100.FAO_CL_kha ----
@@ -561,7 +543,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       add_title("FAO cropland area by country, year") %>%
       add_comments("FAO arable land") %>%
       add_units("kha") %>%
-      add_precursors("aglu/FAO/FAO_CL_kha_RESOURCESTAT", "aglu/AGLU_ctry") ->
+      add_precursors("aglu/FAO/FAO_CL_kha_RESOURCESTAT", "aglu/AGLU_ctry", "common/iso_GCAM_regID") ->
       L100.FAO_CL_kha
 
     ##* L100.FAO_fallowland_kha ----
@@ -571,7 +553,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       add_title("FAO fallow land area by country, year") %>%
       add_comments("FAO and with temporary fallow") %>%
       add_units("kha") %>%
-      add_precursors("aglu/FAO/FAO_fallowland_kha_RESOURCESTAT", "aglu/AGLU_ctry")->
+      add_precursors("aglu/FAO/FAO_fallowland_kha_RESOURCESTAT", "aglu/AGLU_ctry", "common/iso_GCAM_regID")->
       L100.FAO_fallowland_kha
 
     ##* L100.FAO_harv_CL_kha ----
@@ -579,8 +561,9 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       gather_years() %>% filter(!is.na(value)) %>%
       FAO_REG_YEAR_MAP %>%
       add_title("FAO harvested cropland (temporary crops) area by country, year") %>%
+      add_comments("FAO cropland cover") %>%
       add_units("kha") %>%
-      add_precursors("aglu/FAO/FAO_harv_CL_kha_RESOURCESTAT", "aglu/AGLU_ctry")->
+      add_precursors("aglu/FAO/FAO_harv_CL_kha_RESOURCESTAT", "aglu/AGLU_ctry", "common/iso_GCAM_regID")->
       L100.FAO_harv_CL_kha
 
 
@@ -619,7 +602,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
   }
 }
 
-
+# *******************************************************************************
 # Appendix old code----
 
 # Process FAO food consumption data (tons): remove unnecessary columns, convert units, aggregate to region and commodity
@@ -670,7 +653,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
 #   mutate(value = value * CONV_TON_MEGATON)
 
 
-# Update L101.ag_Feed_Mt_R_C_Y ----
+## Update L101.ag_Feed_Mt_R_C_Y ----
 # Moving L108 partly to here
 # L100.FAO_ag_Feed_t %>%
 #   select(iso, item, year, value) %>%
@@ -757,7 +740,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
 #   L100.FAO_an_Prod_t
 
 
-# L106 ----
+## L106 ----
 
 # L106.ag_NetExp_Mt_R_C_Y <-
 #   FAO_SUA_APE_balance %>% filter(element == "Net_Export") %>%
@@ -784,7 +767,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
 #                  "aglu/FAO/GCAM_AgLU_SUA_1973_2019") ->
 #   L106.an_NetExp_Mt_R_C_Y
 
-# old other code for fertilizer and land ----
+## old other code for fertilizer and land ----
 
 # itel_colnames <- c("item", "item codes", "element", "element codes")
 # coitel_colnames <- c("countries", "country codes", itel_colnames)

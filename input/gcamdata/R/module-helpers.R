@@ -693,10 +693,10 @@ FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION <-
       select(-area_code, -area) %>%
       right_join(
         .DF1 %>% filter(year %in% c(YEAR_DISSOLVE_DONE:(YEAR_DISSOLVE_DONE + YEAR_AFTER_DISSOLVE_ACCOUNT))) %>%
-          group_by(across(names(.) %>% setdiff(c("year", "value")))) %>%
+          group_by_at(setdiff(names(.), c("year", "value"))) %>%
           replace_na(list(value = 0)) %>%
           summarise(value = sum(value)) %>% ungroup() %>%
-          group_by(across(names(.) %>% setdiff(c("value", "area", "area_code")))) %>%
+          group_by_at(setdiff(names(.), c("value", "area", "area_code"))) %>%
           mutate(Share = value/sum(value)) %>%
           # using average share if data after dissolved does not exist
           mutate(NODATA = if_else(sum(value) == 0, T, F)) %>%
@@ -791,7 +791,7 @@ FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL <- function(.DF,
 
     .DF2 %>%
       mutate(area_code = replace(area_code, area_code %in% area_code_Sudan, area_code_Sudan[1])) %>%
-      group_by(across(names(.) %>% setdiff(c("value")))) %>%
+      group_by_at(setdiff(names(.), c("value"))) %>%
       summarise(value = sum(value, na.rm = T), .groups = "drop") %>%
       ungroup() -> .DF2
   }
