@@ -379,17 +379,7 @@ module_aglu_L202.an_input <- function(command, ...) {
     L202.rsrcP_R_C_75USDkg <- filter(A_agRsrcCurves, grade == "grade 2") %>%
       select(GCAM_commodity = sub.renewable.resource, calPrice = extractioncost)
 
-    # Here we are using USA prices for all regions for FodderHerb, Residue, Scavenging_Other
-    # L202.ag_Feed_Prices <- L132.ag_an_For_Prices %>%
-    #   filter(GCAM_commodity %in% unique(L202.ag_Feed_P_share_R_C$subsector)) %>%
-    #   bind_rows(L202.rsrcP_R_C_75USDkg) %>%
-    #   write_to_all_regions(c("region", "GCAM_commodity", "calPrice"), GCAM_region_names) %>%
-    #   rename(default_price = calPrice) %>%
-    #   left_join(L202.prP_R_C_75USDkg, by = c("region", "GCAM_commodity")) %>%
-    #   mutate(price = if_else(is.na(price), default_price, price)) %>%
-    #   select(region, GCAM_commodity, price)
 
-    # The above code will be removed
     # The new calculation is more consistent as the missing Taiwan prices were filled in earlier in LB1321
     # This is important as they are need for calculating world/trade prices and thus consumer prices
     # Also L132 is no longer needed here

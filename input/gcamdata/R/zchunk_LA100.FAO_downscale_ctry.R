@@ -104,7 +104,7 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
         left_join_error_no_match(AGLU_ctry %>% select(area = FAO_country, iso), by = "area") %>%
         left_join_error_no_match(iso_GCAM_regID %>% select(iso, GCAM_region_ID), by = "iso") %>%
         # Adding moving average
-        group_by_at(setdiff(names(.), c("year", "value"))) %>%
+        dplyr::group_by_at(dplyr::vars(-year, -value)) %>%
         mutate(value = if_else(is.na(Moving_average(value, periods = MA_period)),
                                value, Moving_average(value, periods = MA_period))) %>%
         ungroup() %>%
@@ -124,10 +124,12 @@ module_aglu_LA100.FAO_downscale_ctry <- function(command, ...) {
       GCAM_AgLU_SUA_1973_2019 %>%
       mutate(Net_Export = Export - Import) %>%
       gather(element, value, -GCAM_region_ID, -GCAM_commodity, -year) %>%
-      # clean and aggregate elements
+      # clean and aggregate elements not using
       mutate(element = replace(element, element %in% c("Stock Variation"), "Other uses")) %>%
+      dplyr::group_by_at(dplyr::vars(-value)) %>%
+      summarise(value = sum(value)) %>% ungroup() %>%
     # Adding 5-year moving average here
-      group_by_at(setdiff(names(.), c("year", "value"))) %>%
+      dplyr::group_by_at(dplyr::vars(-year, -value)) %>%
       mutate(value = if_else(is.na(Moving_average(value, periods = aglu.MODEL_MEAN_PERIOD_LENGTH)),
                              value, Moving_average(value, periods = aglu.MODEL_MEAN_PERIOD_LENGTH))) %>%
       ungroup() %>%

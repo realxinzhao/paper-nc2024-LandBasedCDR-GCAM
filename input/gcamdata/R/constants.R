@@ -256,7 +256,7 @@ aglu.BIO_GRASS_COST_75USD_GJ <- 0.75   # Production costs of biomass (from Patri
 aglu.BIO_TREE_COST_75USD_GJ  <- 0.67   # Production costs of biomass (from Patrick Luckow's work)
 aglu.FERT_PRICE              <- 596    # Price of fertilizer, 2010$ per ton NH3
 aglu.FERT_PRICE_YEAR         <- 2010   # Year corresponding to the above price/cost
-aglu.FOR_COST_75USDM3        <- 29.59  # Forestry cost (1975$/GJ)
+aglu.FOR_COST_75USDM3        <- 29.59  # Forestry cost (1975$/M3); Not used since GCAM5.4
 aglu.FOR_COST_SHARE          <- 0.59   # Non-land forestry cost share (from 2011 GTAP data base)
 
 # Price at which base year bio frac produced is used.
