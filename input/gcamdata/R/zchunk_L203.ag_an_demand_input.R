@@ -81,7 +81,7 @@ module_aglu_L203.ag_an_demand_input <- function(command, ...) {
       gcam.consumer <- nodeInput <- demand_type <- staples.food.demand.input <-
       non.staples.food.demand.input <- subsector <- NULL   # silence package check notes
 
-    # Load required inputs
+    # Load required inputs ----
     GCAM_region_names <- get_data(all_data, "common/GCAM_region_names", strip_attributes = TRUE)
     A_demand_supplysector <- get_data(all_data, "aglu/A_demand_supplysector", strip_attributes = TRUE)
     A_demand_nesting_subsector <- get_data(all_data, "aglu/A_demand_nesting_subsector", strip_attributes = TRUE)
@@ -382,7 +382,7 @@ module_aglu_L203.ag_an_demand_input <- function(command, ...) {
                                by = c("region", "non.staples.food.demand.input")) %>%
       select(LEVEL2_DATA_NAMES[["NonStapleBaseService"]])
 
-    #FINAL OUTPUT
+    #FINAL OUTPUT ----
     L203.Supplysector_demand %>%
       add_title("Generic information for agriculture demand sectors") %>%
       add_units("Unitless") %>%
@@ -400,7 +400,8 @@ module_aglu_L203.ag_an_demand_input <- function(command, ...) {
       add_comments("Remove any regions for which agriculture and land use are not modeled") %>%
       add_legacy_name("L203.Supplysector_demand") %>%
       add_precursors("common/GCAM_region_names",
-                     "aglu/A_demand_supplysector") ->
+                     "aglu/A_demand_supplysector",
+                     "aglu/A_demand_nesting_subsector") ->
       L203.NestingSubsectorAll_demand_food
 
     L203.SubsectorAll_demand_food %>%
