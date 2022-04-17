@@ -26,8 +26,8 @@
 module_aglu_LB164.ag_Costs_USA_C_2005_irr <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
     return(c(FILE = "common/iso_GCAM_regID",
-             FILE = "aglu/USDA_crops",
-             FILE = "aglu/USDA_item_cost",
+             FILE = "aglu/USDA/USDA_crops",
+             FILE = "aglu/USDA/USDA_item_cost",
              "L133.USDA_cost_data",
              "L100.LDS_ag_HA_ha",
              "L133.ag_Cost_75USDkg_C",
@@ -47,8 +47,8 @@ module_aglu_LB164.ag_Costs_USA_C_2005_irr <- function(command, ...) {
 
     # Load required inputs
     iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
-    USDA_crops <- get_data(all_data, "aglu/USDA_crops")
-    USDA_item_cost <- get_data(all_data, "aglu/USDA_item_cost")
+    USDA_crops <- get_data(all_data, "aglu/USDA/USDA_crops")
+    USDA_item_cost <- get_data(all_data, "aglu/USDA/USDA_item_cost")
     L133.USDA_cost_data <- get_data(all_data, "L133.USDA_cost_data")
     L100.LDS_ag_HA_ha <- get_data(all_data, "L100.LDS_ag_HA_ha")
     L133.ag_Cost_75USDkg_C <- get_data(all_data, "L133.ag_Cost_75USDkg_C", strip_attributes = TRUE)
@@ -138,15 +138,14 @@ module_aglu_LB164.ag_Costs_USA_C_2005_irr <- function(command, ...) {
 
 
     # Step 4: Calculate the revised variable cost as the prior total minus the water cost fraction
-    # For any crops not grown in the US, assume no water cost deduction (not used w present dataset
-    # and mappings)
+    # For any crops not grown in the US and thus not available in L164.ag_irrHA_frac_USA_C, assume
+    # no water cost deduction
     L133.ag_Cost_75USDkg_C %>%
       left_join_error_no_match(select(L164.ag_irrHA_frac_USA_C, GCAM_commodity, waterCostFrac),
-                               by = "GCAM_commodity") %>%
-      mutate(Cost_75USDkg_new = Cost_75USDkg * (1 - waterCostFrac),
-             Cost_75USDkg_new = replace(Cost_75USDkg_new,
-                                        is.na(Cost_75USDkg_new),
-                                        Cost_75USDkg)) %>%
+                               by = "GCAM_commodity",
+                               ignore_columns = "waterCostFrac") %>%
+      mutate(waterCostFrac = if_else(is.na(waterCostFrac), 0, waterCostFrac),
+             Cost_75USDkg_new = Cost_75USDkg * (1 - waterCostFrac)) %>%
       select(-Cost_75USDkg, -waterCostFrac) %>%
       rename(Cost_75USDkg = Cost_75USDkg_new) ->
       L164.ag_Cost_75USDkg_C
@@ -165,8 +164,8 @@ module_aglu_LB164.ag_Costs_USA_C_2005_irr <- function(command, ...) {
       add_comments("is adjusted as LB133_cost * (1 - water cost fraction) = production cost - purchased irrigation water for each commodity.") %>%
       add_legacy_name("L164.ag_Cost_75USDkg_C") %>%
       add_precursors("common/iso_GCAM_regID",
-                     "aglu/USDA_crops",
-                     "aglu/USDA_item_cost",
+                     "aglu/USDA/USDA_crops",
+                     "aglu/USDA/USDA_item_cost",
                      "L133.USDA_cost_data",
                      "L100.LDS_ag_HA_ha",
                      "L133.ag_Cost_75USDkg_C",

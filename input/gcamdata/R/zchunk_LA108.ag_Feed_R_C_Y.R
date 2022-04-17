@@ -22,9 +22,7 @@
 module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
     return(c(FILE = "common/iso_GCAM_regID",
-             FILE = "aglu/FAO/FAO_ag_items_cal_SUA",
-             FILE = "aglu/A_recent_feed_modifications",
-             "L100.FAO_ag_Feed_t",
+             "L101.ag_Feed_Mt_R_C_Y",
              "L101.ag_Prod_Mt_R_C_Y",
              "L107.an_Feed_Mt_R_C_Sys_Fd_Y",
              "L122.FeedOut_Mt_R_C_Yh"))
@@ -43,9 +41,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
 
     # Load required inputs
     iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
-    FAO_ag_items_cal_SUA <- get_data(all_data, "aglu/FAO/FAO_ag_items_cal_SUA")
-    A_recent_feed_modifications <- get_data(all_data, "aglu/A_recent_feed_modifications")
-    L100.FAO_ag_Feed_t <- get_data(all_data, "L100.FAO_ag_Feed_t")
+    L101.ag_Feed_Mt_R_C_Y <- get_data(all_data, "L101.ag_Feed_Mt_R_C_Y")
     L101.ag_Prod_Mt_R_C_Y <- get_data(all_data, "L101.ag_Prod_Mt_R_C_Y", strip_attributes = TRUE)
     L107.an_Feed_Mt_R_C_Sys_Fd_Y <- get_data(all_data, "L107.an_Feed_Mt_R_C_Sys_Fd_Y")
     L122.FeedOut_Mt_R_C_Yh <- get_data(all_data, "L122.FeedOut_Mt_R_C_Yh")
@@ -77,21 +73,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
     # Use crop-specific information from FAO, in combination with feed totals from IMAGE,
     # to calculate region/crop specific information. This ensures totals match IMAGE and shares match FAO.
     # First, calculate FAO totals by crop, region, and year. Then, use this compute % of feed from each crop in each region/year.
-
-    L100.FAO_ag_Feed_t %>%
-      select(iso, item, year, value) %>%
-      left_join(A_recent_feed_modifications, by = c("iso", "item", "year")) %>%                    # Swap in modified feed data where relevant
-      mutate(value = if_else(is.na(feed), value, feed)) %>%
-      select(-feed) %>%
-      left_join_error_no_match(iso_GCAM_regID, by = "iso") %>%                                     # Map in GCAM region ID
-      left_join(select(FAO_ag_items_cal_SUA, item, GCAM_commodity), by = "item") %>%               # Map in GCAM commodity
-      filter(!is.na(GCAM_commodity)) %>%                                                           # Remove entries that are not GCAM comodities
-      group_by(GCAM_region_ID, GCAM_commodity, year) %>%
-      summarize(value = sum(value)) %>%                                                            # Aggregate by crop, region, year
-      mutate(value = value * CONV_TON_MEGATON) %>%                                                 # Convert from tons to Mt
-      ungroup() %>%
-      complete(GCAM_region_ID = unique(iso_GCAM_regID$GCAM_region_ID),
-               GCAM_commodity, year, fill = list(value = 0)) %>%                                   # Fill in missing region/commodity combinations with 0
+    L101.ag_Feed_Mt_R_C_Y %>%
       left_join(L108.feedcakes, by = c("GCAM_region_ID", "GCAM_commodity", "year")) %>%            # Bring in the feedcakes quantities to deduct from the estimated oil crops -> feed
       mutate(value = if_else(is.na(feedcakes), value, value - feedcakes)) %>%
       select(-feedcakes) %>%
@@ -195,38 +177,36 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
     # PASTURE & FODDERGRASS
     # Part 3: Calculating Pasture and FodderGrass feed inputs by region and year
 
-    # First, compute pasture feed, which is equal to Pasture_FodderGrass demand minus FodderGrass production within each region
+    # compute pasture feed, which is equal to Pasture_FodderGrass demand minus FodderGrass production within each region
+    # adding minimum pasture share over Pasture_FodderGrass to avoid zero pasture adjustments
+    # that is more FodderGrass is moved to other uses when minimium is reached in historical data
+    # This share is ~30% in the USA. But using 10% to be conservative
+    # Other use of FodderGrass will be reflected in L109 balance
+
     an_Feed_Mt_R_C_Y %>%
       filter(feed == "Pasture_FodderGrass") %>%                                                                 # Start with Pasture_FodderGrass demand
       rename(PastFodderGrass_Demand = value) %>%
       left_join(filter(L101.ag_Prod_Mt_R_C_Y, GCAM_commodity == "FodderGrass"),
                 by = c("GCAM_region_ID", "year")) %>%                                                          # Map in FodderGrass production
-      mutate(value = PastFodderGrass_Demand - value, GCAM_commodity = "Pasture") %>%                            # Compute Pasture supply as difference
-      select(-feed, -PastFodderGrass_Demand) ->
-      ag_Feed_Mt_R_Past_Y
+      mutate(MinPasture = if_else(GCAM_region_ID %in% aglu.Zero_Min_PastureFeed_Share_region_ID, 0,
+                                  PastFodderGrass_Demand * aglu.Min_Share_PastureFeed_in_PastureFodderGrass),
+             Pasture = if_else(PastFodderGrass_Demand - value < MinPasture,
+                               MinPasture,
+                             PastFodderGrass_Demand - value),
+             FodderGrass = PastFodderGrass_Demand - Pasture) %>%
+      select(-MinPasture, -value, -PastFodderGrass_Demand) ->
+      an_Feed_Mt_R_C_Y_Pasture_FodderGrass
 
-    # If pasture demands are negative, this means FodderGrass production exceeds Pasture_FodderGrass demands
-    # When this occurs, set pasture to zero and treat this quantity of foddergrass demand as an other use
-    ag_Feed_Mt_R_Past_Y %>%
-      mutate(value = -value,
-             GCAM_commodity = "FodderGrass",                                            # Compute other uses of FodderGrass as excess supply
-             value = if_else(value < 0, 0, value)) ->                                                           # Zero out all other entries
-      ag_OtherUses_Mt_R_FodderGrass_Y
+    ag_Feed_Mt_R_Past_Y <-
+      an_Feed_Mt_R_C_Y_Pasture_FodderGrass %>%
+      transmute(GCAM_region_ID, year, value = Pasture) %>%
+      mutate(GCAM_commodity = "Pasture")
 
-    # Now, adjust the pasture feeds to remove these other uses.
-    ag_Feed_Mt_R_Past_Y %>%
-      mutate(value = if_else(value < 0, 0, value)) ->
-      ag_Feed_Mt_R_Past_Y
+    ag_Feed_Mt_R_FodderGrass_Y <-
+      an_Feed_Mt_R_C_Y_Pasture_FodderGrass %>%
+      transmute(GCAM_region_ID, year, value = FodderGrass) %>%
+      mutate(GCAM_commodity = "FodderGrass")
 
-    # Adjust FodderGrass feed to reflect the shift in production from feed to other uses (calculated above)
-    # FodderGrass used as feed = FodderGrass production - other uses
-    L101.ag_Prod_Mt_R_C_Y %>%
-      filter(GCAM_commodity == "FodderGrass") %>%                                                          # Start with production of FodderGrass
-      rename(Production = value) %>%
-      left_join(ag_OtherUses_Mt_R_FodderGrass_Y, by = c("GCAM_commodity", "GCAM_region_ID", "year")) %>%   # Map in other uses
-      mutate(value = Production - value) %>%                                                               # Adjust feed supply from FodderGrass
-      select(-Production) ->
-      ag_Feed_Mt_R_FodderGrass_Y
 
     # SCAVENGING & OTHER
     # Part 4: Scavenging and other inputs
@@ -269,7 +249,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
       add_comments("FodderHerb: based on FAO production, but adjusted if this exceeds FodderHerb_Residue demand in IMAGE") %>%
       add_comments("Note: excess FodderGrass and FodderHerb production are mapped to OtherUses") %>%
       add_legacy_name("L108.ag_Feed_Mt_R_C_Y") %>%
-      add_precursors("common/iso_GCAM_regID", "aglu/FAO/FAO_ag_items_cal_SUA", "aglu/A_recent_feed_modifications", "L100.FAO_ag_Feed_t",
+      add_precursors("common/iso_GCAM_regID", "L101.ag_Feed_Mt_R_C_Y",
                      "L101.ag_Prod_Mt_R_C_Y", "L107.an_Feed_Mt_R_C_Sys_Fd_Y", "L122.FeedOut_Mt_R_C_Yh") ->
       L108.ag_Feed_Mt_R_C_Y
 

@@ -94,7 +94,8 @@ module_energy_LB1322.Fert <- function(command, ...) {
 
     L142.ag_Fert_Prod_MtN_ctry_Y %>%
       repeat_add_columns(tibble::tibble(fuel = c("coal", "gas", "refined liquids"))) %>% # Exanding table to include fuels for each iso
-      left_join_error_no_match(IEA_iso_region, by = "iso") %>% # Assign data to fert region using iso
+      # change to inner_join here as L142.ag_Fert_Prod_MtN_ctry_Y may have unimportant FAO regions that not included in IEA_iso_region
+      inner_join(IEA_iso_region, by = "iso") %>% # Assign data to fert region using iso
       # Now we can attach the share data, matching to fert region
       left_join_error_no_match(L1322.IEA_fert_fuel_shares, by = c("fuel", "IEA_Fert_reg")) %>%
       # Switch individual countries' fuel shares according to literature or to make energy balances work at the regional level.
@@ -279,7 +280,7 @@ module_energy_LB1322.Fert <- function(command, ...) {
       complete(resource, year = sort(unique(c(year, aglu.FERT_PRICE_YEAR)))) %>%
       mutate(value = approx_fun(year, value)) %>%
       filter(year == aglu.FERT_PRICE_YEAR) %>%
-      mutate(value = replace_na(value, 0)) %>% 
+      mutate(value = replace_na(value, 0)) %>%
       pull(value) -> # Save cost as single number. Units are 1975 USD per GJ.
       A10.rsrc_cost_aglu.FERT_PRICE_YEAR
 

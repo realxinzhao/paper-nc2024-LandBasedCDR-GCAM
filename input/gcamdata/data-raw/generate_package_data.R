@@ -150,6 +150,7 @@ generate_level2_data_names <- function() {
   level2_data_names[["ResReserveTechProfitShutdown"]] <- c("region", "resource", "reserve.subresource", "resource.reserve.technology", "year", "median.shutdown.point", "profit.shutdown.steepness")
   level2_data_names[["ResReserveTechDeclinePhase"]] <- c("region", "resource", "reserve.subresource", "resource.reserve.technology", "year", "decline.phase.percent")
   level2_data_names[["ResReserveTechCoef"]] <- c("region", "resource", "reserve.subresource", "resource.reserve.technology", "year", "minicam.energy.input", "coefficient")
+  level2_data_names[["FuelPrefElastTech"]] <- c(level2_data_names[["Tech"]], "year.fillout", "fuelprefElasticity")
 
   # Global technologies
   level2_data_names[["GlobalTech"]] <- c("sector.name", "subsector.name", "technology")
@@ -226,7 +227,7 @@ generate_level2_data_names <- function() {
   level2_data_names[["StubTechFixOut"]] <- c(level2_data_names[["StubTechYr"]], "fixedOutput", "share.weight.year", "subs.share.weight", "tech.share.weight")
   level2_data_names[["StubTechCapFactor"]] <- c(level2_data_names[["StubTechYr"]], "capacity.factor")
   level2_data_names[["StubTechMarket"]] <- c(level2_data_names[["StubTechYr"]], "minicam.energy.input", "market.name")
-  level2_data_names[["StubCalorieContent"]] <- c("region", "supplysector", "subsector", "stub.technology", "year", "minicam.energy.input", "efficiency", "market.name")
+  level2_data_names[["StubCalorieContent"]] <- c("region", "supplysector", "subsector", "stub.technology", "year", "minicam.energy.input", "efficiency")
   level2_data_names[["StubResBioCurve"]] <- c("region", "supplysector", "subsector", "stub.technology", "year", "residue.biomass.production", "price", "fract.harvested")
   level2_data_names[["StubTechCalInputIndUrb"]] <- c("region", "sector.name", "subsector.name", "technology", "year", "minicam.energy.input", "calibrated.value")
   level2_data_names[["StubTechCoefIndUrb"]] <- c("region", "supplysector", "subsector", "technology", "year", "minicam.energy.input", "coefficient")
@@ -312,13 +313,13 @@ generate_level2_data_names <- function() {
   level2_data_names[["DeleteThermalService"]] <- c("region", "gcam.consumer", "nodeInput", "building.node.input", "thermal.building.service.input", "supplysector")
   level2_data_names[["DeleteGenericService"]] <- c("region", "gcam.consumer", "nodeInput", "building.node.input", "building.service.input", "supplysector")
   level2_data_names[["BldNodes"]] <- c("region", "gcam.consumer", "nodeInput", "building.node.input")
-  level2_data_names[["NegEmissFinalDemand"]] <- c("region", "negative.emissions.final.demand", "policy.name")
   level2_data_names[["DemandStapleParams"]] <- c("region", "gcam.consumer", "nodeInput", "staples.food.demand.input", "scale.param", "self.price.elasticity", "cross.price.elasticity", "income.elasticity", "income.max.term", "price.received")
   level2_data_names[["DemandNonStapleParams"]] <- c("region", "gcam.consumer", "nodeInput", "non.staples.food.demand.input", "scale.param", "self.price.elasticity", "income.elasticity")
   level2_data_names[["DemandStapleRegBias"]] <- c("region", "gcam.consumer", "nodeInput", "staples.food.demand.input", "regional.bias.year", "regional.bias")
   level2_data_names[["DemandNonStapleRegBias"]] <- c("region", "gcam.consumer", "nodeInput", "non.staples.food.demand.input", "regional.bias.year", "regional.bias")
   level2_data_names[["StapleBaseService"]] <- c("region", "gcam.consumer", "nodeInput", "staples.food.demand.input", "year", "base.service")
   level2_data_names[["NonStapleBaseService"]] <- c("region", "gcam.consumer", "nodeInput", "non.staples.food.demand.input", "year", "base.service")
+  level2_data_names[["GompFnParam"]] <- c("region","gcam.consumer","nodeInput","building.node.input","habitable.land","base.pcFlsp","unadjust.satiation","land.density.param","b.param","income.param","bias.adjust.param")
 
   # Land types
   level2_data_names[["LN0_Land"]] <- c("region", "LandAllocatorRoot", "year.fillout", "landAllocation")
@@ -431,6 +432,10 @@ generate_level2_data_names <- function() {
   level2_data_names[["AgMACPhaseIn"]] <- c("region", "AgSupplySector", "AgSupplySubsector", "AgProductionTechnology", "year", "Non.CO2", "mac.control", "mac.phase.in.time")
   level2_data_names[["TrnInputEmissCoeff"]] <- c("region", "supplysector", "tranSubsector", "stub.technology", "year", "Non.CO2", "emiss.coef", "input.name")
   level2_data_names[["LinearCtrlInc"]] <- c("region", "supplysector", "tranSubsector","stub.technology", "year", "Non.CO2", "linear.control", "start.year", "end.year", "final.emissions.coefficient")
+  level2_data_names[["EF_Retrofit"]] <- c("region", "supplysector", "subsector", "stub.technology", "retrofit_vintage", "Non.CO2", "linear.control", "start.year", "end.year", "final.emissions.coefficient")
+  level2_data_names[["RetrofitOff"]] <- c("region", "supplysector", "subsector", "stub.technology", "period", "Non.CO2", "linear.control", "start.year", "end.year", "disable.em.control")
+  level2_data_names[["EF_NSPS"]] <- c("region", "supplysector", "subsector", "stub.technology", "period", "Non.CO2", "emiss.coef")
+  level2_data_names[["DeleteGDPControl"]] <-  c("region", "supplysector", "subsector", "stub.technology", "period", "Non.CO2", "gdp.control")
 
   # Policy
   level2_data_names[["PortfolioStd"]] <- c("region", "policy.portfolio.standard", "market", "policyType", "year", "constraint", "price.unit", "output.unit")

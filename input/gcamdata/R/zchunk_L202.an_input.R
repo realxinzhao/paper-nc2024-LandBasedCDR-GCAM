@@ -41,9 +41,6 @@ module_aglu_L202.an_input <- function(command, ...) {
              "L107.an_Feed_Mt_R_C_Sys_Fd_Y",
              "L108.ag_Feed_Mt_R_C_Y",
              "L109.ag_ALL_Mt_R_C_Y",
-             "L109.an_ALL_Mt_R_C_Y",
-             "L1091.GrossTrade_Mt_R_C_Y",
-             "L132.ag_an_For_Prices",
              "L1321.ag_prP_R_C_75USDkg",
              "L1321.an_prP_R_C_75USDkg"))
   } else if(command == driver.DECLARE_OUTPUTS) {
@@ -99,9 +96,7 @@ module_aglu_L202.an_input <- function(command, ...) {
     A_an_supplysector <- get_data(all_data, "aglu/A_an_supplysector", strip_attributes = TRUE)
     A_an_subsector <- get_data(all_data, "aglu/A_an_subsector", strip_attributes = TRUE)
     A_an_technology <- get_data(all_data, "aglu/A_an_technology", strip_attributes = TRUE)
-    L132.ag_an_For_Prices <- get_data(all_data, "L132.ag_an_For_Prices")
     L109.ag_ALL_Mt_R_C_Y <- get_data(all_data, "L109.ag_ALL_Mt_R_C_Y")
-    L1091.GrossTrade_Mt_R_C_Y <- get_data(all_data, "L1091.GrossTrade_Mt_R_C_Y")
     L1321.ag_prP_R_C_75USDkg <- get_data(all_data, "L1321.ag_prP_R_C_75USDkg", strip_attributes = TRUE)
     L1321.an_prP_R_C_75USDkg <- get_data(all_data, "L1321.an_prP_R_C_75USDkg")
 
@@ -120,7 +115,8 @@ module_aglu_L202.an_input <- function(command, ...) {
     L202.an_FeedIO_R_C_Sys_Fd_Y.mlt <- get_join_filter("L107.an_FeedIO_R_C_Sys_Fd_Y")
     L202.an_Feed_Mt_R_C_Sys_Fd_Y.mlt <- get_join_filter("L107.an_Feed_Mt_R_C_Sys_Fd_Y")
     L202.ag_Feed_Mt_R_C_Y.mlt <- get_join_filter("L108.ag_Feed_Mt_R_C_Y")
-    L202.an_ALL_Mt_R_C_Y <- get_join_filter("L109.an_ALL_Mt_R_C_Y")
+
+
 
     # L202.RenewRsrc: generic resource attributes
     # Here, and in general below, we extend data across all GCAM regions for a particular set of
@@ -176,12 +172,10 @@ module_aglu_L202.an_input <- function(command, ...) {
       L202.UnlimitedRenewRsrcCurves
 
     # L202.UnlimitedRenewRsrcPrice (105-112)
-    L202.an_prP_R_C_75USDkg <- left_join_error_no_match(L1321.an_prP_R_C_75USDkg,
-                                                         GCAM_region_names, by = "GCAM_region_ID") %>%
-      select(-GCAM_region_ID)
+    L202.an_prP_R_C_75USDkg <- L1321.an_prP_R_C_75USDkg
 
     A_agUnlimitedRsrcCurves %>%
-      select(unlimited.resource, year, price) %>%
+      select(unlimited.resource, price) %>%
       repeat_add_columns(tibble(year = MODEL_BASE_YEARS)) %>%
       write_to_all_regions(LEVEL2_DATA_NAMES[["UnlimitRsrcPrice"]], GCAM_region_names) %>%
       # replace these default prices with the prices calculated in L1321
@@ -283,10 +277,11 @@ module_aglu_L202.an_input <- function(command, ...) {
       write_to_all_regions(LEVEL2_DATA_NAMES[["Tech"]], GCAM_region_names) %>%
       rename(stub.technology = technology) %>%
       repeat_add_columns(tibble(year = MODEL_BASE_YEARS)) %>%
-      left_join_error_no_match(L202.an_Prod_Mt_R_C_Sys_Fd_Y.mlt,
-                               by = c("region", "supplysector" = "GCAM_commodity",
-                                      "subsector" = "system", "stub.technology" = "feed",
-                                      "year")) %>%
+      left_join(L202.an_Prod_Mt_R_C_Sys_Fd_Y.mlt %>%
+                  select(region, supplysector = GCAM_commodity, year,
+                         subsector = system, stub.technology = feed, value),
+                by = c("region", "supplysector", "subsector", "stub.technology", "year")) %>%
+      replace_na(list(value = 0)) %>%
       mutate(calOutputValue = round(value, aglu.DIGITS_CALOUTPUT),
              # subsector and technology shareweights (subsector requires the year as well)
              share.weight.year = year,
@@ -345,7 +340,10 @@ module_aglu_L202.an_input <- function(command, ...) {
       L202.ag_Feed_P_share_R_C
 
     # Use the producer prices of crops in each exporting region to calculate the global "traded" crop prices
-    L202.ag_tradedP_C_75USDkg <- filter(L1091.GrossTrade_Mt_R_C_Y, year == max(MODEL_BASE_YEARS)) %>%
+    L202.ag_tradedP_C_75USDkg <- L109.ag_ALL_Mt_R_C_Y %>%
+      select(GCAM_region_ID, GCAM_commodity, year, GrossExp_Mt, GrossImp_Mt) %>%
+      filter(year == max(MODEL_BASE_YEARS),
+             GCAM_commodity%in% aglu.TRADED_CROPS) %>%
       inner_join(L1321.ag_prP_R_C_75USDkg, by = c("GCAM_region_ID", "GCAM_commodity")) %>%
       mutate(Exp_wtd_price = GrossExp_Mt * value) %>%
       group_by(GCAM_commodity) %>%
@@ -357,13 +355,13 @@ module_aglu_L202.an_input <- function(command, ...) {
 
     # Calculate the share of domestic supply (i.e., total consumption) that is from imports
     L202.ag_ImpShare_Mt_R_C_Y <- filter(L109.ag_ALL_Mt_R_C_Y, year == max(MODEL_BASE_YEARS)) %>%
-      select(GCAM_region_ID, GCAM_commodity, year, Supply_Mt) %>%
-      left_join(L1091.GrossTrade_Mt_R_C_Y, by = c("GCAM_region_ID", "GCAM_commodity", "year")) %>%
+      select(GCAM_region_ID, GCAM_commodity, year, Supply_Mt, GrossExp_Mt, GrossImp_Mt) %>%
       mutate(ImpShare = if_else(is.na(GrossImp_Mt) | Supply_Mt == 0, 0, GrossImp_Mt / Supply_Mt)) %>%
       select(GCAM_region_ID, GCAM_commodity, ImpShare)
 
     # Calculate the weighted average regional crop prices, as the global traded crop price times the
     # import share plus the local producer price times the domestic source share (1 - ImpShare)
+    # For aglu.IWM_TRADED_COMM (e.g., FodderHerb), single world price won't be affected
     L202.ag_consP_R_C_75USDkg <- L1321.ag_prP_R_C_75USDkg %>%
       rename(PrP = value) %>%
       left_join_error_no_match(L202.ag_ImpShare_Mt_R_C_Y, by = c("GCAM_region_ID", "GCAM_commodity")) %>%
@@ -373,19 +371,22 @@ module_aglu_L202.an_input <- function(command, ...) {
                              PrP * (1 - ImpShare) + tradedP * ImpShare)) %>%
       select(GCAM_region_ID, GCAM_commodity, value)
 
-    L202.prP_R_C_75USDkg <- bind_rows(L202.ag_consP_R_C_75USDkg, L1321.an_prP_R_C_75USDkg) %>%
+    # Remove meat prices here since meat is not used as feed. And even if it does, regional prices should be used!
+    # This will need to be updated if meat outputs are included in the feed.
+    L202.prP_R_C_75USDkg <- L202.ag_consP_R_C_75USDkg %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
       select(region, GCAM_commodity, price = value)
     L202.rsrcP_R_C_75USDkg <- filter(A_agRsrcCurves, grade == "grade 2") %>%
       select(GCAM_commodity = sub.renewable.resource, calPrice = extractioncost)
 
-    L202.ag_Feed_Prices <- L132.ag_an_For_Prices %>%
-      bind_rows(L202.rsrcP_R_C_75USDkg) %>%
-      write_to_all_regions(c("region", "GCAM_commodity", "calPrice"), GCAM_region_names) %>%
-      rename(default_price = calPrice) %>%
-      left_join(L202.prP_R_C_75USDkg, by = c("region", "GCAM_commodity")) %>%
-      mutate(price = if_else(is.na(price), default_price, price)) %>%
-      select(region, GCAM_commodity, price)
+
+    # The new calculation is more consistent as the missing Taiwan prices were filled in earlier in LB1321
+    # This is important as they are need for calculating world/trade prices and thus consumer prices
+    # Also L132 is no longer needed here
+    L202.ag_Feed_Prices <- L202.prP_R_C_75USDkg %>%
+      bind_rows(L202.rsrcP_R_C_75USDkg%>% rename(price = calPrice) %>%
+                  write_to_all_regions(c("region", "GCAM_commodity", "price"), GCAM_region_names))
+
 
     L202.ag_Feed_P_share_R_C %>%
       # not all stub.technology values are present as commodities in the price data; DDGS and feedcakes return NA and are dropped
@@ -424,7 +425,7 @@ module_aglu_L202.an_input <- function(command, ...) {
                                by = c("GCAM_region_ID", "GCAM_commodity", "system", "feed", "year")) %>%
       left_join_error_no_match(L202.ag_FeedCost_USDkg_R_F, by = c("region", "feed" = "supplysector")) %>%
       rename(FeedPrice_USDkg = price) %>%
-      left_join(L1321.an_prP_R_C_75USDkg, by = c("GCAM_region_ID", "GCAM_commodity")) %>%
+      left_join(L1321.an_prP_R_C_75USDkg, by = c("GCAM_region_ID", "GCAM_commodity", "region")) %>%
       # gpk 2020-08-05 We don't have animal commodity price data for Taiwan here. Set that to China's data, and for any
       # other regions that may have missing data, use the median values computed above as defaults
       left_join_error_no_match(L202.ChinaAnPrices, by = "GCAM_commodity") %>%
@@ -464,7 +465,8 @@ module_aglu_L202.an_input <- function(command, ...) {
     # Also, remove DDGS and feedcake subsectors and technologies in regions where these commodities are not available
     # First need to figure out what the names of these subsectors are, and which regions to exclude
     A_regions %>%
-      filter(ethanol != "corn ethanol", paste(biomassOil_tech, biodiesel) != "OilCrop biodiesel") %>%
+      filter(ethanol != "corn ethanol",
+             !paste(biomassOil_tech, biodiesel) %in% c("OilCrop biodiesel", "Soybean biodiesel" )) %>%
       select(-region) %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
       select(region) ->
@@ -537,7 +539,7 @@ module_aglu_L202.an_input <- function(command, ...) {
       add_units("Mt/yr") %>%
       add_comments("Computed as the maximum of all base periods, for each region and resource") %>%
       add_legacy_name("L202.maxSubResource") %>%
-      add_precursors("L109.an_ALL_Mt_R_C_Y", "L108.ag_Feed_Mt_R_C_Y", "aglu/A_agRsrcCurves", "common/GCAM_region_names") ->
+      add_precursors("L108.ag_Feed_Mt_R_C_Y", "aglu/A_agRsrcCurves", "common/GCAM_region_names") ->
       L202.maxSubResource
 
     L202.RenewRsrcCurves %>%
@@ -697,8 +699,8 @@ module_aglu_L202.an_input <- function(command, ...) {
       add_comments("This is the non-feed cost; i.e., all costs of producing animal commodities except for the feed.") %>%
       add_legacy_name("L202.StubTechCost_an") %>%
       same_precursors_as(L202.StubTechCoef_an) %>%
-      add_precursors("L132.ag_an_For_Prices", "L1321.ag_prP_R_C_75USDkg", "L1321.an_prP_R_C_75USDkg",
-                     "L107.an_Feed_Mt_R_C_Sys_Fd_Y", "L1091.GrossTrade_Mt_R_C_Y", "L109.ag_ALL_Mt_R_C_Y") ->
+      add_precursors("L1321.ag_prP_R_C_75USDkg", "L1321.an_prP_R_C_75USDkg",
+                     "L107.an_Feed_Mt_R_C_Sys_Fd_Y", "L109.ag_ALL_Mt_R_C_Y") ->
       L202.StubTechCost_an
 
     # Return also the consumer prices, to be made available elsewhere
@@ -707,7 +709,7 @@ module_aglu_L202.an_input <- function(command, ...) {
       add_units("1975$/kg") %>%
       add_comments("Computed from weighted average of domestically sourced crops (which use producer prices) and imports") %>%
       add_comments("Imported crop prices are computed from weighted average of producer prices of exporting countries") %>%
-      add_precursors("L1321.ag_prP_R_C_75USDkg", "L109.ag_ALL_Mt_R_C_Y", "L1091.GrossTrade_Mt_R_C_Y") ->
+      add_precursors("L1321.ag_prP_R_C_75USDkg", "L109.ag_ALL_Mt_R_C_Y") ->
       L202.ag_consP_R_C_75USDkg
 
 

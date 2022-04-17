@@ -59,9 +59,10 @@ module_water_L133.water_demand_livestock <- function(command, ...) {
     # remove dairy animals.
     L100.FAO_an_Dairy_Stocks %>%
       filter(year == 2000) %>%
-      select(iso, item, value, year) %>%
-      left_join_error_no_match(FAO_an_items_Stocks %>% select(item, dairy.to.total),
-                               by = "item") %>%
+      select(iso, item,item_code, value, year) %>%
+      # item_code is used
+      left_join_error_no_match(FAO_an_items_Stocks %>% select(item_code, dairy.to.total),
+                               by = "item_code") %>%
       select(iso, item = dairy.to.total, dairy.adj = value, year) ->
       L133.dairy_an_adj
 
@@ -84,9 +85,9 @@ module_water_L133.water_demand_livestock <- function(command, ...) {
     # into a single tibble. Subsest for the year 2000 since that is the year the water use
     # coefficients are from.
     L133.FAO_an_heads %>%
-      select(iso, item, year, value) %>%
+      select(iso, item, item_code, year, value) %>%
       bind_rows(L100.FAO_an_Dairy_Stocks %>%
-                  select(iso, item, year, value)) %>%
+                  select(iso, item, item_code, year, value)) %>%
       filter(year == 2000) ->
       L133.FAO_an_heads
 
@@ -98,7 +99,7 @@ module_water_L133.water_demand_livestock <- function(command, ...) {
     L133.FAO_an_heads %>%
       # A 1:1 match is not expected and we do not want NAs introduced to the data frame so
       # use inner join here.
-      inner_join(FAO_an_items_Stocks, by = "item") %>%
+      inner_join(FAO_an_items_Stocks %>% select(item_code, Animal, GCAM_commodity), by = "item_code") %>%
       # A 1:1 match is not expected and we do not want NAs introduced to the data frame so
       # use inner join here.
       inner_join(LivestockWaterFootprint_MH2010, by = "Animal") %>%

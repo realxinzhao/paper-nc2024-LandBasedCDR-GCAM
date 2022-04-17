@@ -12,9 +12,10 @@
 #' original data system was \code{batch_ag_cost_IRR_MGMT_xml.R} (aglu XML).
 module_aglu_batch_ag_cost_IRR_MGMT_xml <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
-    return(c("L2052.AgCost_ag_irr_mgmt",
-              "L2052.AgCost_bio_irr_mgmt",
-              "L2052.AgCost_For"))
+    return(c("L2062.AgCost_ag_irr_mgmt_adj",
+             "L2062.AgCost_bio_irr_mgmt_adj",
+             # Note that L2052.Agcost ag and bio files are replaced by L2062 ones as fertilizer costs were adjusted
+             "L2052.AgCost_For"))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c(XML = "ag_cost_IRR_MGMT.xml"))
   } else if(command == driver.MAKE) {
@@ -22,18 +23,18 @@ module_aglu_batch_ag_cost_IRR_MGMT_xml <- function(command, ...) {
     all_data <- list(...)[[1]]
 
     # Load required inputs
-    L2052.AgCost_ag_irr_mgmt <- get_data(all_data, "L2052.AgCost_ag_irr_mgmt")
-    L2052.AgCost_bio_irr_mgmt <- get_data(all_data, "L2052.AgCost_bio_irr_mgmt")
+    L2062.AgCost_ag_irr_mgmt_adj <- get_data(all_data, "L2062.AgCost_ag_irr_mgmt_adj")
+    L2062.AgCost_bio_irr_mgmt_adj <- get_data(all_data, "L2062.AgCost_bio_irr_mgmt_adj")
     L2052.AgCost_For <- get_data(all_data, "L2052.AgCost_For")
 
     # ===================================================
 
     # Produce outputs
     create_xml("ag_cost_IRR_MGMT.xml") %>%
-      add_xml_data(L2052.AgCost_ag_irr_mgmt, "AgCost") %>%
-      add_xml_data(L2052.AgCost_bio_irr_mgmt, "AgCost") %>%
+      add_xml_data(L2062.AgCost_ag_irr_mgmt_adj, "AgCost") %>%
+      add_xml_data(L2062.AgCost_bio_irr_mgmt_adj, "AgCost") %>%
       add_xml_data(L2052.AgCost_For, "AgCost") %>%
-      add_precursors("L2052.AgCost_ag_irr_mgmt", "L2052.AgCost_bio_irr_mgmt", "L2052.AgCost_For") ->
+      add_precursors("L2062.AgCost_ag_irr_mgmt_adj", "L2062.AgCost_bio_irr_mgmt_adj", "L2052.AgCost_For") ->
       ag_cost_IRR_MGMT.xml
 
     return_data(ag_cost_IRR_MGMT.xml)

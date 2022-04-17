@@ -52,7 +52,7 @@ module_aglu_LB165.ag_water_R_C_Y_GLU_irr <- function(command, ...) {
       MH2014_proxy <- GLU <- year <- IrrWithd_km3 <- NULL
     GreenRfd_m3kg <- GCAM_region_ID <- GCAM_commodity <- BlueIrr_thousm3 <-
       TotIrr_m3kg <- application.eff <- management.eff <- irrHA <-
-      field.eff <- conveyance.eff <- NULL
+      field.eff <- conveyance.eff <- GCAM_subsector <- NULL
 
     all_data <- list(...)[[1]]
 
@@ -96,14 +96,14 @@ module_aglu_LB165.ag_water_R_C_Y_GLU_irr <- function(command, ...) {
     # Initial data cleaning (original lines 55-57)
     L100.Water_footprint_m3 %>%
       rename(MH_crop = GTAP_crop) %>%
-      left_join_error_no_match(select(FAO_ag_items_PRODSTAT, MH_crop, GTAP_crop), by = "MH_crop") ->
+      left_join(select(FAO_ag_items_PRODSTAT, MH_crop, GTAP_crop), by = "MH_crop") ->
       L165.Water_footprint_m3
 
     # Re-cast nation-level data so that blue and green are represented as data columns (original lines 59-64)
     Mekonnen_Hoekstra_Rep47_A2 %>%
-      gather(iso, coef_m3t, -FAO_crop, -water_type) %>%
+      gather(iso, coef_m3t, -FAO_crop_item, -item_code, -water_type) %>%
       mutate(coef_m3kg = coef_m3t / CONV_T_KG) %>%
-      select(iso, FAO_crop, water_type, coef_m3kg) %>%
+      select(iso, FAO_crop_item, item_code, water_type, coef_m3kg) %>%
       # Set all missing values to zero -- this may be re-visited at another point
       # We may want to substitute default values from the MH2011 table
 
@@ -153,10 +153,11 @@ module_aglu_LB165.ag_water_R_C_Y_GLU_irr <- function(command, ...) {
     # estimates of crop production by region, and share of irrigated production by region.
     CTRY_GLU_MAX_ADDER <- 2
     L165.Mekonnen_Hoekstra_Rep47_A2 %>%
-      group_by(FAO_crop) %>%
+      group_by(FAO_crop_item, item_code) %>%
       summarise(Blue = max(Blue + CTRY_GLU_MAX_ADDER),
                 Green = max(Green + CTRY_GLU_MAX_ADDER)) %>%
-      left_join(select(FAO_ag_items_PRODSTAT, item, MH_crop), by = c("FAO_crop" = "item")) ->
+      ungroup() %>%
+      left_join(select(FAO_ag_items_PRODSTAT, item_code, MH_crop), by = c("item_code")) ->
       L165.MaxWaterCoefs_m3kg
 
     # Apply the cap computed above: change L165.ag_Water_ctry_MHcrop_GLU$coef_m3kg to be the minimum
@@ -164,9 +165,10 @@ module_aglu_LB165.ag_water_R_C_Y_GLU_irr <- function(command, ...) {
     L165.MaxWaterCoefs_m3kg %>%
       gather(water_type, value_other, Blue, Green) %>%
       mutate(water_type = tolower(water_type)) %>%
-      right_join(L165.ag_Water_ctry_MHcrop_GLU, by = c("MH_crop", "water_type")) %>%
+      right_join(L165.ag_Water_ctry_MHcrop_GLU,
+                 by = c("MH_crop", "water_type")) %>%
       mutate(coef_m3kg = pmin(coef_m3kg, value_other)) %>%
-      select(-value_other, -FAO_crop) ->
+      select(-value_other, -FAO_crop_item, -item_code) ->
       L165.ag_Water_ctry_MHcrop_GLU
 
     # Work through calculation sequence to determine blue and green water coefficients for irrigated
@@ -251,7 +253,8 @@ module_aglu_LB165.ag_water_R_C_Y_GLU_irr <- function(command, ...) {
       # combine with the non-substituted crops
       bind_rows(filter(L165.ag_Water_ctry_MHcropX, ! FAO_crop %in% crops_to_substitute)) %>%
       # match in the water contents
-      left_join_keep_first_only(L165.Mekonnen_Hoekstra_Rep47_A2, by = c("iso", "FAO_crop")) %>%
+      left_join_keep_first_only(L165.Mekonnen_Hoekstra_Rep47_A2 %>% rename(FAO_crop = FAO_crop_item),
+                                by = c("iso", "FAO_crop")) %>%
       rename(blue_m3kg = Blue, green_m3kg = Green) %>%
       # drop the crops that aren't assigned to anything, which will return missing values here
       na.omit() ->
@@ -324,7 +327,7 @@ module_aglu_LB165.ag_water_R_C_Y_GLU_irr <- function(command, ...) {
              GreenRfd_thousm3 = GreenRfd_m3kg * rfdProd_t) %>%
       # match in GCAM regions and commodities for aggregation
       left_join_error_no_match(select(iso_GCAM_regID, iso, GCAM_region_ID), by = "iso") %>%
-      left_join_keep_first_only(select(FAO_ag_items_PRODSTAT, GTAP_crop, GCAM_commodity), by = "GTAP_crop") ->
+      left_join_keep_first_only(select(FAO_ag_items_PRODSTAT, GTAP_crop, GCAM_commodity, GCAM_subsector), by = "GTAP_crop") ->
       L165.ag_Water_ctry_crop_GLU
 
     # Original lines 243-265
@@ -348,7 +351,7 @@ module_aglu_LB165.ag_water_R_C_Y_GLU_irr <- function(command, ...) {
 
       # at this point, the crops are ready for aggregation by GCAM region and commodity
       filter(!is.na(GCAM_commodity)) %>%   # to replicate `aggregate` behavior
-      group_by(GCAM_region_ID, GCAM_commodity, GLU) %>%
+      group_by(GCAM_region_ID, GCAM_commodity, GCAM_subsector, GLU) %>%
       summarise_at(vars(irrProd_t, rfdProd_t, BlueIrr_thousm3, GreenIrr_thousm3, GreenRfd_thousm3), sum) %>%
       ungroup %>%
       mutate(BlueIrr_m3kg = BlueIrr_thousm3 / irrProd_t,
@@ -361,9 +364,9 @@ module_aglu_LB165.ag_water_R_C_Y_GLU_irr <- function(command, ...) {
     L165.ag_Water_R_C_GLU[is.na(L165.ag_Water_R_C_GLU)] <- 0
 
     # Create the final tables to be written out (original lines 267-270)
-    L165.BlueIrr_m3kg_R_C_GLU <- select(L165.ag_Water_R_C_GLU, GCAM_region_ID, GCAM_commodity, GLU, BlueIrr_m3kg)
-    L165.TotIrr_m3kg_R_C_GLU <- select(L165.ag_Water_R_C_GLU, GCAM_region_ID, GCAM_commodity, GLU, TotIrr_m3kg)
-    L165.GreenRfd_m3kg_R_C_GLU <- select(L165.ag_Water_R_C_GLU, GCAM_region_ID, GCAM_commodity, GLU, GreenRfd_m3kg)
+    L165.BlueIrr_m3kg_R_C_GLU <- select(L165.ag_Water_R_C_GLU, GCAM_region_ID, GCAM_commodity, GCAM_subsector, GLU, BlueIrr_m3kg)
+    L165.TotIrr_m3kg_R_C_GLU <- select(L165.ag_Water_R_C_GLU, GCAM_region_ID, GCAM_commodity, GCAM_subsector, GLU, TotIrr_m3kg)
+    L165.GreenRfd_m3kg_R_C_GLU <- select(L165.ag_Water_R_C_GLU, GCAM_region_ID, GCAM_commodity, GCAM_subsector, GLU, GreenRfd_m3kg)
 
     # Original lines 272-290
     # Irrigation Efficiency: Compile country-level data to GCAM regions, weighted by total irrigated harvested area
@@ -390,13 +393,13 @@ module_aglu_LB165.ag_water_R_C_Y_GLU_irr <- function(command, ...) {
     # minor region/glu/crop observations
     L165.IrrWithd_km3_R_C_Y_GLU <- L161.ag_irrProd_Mt_R_C_Y_GLU %>%
       left_join_error_no_match(L165.BlueIrr_m3kg_R_C_GLU,
-                               by = c("GCAM_region_ID", "GCAM_commodity", "GLU"),
+                               by = c("GCAM_region_ID", "GCAM_commodity", "GCAM_subsector", "GLU"),
                                ignore_columns = "BlueIrr_m3kg") %>%
       left_join_error_no_match(select(L165.ag_IrrEff_R, GCAM_region_ID, field.eff),
                                by = "GCAM_region_ID") %>%
       mutate(BlueIrr_m3kg = if_else(is.na(BlueIrr_m3kg), 0, BlueIrr_m3kg),
              IrrWithd_km3 = value * BlueIrr_m3kg / field.eff) %>%
-      select(GCAM_region_ID, GCAM_commodity, GLU, year, IrrWithd_km3)
+      select(GCAM_region_ID, GCAM_commodity, GCAM_subsector, GLU, year, IrrWithd_km3)
 
     # aggregate by GCAM region and year
     L165.IrrWithd_km3_R_Y <- group_by(L165.IrrWithd_km3_R_C_Y_GLU, GCAM_region_ID, year) %>%

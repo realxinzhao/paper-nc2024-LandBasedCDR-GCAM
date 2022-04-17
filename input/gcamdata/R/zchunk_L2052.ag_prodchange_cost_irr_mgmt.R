@@ -26,7 +26,7 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
              "L162.ag_YieldRate_R_C_Y_GLU_irr",
              "L162.bio_YieldRate_R_Y_GLU_irr",
              "L164.ag_Cost_75USDkg_C",
-             "L132.ag_an_For_Prices",
+             "L1321.ag_prP_R_C_75USDkg",
              "L2012.AgSupplySector",
              "L201.AgYield_bio_grass",
              "L201.AgYield_bio_tree",
@@ -49,7 +49,7 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
       MGMT <- AgSupplySector <- AgSupplySubsector <- AgProductionTechnology <-
       AgProdChange <- nonLandVariableCost <- high_reg <- low_reg <- region <-
       GCAM_region_ID <- year <- value <- GCAM_commodity <- Cost_75USDkg <-
-      Irr_Rfd <- scenario <- calPrice <- cost_PrP_ratio <- . <- NULL  # silence package check notes
+      Irr_Rfd <- scenario <- calPrice <- cost_PrP_ratio <- . <- GCAM_subsector <- NULL  # silence package check notes
 
     # Load required inputs
     GCAM_region_names <- get_data(all_data, "common/GCAM_region_names", strip_attributes = TRUE)
@@ -60,7 +60,7 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
     L162.ag_YieldRate_R_C_Y_GLU_irr <- get_data(all_data, "L162.ag_YieldRate_R_C_Y_GLU_irr", strip_attributes = TRUE)
     L162.bio_YieldRate_R_Y_GLU_irr <- get_data(all_data, "L162.bio_YieldRate_R_Y_GLU_irr", strip_attributes = TRUE)
     L164.ag_Cost_75USDkg_C <- get_data(all_data, "L164.ag_Cost_75USDkg_C", strip_attributes = TRUE)
-    L132.ag_an_For_Prices <- get_data(all_data, "L132.ag_an_For_Prices", strip_attributes = TRUE)
+    L1321.ag_prP_R_C_75USDkg <- get_data(all_data, "L1321.ag_prP_R_C_75USDkg", strip_attributes = TRUE)
     L2012.AgSupplySector <- get_data(all_data, "L2012.AgSupplySector", strip_attributes = TRUE)
     L201.AgYield_bio_grass <- get_data(all_data, "L201.AgYield_bio_grass", strip_attributes = TRUE)
     L201.AgYield_bio_tree <- get_data(all_data, "L201.AgYield_bio_tree", strip_attributes = TRUE)
@@ -78,7 +78,7 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
     L161.ag_irrProd_Mt_R_C_Y_GLU %>%
       mutate(IRR_RFD = "IRR") %>%
       bind_rows(mutate(L161.ag_rfdProd_Mt_R_C_Y_GLU, IRR_RFD = "RFD")) %>%
-      select(GCAM_region_ID, GCAM_commodity, GLU, IRR_RFD) %>%
+      select(GCAM_region_ID, GCAM_commodity, GCAM_subsector, GLU, IRR_RFD) %>%
       unique() %>%
       # Map in costs data, same level for irrigated and rainfed
       left_join_error_no_match(L164.ag_Cost_75USDkg_C, by = "GCAM_commodity") %>%
@@ -89,8 +89,9 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
       left_join_error_no_match(basin_to_country_mapping[c("GLU_code", "GLU_name")], by = c("GLU" = "GLU_code")) %>%
       # Add sector, subsector, technology names
       mutate(AgSupplySector = GCAM_commodity,
-             AgSupplySubsector = paste(GCAM_commodity, GLU_name, sep = "_"),
-             AgProductionTechnology = paste(GCAM_commodity, GLU_name, IRR_RFD, MGMT, sep = "_")) %>%
+             AgSupplySubsector = paste(GCAM_subsector, GLU_name, sep = aglu.CROP_GLU_DELIMITER),
+             AgProductionTechnology = paste(paste(AgSupplySubsector, IRR_RFD, sep = aglu.IRR_DELIMITER),
+                                            MGMT, sep = aglu.MGMT_DELIMITER)) %>%
       # Copy costs to all model years
       repeat_add_columns(tibble(year = MODEL_YEARS)) %>%
       select(names_AgCost) ->
@@ -108,12 +109,16 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
     # be grown in Puerto Rico, and (b) have lower producer prices in Puerto Rico than in the USA.
 
     # Specifically, the method applies the cost:price ratio of each crop in the USA to each crop in all regions
-    L132.ag_an_For_Prices %>% filter(GCAM_commodity %in% L164.ag_Cost_75USDkg_C$GCAM_commodity) %>%
-      mutate(region = gcam.USA_REGION) %>%
-      select(region, GCAM_commodity, calPrice) %>%
+    # L132.ag_an_For_Prices %>% filter(GCAM_commodity %in% L164.ag_Cost_75USDkg_C$GCAM_commodity) %>% mutate(region = gcam.USA_REGION)
+    # L132.ag_an_For_Prices is replaced with L1321.ag_prP_R_C_75USDkg for consistency
+    L1321.ag_prP_R_C_75USDkg %>%
+      filter(region == gcam.USA_REGION) %>%
+      filter(GCAM_commodity %in% L164.ag_Cost_75USDkg_C$GCAM_commodity) %>%
+      select(region, GCAM_commodity, calPrice = value) %>%
       left_join_error_no_match(L164.ag_Cost_75USDkg_C, by = "GCAM_commodity") %>%
       mutate(cost_PrP_ratio = Cost_75USDkg / calPrice) %>%
-      select(AgSupplySector = GCAM_commodity, cost_PrP_ratio)->L2052.AgCostRatio_USA
+      select(AgSupplySector = GCAM_commodity, cost_PrP_ratio) ->
+        L2052.AgCostRatio_USA
 
     L2052.AgCost_ag_irr_mgmt <- left_join_error_no_match(L2052.AgCost_ag_irr_mgmt, L2052.AgCostRatio_USA,
                                      by = "AgSupplySector") %>%
@@ -153,15 +158,13 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
       left_join_error_no_match(basin_to_country_mapping[c("GLU_code", "GLU_name")], by = c("GLU" = "GLU_code")) %>%
       # Add sector, subsector, technology names
       mutate(AgSupplySector = GCAM_commodity,
-             AgSupplySubsector = paste(GCAM_commodity, GLU_name, sep = "_"),
-             AgProductionTechnology = paste(GCAM_commodity, GLU_name, sep = "_")) %>%
-      left_join(L132.ag_an_For_Prices, by = "GCAM_commodity") %>%
-      left_join(L1321.expP_R_F_75USDm3, by = c("GCAM_region_ID", "GCAM_commodity")) %>%
-                  mutate(nonLandVariableCost = if_else(is.na(value),
-                                                       calPrice * aglu.FOR_COST_SHARE,
-                                                       value * aglu.FOR_COST_SHARE) ) %>%
+             AgSupplySubsector = paste(GCAM_commodity, GLU_name, sep = aglu.CROP_GLU_DELIMITER),
+             AgProductionTechnology = AgSupplySubsector) %>%
+      left_join(L1321.expP_R_F_75USDm3, by = c("GCAM_region_ID", "GCAM_commodity", "region")) %>%
+                  mutate(nonLandVariableCost = value * aglu.FOR_COST_SHARE) %>%
       select(names_AgCost) ->
       L2052.AgCost_For
+
     # Future agricultural productivity changes
     # Specify reference scenario agricultural productivity change for crops (not incl biomass)
     L162.ag_YieldRate_R_C_Y_GLU_irr %>%
@@ -178,8 +181,9 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
       left_join_error_no_match(basin_to_country_mapping[c("GLU_code", "GLU_name")], by = c("GLU" = "GLU_code")) %>%
       # Add sector, subsector, technology names
       mutate(AgSupplySector = GCAM_commodity,
-             AgSupplySubsector = paste(GCAM_commodity, GLU_name, sep = "_"),
-             AgProductionTechnology = paste(GCAM_commodity, GLU_name, Irr_Rfd, MGMT, sep = "_")) %>%
+             AgSupplySubsector = paste(GCAM_subsector, GLU_name, sep = aglu.CROP_GLU_DELIMITER),
+             AgProductionTechnology = paste(paste(AgSupplySubsector, Irr_Rfd, sep = aglu.IRR_DELIMITER),
+                                            MGMT, sep = aglu.MGMT_DELIMITER)) %>%
       select(names_AgProdChange) ->
       L2052.AgProdChange_ag_irr_ref
 
@@ -201,7 +205,7 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
       # Copy to both irrigated and rainfed technologies
       repeat_add_columns(tibble(IRR_RFD = c("IRR", "RFD"))) %>%
       # Separate the AgProductionTechnology variable to get GLU names for matching in the yield change rates
-      separate(AgProductionTechnology, c("biomass", "GLU_name"), sep = "_") %>%
+      separate(AgProductionTechnology, c("biomass", "GLU_name"), sep = aglu.CROP_GLU_DELIMITER) %>%
       # Map in yield change rates, the same values for bioenergy crops are applied equally to grass and tree crops.
       left_join(L2051.AgProdChange_bio_irr_ref[c("region", "GLU_name", "Irr_Rfd", "year", "AgProdChange")],
                 by = c("region", "GLU_name", "IRR_RFD" = "Irr_Rfd", "year")) %>%
@@ -212,7 +216,8 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
       # Copy coefficients to high and low management levels
       repeat_add_columns(tibble(MGMT = c("hi", "lo"))) %>%
       # Revise technology names to add all technologies
-      mutate(AgProductionTechnology = paste(AgSupplySubsector, IRR_RFD, MGMT, sep = "_")) %>%
+      mutate(AgProductionTechnology = paste(paste(AgSupplySubsector, IRR_RFD, sep = aglu.CROP_GLU_DELIMITER),
+                                            MGMT, sep = aglu.MGMT_DELIMITER)) %>%
       select(names_AgProdChange) ->
       L2052.AgProdChange_bio_irr_ref
 
@@ -272,7 +277,7 @@ module_aglu_L2052.ag_prodchange_cost_irr_mgmt <- function(command, ...) {
                      "L161.ag_irrProd_Mt_R_C_Y_GLU",
                      "L161.ag_rfdProd_Mt_R_C_Y_GLU",
                      "L164.ag_Cost_75USDkg_C",
-                     "L132.ag_an_For_Prices",
+                     "L1321.ag_prP_R_C_75USDkg",
                      "L2012.AgSupplySector") ->
       L2052.AgCost_ag_irr_mgmt
 

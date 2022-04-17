@@ -3176,6 +3176,11 @@ element input {
                         <rewrite from="RockIceDesert" to="rock and desert"/>
                         <rewrite from="RootTuber" to="crops"/>
                         <rewrite from="Corn" to="crops"/>
+                        <rewrite from="Fruits" to="crops"/>
+                        <rewrite from="Legumes" to="crops"/>
+                        <rewrite from="NutsSeeds" to="crops"/>
+                        <rewrite from="Soybean" to="crops"/>
+                        <rewrite from="Vegetables" to="crops"/>
                         <rewrite from="OilCrop" to="crops"/>
                         <rewrite from="ProtectedShrubland" to="shrubs"/>
                         <rewrite from="SugarCrop" to="crops"/>
@@ -3641,20 +3646,20 @@ element input {
             <supplyDemandQuery title="food consumption by type (specific)">
                 <axis1 name="technology">technology</axis1>
                 <axis2 name="Year">physical-output[@vintage]</axis2>
-                <xPath buildList="true" dataName="output" group="false" sumAll="false">*[@type='sector' and (@name='FoodDemand_Staples' or @name='FoodDemand_NonStaples')]/
-            *[@type='subsector']/*[@type='technology']/
-            *[@type='output']/physical-output/node()</xPath>
+                <xPath buildList="true" dataName="output" group="false" sumAll="false">*[@type='sector' (:collapse:) and (@name='FoodDemand_Staples' or @name='FoodDemand_NonStaples')]//
+            *[@type='subsector']//*[@type='technology']/
+            *[@type='output' (:collapse:)]/physical-output/node()</xPath>
                 <comments/>
             </supplyDemandQuery>
             <supplyDemandQuery title="demand balances by crop commodity">
                 <axis1 name="sector">sector</axis1>
                 <axis2 name="Year">demand-physical[@vintage]</axis2>
                 <xPath buildList="true" dataName="input" group="false" sumAll="false">*[@type='sector']//*[@type='input' and
-            (@name='regional corn' or @name='regional fibercrop'
-               or @name='regional misccrop' or @name='regional oilcrop' or @name='regional othergrain'
+            (@name='regional corn' or @name='regional fibercrop' or @name='regional fruits' or @name='regional legumes'
+               or @name='regional misccrop' or @name='regional nuts_seeds' or @name='regional oilcrop' or @name='regional othergrain'
                or @name='regional palmfruit' or @name='regional rice' or @name='regional root_tuber'
-               or @name='regional sugarcrop' or @name='regional wheat' or @name='FodderGrass' or @name='FodderHerb'
-               or @name='Forest' or @name='Pasture')]/
+               or @name='regional soybean' or @name='regional sugarcrop' or @name='regional vegetables' or @name='regional wheat'
+               or @name='FodderGrass' or @name='FodderHerb' or @name='Forest' or @name='Pasture')]/
                demand-physical/node()</xPath>
                 <comments/>
             </supplyDemandQuery>

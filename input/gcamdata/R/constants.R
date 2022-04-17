@@ -48,9 +48,10 @@ GCAM_REGION_ID      <- "GCAM_region_ID"
 # The default market price GCAM will use to start solving from if it has no other info
 # If users do not have an estimate for a starting price this is a safe one to set
 gcam.DEFAULT_PRICE <- 1.0
-gcam.DEFAULT_SUBSECTOR_LOGIT <- -3
-gcam.DEFAULT_TECH_LOGIT      <- -6
-
+gcam.DEFAULT_SUBSECTOR_LOGIT  <- -3
+gcam.DEFAULT_TECH_LOGIT       <- -6
+gcam.REGION_NUMBER            <- 32    # Use for assertion in data processing to ensure all region has data
+gcam.REAL_PRICE_BASE_YEAR     <- 1975  # This is only used in AgLU prices now.
 
 # Driver constants ======================================================================
 
@@ -167,9 +168,14 @@ CONV_FT2_M2 <- 0.0929 # Square feet to square meters
 # AgLU constants ======================================================================
 
 # Time
-aglu.AGLU_HISTORICAL_YEARS  <- 1971:2015
-aglu.BASE_YEAR_IFA          <- 2006      # Base year of International Fertilizer Industry Association (IFA) fertilizer application data KD does this belong here???
-aglu.BIO_START_YEAR         <- 2020
+aglu.MODEL_MEAN_PERIOD_LENGTH <- 5       # AgLU data use a moving average over this period length in LA.100
+aglu.MODEL_PRICE_YEARS      <- 2013:2017 # consistent with aglu.MODEL_SUA_MEAN_PERIODS
+aglu.MODEL_COST_YEARS       <- 2008:2016
+aglu.DEFLATOR_BASE_YEAR     <- 2015      # year used as the basis for computing regional price deflators
+aglu.FALLOW_YEARS           <- 2013:2017 # Years used for calculating the % of fallow land
+aglu.AGLU_HISTORICAL_YEARS  <- 1973:2015
+aglu.BASE_YEAR_IFA          <- 2006      # Base year of International Fertilizer Industry Association (IFA) fertilizer application data
+aglu.BIO_START_YEAR         <- 2025      # Also set in aglu/A_bio_ghost_share
 aglu.CROSIT_HISTORICAL_YEAR <- 2005      # Historical year from the CROSIT data
 aglu.DIET_YEARS             <- seq(max(aglu.AGLU_HISTORICAL_YEARS), 2050, by = 5)
 aglu.FAO_HISTORICAL_YEARS   <- 1961:2015
@@ -177,21 +183,26 @@ aglu.FAO_LDS_YEARS          <- 1998:2002  # Years for which FAO harvested area d
 aglu.GTAP_HISTORICAL_YEAR   <- 2000      # Is the year that the GTAP data is based on.
 aglu.LAND_HISTORY_YEARS     <- c(1700, 1750, 1800, 1850, 1900, 1950, 1975)
 aglu.LAND_COVER_YEARS       <- sort(unique(c(aglu.LAND_HISTORY_YEARS, aglu.AGLU_HISTORICAL_YEARS)))
-aglu.MODEL_COST_YEARS       <- 2008:2016
-aglu.MODEL_PRICE_YEARS      <- 2008:2016
 aglu.PREAGLU_YEARS          <- c(1700, 1750,1800, 1850, 1900, 1950)          # Cropland cover years prior to first aglu historical year to use in climate model component
-aglu.DEFLATOR_BASE_YEAR     <- 2015                                          # year used as the basis for computing regional price deflators
 aglu.SPEC_AG_PROD_YEARS     <- seq(max(aglu.AGLU_HISTORICAL_YEARS), 2050, by = 5) # Specified ag productivity years, KD i think this might need a better comment
 aglu.SSP_DEMAND_YEARS       <- seq(2015, 2100, 5) # food demand in the SSPs is calculated at 5-yr intervals
 aglu.TRADE_CAL_YEARS        <- 2013:2017 # Years used for calculating base year gross trade. Should ideally include the final base year, but note that the trade data starts in 1986.
 aglu.TRADE_FINAL_BASE_YEAR  <- max(MODEL_BASE_YEARS) # The base year to which gross trade volumes are assigned. Should be within the aglu.TRADE_CAL_YEARS and equal to the final model calibration year
-aglu.FALLOW_YEARS           <- 2008:2012 # Years used for calculating the % of fallow land
-aglu.TRADED_CROPS           <- c("Corn", "FiberCrop", "MiscCrop", "OilCrop", "OtherGrain", "PalmFruit", "Rice", "RootTuber", "SugarCrop", "Wheat")
+# aglu.TRADED_* regional market commodities
+aglu.TRADED_CROPS           <- c("Corn", "FiberCrop", "Fruits", "Legumes", "MiscCrop", "NutsSeeds", "OilCrop", "OtherGrain", "OilPalm", "Rice", "RootTuber", "Soybean", "SugarCrop", "Vegetables", "Wheat")
 aglu.TRADED_MEATS           <- c("Beef", "Dairy", "Pork", "Poultry", "SheepGoat")
 aglu.TRADED_FORESTS         <- c("Forest")
+# Integrated world market and non-trade commodities
+aglu.IWM_TRADED_COMM        <- c("FodderHerb", "OtherMeat_Fish") # Integrated World Market (IWM)commodities
+aglu.NONTRADED_COMM         <- c("DDGS and feedcakes", "FodderGrass", "Pasture", "Residue", "Scavenging_Other") # non-traded commodities; "Pasture" is modeled as a crop produced from pasture land.
+
 aglu.LAND_TOLERANCE    <- 0.005
 aglu.MIN_PROFIT_MARGIN <- 0.15  # Unitless and is used to ensure that Agricultural Costs (units 1975USD/kg) don't lead to profits below a minimum profit margin.
 aglu.MAX_FAO_LDS_SCALER <- 5   # Unitless max multiplier in reconciling LDS harvested area with FAO harvested area by country and crop. Useful for preventing bad allocations of N fert in AFG, TWN, several others
+aglu.TREECROP_MATURE_AGE <- 10 # Number of years for vegetation carbon to reach peak, for tree crops
+
+aglu.Min_Share_PastureFeed_in_PastureFodderGrass <- 0.1 # minimum share of pasture in Pasture_FodderGrass for feed uses to avoid negative or zero (not including Japan now); USA has ~30%
+aglu.Zero_Min_PastureFeed_Share_region_ID <- c(19) # GCAM_region_ID of Japan; Japan has zero unmanaged and protected pasture
 
 # GLU (Geographic Land Unit) settings - see module_aglu_LA100.0_LDS_preprocessing
 aglu.GLU <- "GLU"
@@ -244,8 +255,8 @@ aglu.LOW_PROD_GROWTH_MULT <- 0.5 # Multipliers for low ag prod growth scenarios
 aglu.BIO_GRASS_COST_75USD_GJ <- 0.75   # Production costs of biomass (from Patrick Luckow's work)
 aglu.BIO_TREE_COST_75USD_GJ  <- 0.67   # Production costs of biomass (from Patrick Luckow's work)
 aglu.FERT_PRICE              <- 596    # Price of fertilizer, 2010$ per ton NH3
-aglu.FERT_PRICE_YEAR         <- 2010    # Year corresponding to the above price/cost
-aglu.FOR_COST_75USDM3        <- 29.59  # Forestry cost (1975$/GJ)
+aglu.FERT_PRICE_YEAR         <- 2010   # Year corresponding to the above price/cost
+aglu.FOR_COST_75USDM3        <- 29.59  # Forestry cost (1975$/M3); Not used since GCAM5.4
 aglu.FOR_COST_SHARE          <- 0.59   # Non-land forestry cost share (from 2011 GTAP data base)
 
 # Price at which base year bio frac produced is used.
@@ -327,12 +338,21 @@ aglu.WOOD_WATER_CONTENT <- 0.065
 aglu.MIN_VEG_CARBON_DENSITY  <- 0
 aglu.MIN_SOIL_CARBON_DENSITY <- 0
 
+
 # Define top-level (zero) land nest logit exponent and logit type
 aglu.N0_LOGIT_EXP  <- 0
 aglu.N0_LOGIT_TYPE <- NA
 
-# Fraction of land that is protected
-aglu.PROTECT_LAND_FRACT <- 0.9
+
+
+#Set the below constant to TRUE to de-activate the protected areas differentiated by land type and region in GCAM. Setting it to TRUE will use the default protection fraction defined in aglu.PROTECT_DEFAULT
+aglu.PROTECTION_DATA_SOURCE_DEFAULT <- FALSE
+#Un-Protected area status- This constant can be used to make more land types from the protection categories available for expansion.
+# The available options for land types are - Unknown, UnsuitableUnprotected, SuitableUnprotected, SuitableHighProtectionIntact, SuitbaleHighProtectionDeforested, SuitableLow Protection, UnsuitableHighProtection, UnsuitableLowProtection
+aglu.NONPROTECT_LAND_STATUS <- c("SuitableUnprotected","Unknown")
+
+# Default fraction for protected land. This is used if the aglu.PROTECTION_DATA_SOURCE is set to TRUE or if protection data is unavailable.
+aglu.PROTECT_DEFAULT<- 0.9
 
 # Multiplier on the ghost share for irrigated land
 aglu.IRR_GHOST_SHARE_MULT <- 0.25
@@ -348,6 +368,13 @@ aglu.LN1_PROTUNMGD_LOGIT_TYPE <- NA
 # default logit exponent and type for LN5, the competition betweein high and lo management
 aglu.MGMT_LOGIT_EXP  <- 2.5
 aglu.MGMT_LOGIT_TYPE <- "absolute-cost-logit"
+
+# Statistical differences reconciliation: China's Vegetable production estimates are inconsistent between the PRODSTAT
+# ("Production") and SUA ("Commodity Balances"). Because the latter dataset is used for estimating food consumption in
+# GCAM, and because these SUA food consumption estimates are derived from production data that is about 20% higher than
+# PRODSTAT, this discrepancy causes very high negative "non-food" demands in this nation, which are large enough to
+# result in negative non-food demands globally.
+aglu.CHN_VEG_FOOD_MULT <- 0.8
 
 # XML-related constants
 aglu.CROP_GLU_DELIMITER   <- "_"  # delimiter between the crop name and GLU name
@@ -372,6 +399,12 @@ aglu.DIGITS_LAND_VALUE    <- 0
 aglu.DIGITS_MATUREAGE     <- 0
 aglu.DIGITS_RES_ENERGY    <- 4
 aglu.DIGITS_WATER_CONTENT <- 2
+
+
+#Land leaf names used in the data system for different land types
+aglu.PASTURE_NODE_NAMES <- "Pasture"
+aglu.FOREST_NODE_NAMES <- "Forest"
+aglu.GRASSLAND_NODE_NAMES <- "Grassland"
 
 
 # Energy constants ======================================================================
@@ -448,7 +481,7 @@ energy.DIGITS_COST             <- 4
 energy.DIGITS_CURVE_EXPONENT   <- 3
 energy.DIGITS_RESOURCE      <- 2
 energy.DIGITS_EFFICIENCY       <- 3
-energy.DIGITS_FLOORSPACE       <- 3
+energy.DIGITS_FLOORSPACE       <- 6
 energy.DIGITS_GDP_SUPPLY_ELAST <- 3
 energy.DIGITS_HDDCDD           <- 0
 energy.DIGITS_INCELAS_IND      <- 3
@@ -491,6 +524,14 @@ energy.COSTS_LOW_CASE <- "low tech"
 energy.CAPITAL_INPUT <- "capital"
 energy.OM_FIXED_INPUT <- "OM-fixed"
 energy.OM_VAR_INPUT <- "OM-var"
+
+# Constants for the residential sector: Parameters for USA (estimated offline) and unadjusted saturation values:
+obs_UnadjSat<-100
+obs_UnadjSat_USA<-150
+
+land.density.param.usa<-0
+b.param.usa<-3.49026
+income.param.usa<-0.4875
 
 # Socioeconomics constants ======================================================================
 
@@ -677,6 +718,7 @@ emissions.DIGITS_EMISS_COEF    <- 7
 emissions.DIGITS_EMISSIONS     <- 10
 emissions.DIGITS_MACC          <- 3
 emissions.DIGITS_MACC_TC       <- 4 # tech.change rounding
+emissions.DIGITS_GFED          <- 12
 
 # GCAM-USA constants ======================================================================
 

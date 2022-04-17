@@ -49,7 +49,7 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
     Land_Type <- year <- . <- GCAM_region_ID <- GLU <- GCAM_commodity <-
       value <- iso <- countries <- cropland <- fallow <- fallow_frac <- cropped <-
       cropped_frac <- uncropped_frac <- nonharvested_frac <- value.x <-
-      value.y <- Land_Type.y <- Land_Type.x <- NULL # silence package check.
+      value.y <- Land_Type.y <- Land_Type.x <- GCAM_subsector <- NULL # silence package check.
 
     all_data <- list(...)[[1]]
 
@@ -97,8 +97,6 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
     # Take the input historical harvested area table, L101.ag_HA_bm2_R_C_Y_GLU, and sum over GCAM_commodity, so that each
     # region-GLU-year combo has a single value.
     L101.ag_HA_bm2_R_C_Y_GLU %>%
-      # remove GCAM_commodity:
-      select(-GCAM_commodity) %>%
       group_by(GCAM_region_ID, GLU, year) %>%
       # and sum by region-GLU-year:
       summarise(value = sum(value)) %>%
@@ -123,19 +121,18 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
     # joining by iso and countries (or country.codes) instead of simply iso. Alternatively, aggregating to the iso level in each
     # FAO table (L100.FAO_X) BEFORE doing further joins and calculations should also lead to the correct answer.
 
+    # Most (if not all) of what described above has been fixed in earlier steps
     # Take the FAO cropland table, L100.FAO_CL_kha:
     L100.FAO_CL_kha %>%
       # only include data in the right fallow land year range
       filter(year %in% aglu.FALLOW_YEARS) %>%
       # keep only the iso country and the value for each:
-      select(iso, countries, cropland = value, year) %>%
+      select(iso, area_code, cropland = value, year) %>%
       # append in fallow land data in aglu.FALLOW_YEARS from FAO, L100.FAO_fallowland_kha, keeping NA values:
-      left_join(L100.FAO_fallowland_kha, by = c("iso", "countries", "year")) %>%
+      left_join(L100.FAO_fallowland_kha, by = c("iso", "area_code", "year")) %>%
       # rename value to fallow and remove NAs:
       rename(fallow = value) %>%
       na.omit() %>%
-      # add GCAM region information from iso_GCAM_regID
-      mutate(GCAM_region_ID = left_join(., iso_GCAM_regID, by = "iso")[['GCAM_region_ID']]) %>%
       select(GCAM_region_ID, cropland, fallow) %>%
       ungroup() %>%
       # aggregate cropland and fallow values to the GCAM region level:
@@ -160,14 +157,12 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
       # only include data in the right fallow land year range
       filter(year %in% aglu.FALLOW_YEARS) %>%
       # keep only the iso country and the value for each:
-      select(iso, countries, cropland = value, year) %>%
+      select(iso, area_code, cropland = value, year) %>%
       # append in cropped land data in aglu.FALLOW_YEARS from FAO, L100.FAO_harv_CL_kha, keeping NA values:
-      left_join(L100.FAO_harv_CL_kha, by = c("iso", "countries", "year")) %>%
+      left_join(L100.FAO_harv_CL_kha, by = c("iso", "area_code", "year")) %>%
       # rename value to cropped and remove NAs:
       rename(cropped = value) %>%
       na.omit() %>%
-      # add GCAM region information from iso_GCAM_regID
-      mutate(GCAM_region_ID = left_join(., iso_GCAM_regID, by = "iso")[['GCAM_region_ID']]) %>%
       # remove all columns that are not GCAM_region_ID, cropland, and cropped values:
       select(GCAM_region_ID, cropland, cropped) %>%
       ungroup() %>%
@@ -300,9 +295,6 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
     # is used for other calculations below. That is why this is not part of the previous pipeline
     # Take harvested cropland area by region-commodity-glu-year:
     L122.LC_bm2_R_HarvCropLand_C_Y_GLU %>%
-      # remove commodity info since that is what aggregate over:
-      select(-GCAM_commodity) %>%
-      # aggregate:
       group_by(GCAM_region_ID, GLU, Land_Type, year) %>%
       summarise(value = sum(value)) ->
       # store in a table of Harvested cropland by region-glu-year:
@@ -316,7 +308,7 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
     # Take cropland by region-glu-commodity-year:
     L122.LC_bm2_R_HarvCropLand_C_Y_GLU %>%
       # join the production by region-glu-commodity-year information:
-      left_join_error_no_match(L101.ag_Prod_Mt_R_C_Y_GLU, by = c("GCAM_region_ID", "GCAM_commodity", "GLU", "year")) %>%
+      left_join_error_no_match(L101.ag_Prod_Mt_R_C_Y_GLU, by = c("GCAM_region_ID", "GCAM_commodity", "GCAM_subsector", "GLU", "year")) %>%
       # value.x = the cropland area by region-commodity-glu-year from L122.LC_bm2_R_HarvCropLand_C_Y_GLU
       # value.y = production by region-commodity-glu-year from L101.ag_Prod_Mt_R_C_Y_GLU
       # Calculate yield by region-commodity-glu-year as value = value.y/value.x:
@@ -472,7 +464,7 @@ module_aglu_LB122.LC_R_Cropland_Yh_GLU <- function(command, ...) {
       ungroup %>%
       # expand to include history years and fill in those values to be 0:
       tidyr::complete(year = c(aglu.PREAGLU_YEARS, aglu.AGLU_HISTORICAL_YEARS),
-                      nesting(GCAM_region_ID, GCAM_commodity, GLU, Land_Type),
+                      nesting(GCAM_region_ID, GCAM_commodity, GCAM_subsector, GLU, Land_Type),
                       fill = list(value = 0)) ->
       # store in a table of HarvCropland by region-commodity-glu-year, including historical years:
       L122.LC_bm2_R_HarvCropLand_C_Yh_GLU
