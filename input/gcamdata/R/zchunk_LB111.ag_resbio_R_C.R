@@ -81,11 +81,10 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
       add_units("Varied") %>%
       add_comments("Calculate the HarvestIndex, ErosCtrl, ResEnergy, and WaterContent of residue biomass") %>%
       add_comments("These parameters are weighted by production when calculating the average by GCAM region and commodity") %>%
-      add_legacy_name("L111.ag_resbio_R_C") %>%
+      add_legacy_name("L111.ag_resbio_R_C_beforeadjust") %>%
       add_precursors("aglu/FAO/FAO_ag_items_PRODSTAT",
                      "L100.FAO_ag_Prod_t",
-                     "aglu/Various_ag_resbio_data",
-                     "aglu/Various_ag_resbio_data_SI") ->
+                     "aglu/Various_ag_resbio_data") ->
       L111.ag_resbio_R_C_beforeadjust
 
     L111.ag_resbio_R_C %>%
@@ -101,7 +100,8 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
                      "aglu/Various_ag_resbio_data_SI") ->
       L111.ag_resbio_R_C
 
-    return_data(L111.ag_resbio_R_C_beforeadjust, L111.ag_resbio_R_C)
+    return_data(#L111.ag_resbio_R_C_beforeadjust,
+                L111.ag_resbio_R_C)
   } else {
     stop("Unknown command")
   }
