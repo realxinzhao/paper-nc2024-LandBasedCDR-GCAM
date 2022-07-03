@@ -16,6 +16,7 @@ module_energy_batch_en_transformation_xml <- function(command, ...) {
              "L222.SubsectorLogit_en",
              "L222.SubsectorShrwtFllt_en",
              "L222.SubsectorInterp_en",
+             "L222.SubsectorInterpTo_en",
              "L222.StubTech_en",
              "L222.GlobalTechInterp_en",
              "L222.GlobalTechCoef_en",
