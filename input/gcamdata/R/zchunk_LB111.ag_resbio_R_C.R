@@ -69,9 +69,9 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
     # Dry matter loss is accounted for in water content
     L111.ag_resbio_R_C_beforeadjust %>%
       left_join_error_no_match(Various_ag_resbio_data_SI, by = "GCAM_commodity") %>%
-      mutate(ErosCtrl_tHa = max(ErosCtrl_tHa, ErosCtrl_tHa_min),
-             HarvestIndex = max(HarvestIndex, HarvestIndex_min),
-             WaterContent = max(WaterContent, WaterContent_min) * (1 - DryMatterLoss)) %>%
+      mutate(ErosCtrl_tHa = pmax(ErosCtrl_tHa, ErosCtrl_tHa_min),
+             HarvestIndex = pmax(HarvestIndex, HarvestIndex_min),
+             WaterContent = pmax(WaterContent, WaterContent_min) * (1 - DryMatterLoss)) %>%
       select(names(L111.ag_resbio_R_C_beforeadjust)) ->
       L111.ag_resbio_R_C
 
@@ -101,7 +101,7 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
                      "aglu/Various_ag_resbio_data_SI") ->
       L111.ag_resbio_R_C
 
-    return_data(L111.ag_resbio_R_C)
+    return_data(L111.ag_resbio_R_C_beforeadjust, L111.ag_resbio_R_C)
   } else {
     stop("Unknown command")
   }
