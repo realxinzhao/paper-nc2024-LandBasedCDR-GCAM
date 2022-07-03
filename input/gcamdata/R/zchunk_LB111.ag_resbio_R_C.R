@@ -20,7 +20,8 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
     return(c(FILE = "aglu/FAO/FAO_ag_items_PRODSTAT",
              "L100.FAO_ag_Prod_t",
-             FILE = "aglu/Various_ag_resbio_data"))
+             FILE = "aglu/Various_ag_resbio_data",
+             FILE = "aglu/Various_ag_resbio_data_SI"))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L111.ag_resbio_R_C"))
   } else if(command == driver.MAKE) {
@@ -34,6 +35,8 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
     FAO_ag_items_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_items_PRODSTAT")
     L100.FAO_ag_Prod_t <- get_data(all_data, "L100.FAO_ag_Prod_t")
     Various_ag_resbio_data <- get_data(all_data, "aglu/Various_ag_resbio_data")
+    Various_ag_resbio_data_SI <- get_data(all_data, "aglu/Various_ag_resbio_data_SI") %>%
+      select(-Source)
 
     # Compute weighted averages of each parameter (HarvestIndex, ErosionControl, and
     # ResidueEnergyContent) for each crop type in each GCAM region
@@ -59,17 +62,43 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
       ungroup() %>%
       mutate(value = value / prod) %>%
       select(-prod) %>%
-      spread(resbio_params, value) %>%
+      spread(resbio_params, value) ->
+      L111.ag_resbio_R_C_beforeadjust
 
+    # Adjustment made based on add on info ----
+    # Dry matter loss is accounted for in water content
+    L111.ag_resbio_R_C_beforeadjust %>%
+      left_join_error_no_match(Various_ag_resbio_data_SI, by = "GCAM_commodity") %>%
+      mutate(ErosCtrl_tHa = max(ErosCtrl_tHa, ErosCtrl_tHa_min),
+             HarvestIndex = max(HarvestIndex, HarvestIndex_min),
+             WaterContent = max(WaterContent, WaterContent_min) * (1 - DryMatterLoss)) %>%
+      select(names(L111.ag_resbio_R_C_beforeadjust)) ->
+      L111.ag_resbio_R_C
+
+    L111.ag_resbio_R_C_beforeadjust %>%
       # Produce outputs
       add_title("Weighted average residue biomass parameters by GCAM region / commodity") %>%
       add_units("Varied") %>%
-      add_comments("Calculate the HarvestIndex, ErosCtrl, ResEnergy, Root_Shoot, and WaterContent of residue biomass") %>%
+      add_comments("Calculate the HarvestIndex, ErosCtrl, ResEnergy, and WaterContent of residue biomass") %>%
       add_comments("These parameters are weighted by production when calculating the average by GCAM region and commodity") %>%
       add_legacy_name("L111.ag_resbio_R_C") %>%
       add_precursors("aglu/FAO/FAO_ag_items_PRODSTAT",
                      "L100.FAO_ag_Prod_t",
-                     "aglu/Various_ag_resbio_data") ->
+                     "aglu/Various_ag_resbio_data",
+                     "aglu/Various_ag_resbio_data_SI") ->
+      L111.ag_resbio_R_C_beforeadjust
+
+    L111.ag_resbio_R_C %>%
+      # Produce outputs
+      add_title("Weighted average residue biomass parameters by GCAM region / commodity") %>%
+      add_units("Varied") %>%
+      add_comments("Calculate the HarvestIndex, ErosCtrl, ResEnergy, and WaterContent of residue biomass") %>%
+      add_comments("Adjusted bioresidue parameter for GCAM commodity") %>%
+      add_legacy_name("L111.ag_resbio_R_C") %>%
+      add_precursors("aglu/FAO/FAO_ag_items_PRODSTAT",
+                     "L100.FAO_ag_Prod_t",
+                     "aglu/Various_ag_resbio_data",
+                     "aglu/Various_ag_resbio_data_SI") ->
       L111.ag_resbio_R_C
 
     return_data(L111.ag_resbio_R_C)
