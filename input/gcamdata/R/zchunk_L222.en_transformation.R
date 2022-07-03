@@ -32,6 +32,7 @@ module_energy_L222.en_transformation <- function(command, ...) {
              FILE = "energy/A22.subsector_logit",
              FILE = "energy/A22.subsector_shrwt",
              FILE = "energy/A22.subsector_interp",
+             FILE = "energy/A22.subsector_interp_R",
              FILE = "energy/A22.globaltech_coef",
              FILE = "energy/A22.globaltech_cost",
              # Note: Low indicates low tech. Costs are actually higher than core
@@ -86,6 +87,7 @@ module_energy_L222.en_transformation <- function(command, ...) {
     A22.subsector_logit <- get_data(all_data, "energy/A22.subsector_logit", strip_attributes = TRUE)
     A22.subsector_shrwt <- get_data(all_data, "energy/A22.subsector_shrwt", strip_attributes = TRUE)
     A22.subsector_interp <- get_data(all_data, "energy/A22.subsector_interp", strip_attributes = TRUE)
+    A22.subsector_interp_R <- get_data(all_data, "energy/A22.subsector_interp_R", strip_attributes = TRUE)
     A22.globaltech_coef <- get_data(all_data, "energy/A22.globaltech_coef", strip_attributes = TRUE)
     A22.globaltech_cost <- get_data(all_data, "energy/A22.globaltech_cost")
     A22.globaltech_cost_low  <- get_data(all_data, "energy/A22.globaltech_cost_low")
@@ -142,6 +144,11 @@ module_energy_L222.en_transformation <- function(command, ...) {
       filter(!is.na(to.value)) %>%
       write_to_all_regions(c(LEVEL2_DATA_NAMES[["SubsectorInterpTo"]]), GCAM_region_names) ->
       L222.SubsectorInterpTo_en
+
+      L222.SubsectorInterpTo_en %>%
+        anti_join(A22.subsector_interp_R, by = c("region", "supplysector", "subsector")) %>%
+        bind_rows(set_years(A22.subsector_interp_R[, names(L222.SubsectorInterpTo_en)])) ->
+        L222.SubsectorInterpTo_en
     }
 
     # 2c. Technology information
@@ -471,7 +478,7 @@ module_energy_L222.en_transformation <- function(command, ...) {
       add_units("Unitless") %>%
       add_comments("If A22.subsector_interp is altered to interpolated to a to.value instead of a to.year, will contain any resulting interpolation information") %>%
       add_legacy_name("L222.SubsectorInterpTo_en") %>%
-      add_precursors("energy/A22.subsector_interp", "common/GCAM_region_names") ->
+      add_precursors("energy/A22.subsector_interp", "energy/A22.subsector_interp_R", "common/GCAM_region_names") ->
       L222.SubsectorInterpTo_en
   } else {
     missing_data() %>%
