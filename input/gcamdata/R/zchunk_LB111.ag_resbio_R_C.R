@@ -23,7 +23,8 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
              FILE = "aglu/Various_ag_resbio_data",
              FILE = "aglu/Various_ag_resbio_data_SI"))
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L111.ag_resbio_R_C"))
+    return(c("L111.ag_resbio_R_C_beforeadjust",
+             "L111.ag_resbio_R_C"))
   } else if(command == driver.MAKE) {
 
     iso <- item <- year <- value <- resbio_params <- GCAM_region_ID <-
@@ -100,7 +101,7 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
                      "aglu/Various_ag_resbio_data_SI") ->
       L111.ag_resbio_R_C
 
-    return_data(#L111.ag_resbio_R_C_beforeadjust,
+    return_data(L111.ag_resbio_R_C_beforeadjust,
                 L111.ag_resbio_R_C)
   } else {
     stop("Unknown command")
