@@ -146,8 +146,9 @@ module_energy_L222.en_transformation <- function(command, ...) {
       L222.SubsectorInterpTo_en
 
       L222.SubsectorInterpTo_en %>%
+        mutate(to.year = as.numeric(to.year), to.value = as.numeric(to.value)) %>%
         anti_join(A22.subsector_interp_R, by = c("region", "supplysector", "subsector")) %>%
-        bind_rows(set_years(A22.subsector_interp_R[, names(L222.SubsectorInterpTo_en)])) ->
+        bind_rows(A22.subsector_interp_R[, names(L222.SubsectorInterpTo_en)] ) ->
         L222.SubsectorInterpTo_en
     }
 

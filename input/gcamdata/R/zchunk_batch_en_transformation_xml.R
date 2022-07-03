@@ -39,6 +39,7 @@ module_energy_batch_en_transformation_xml <- function(command, ...) {
     L222.SubsectorLogit_en <- get_data(all_data, "L222.SubsectorLogit_en")
     L222.SubsectorShrwtFllt_en <- get_data(all_data, "L222.SubsectorShrwtFllt_en")
     L222.SubsectorInterp_en <- get_data(all_data, "L222.SubsectorInterp_en")
+    L222.SubsectorInterpTo_en <- get_data(all_data, "L222.SubsectorInterpTo_en")
     L222.StubTech_en <- get_data(all_data, "L222.StubTech_en")
     L222.GlobalTechInterp_en <- get_data(all_data, "L222.GlobalTechInterp_en")
     L222.GlobalTechCoef_en <- get_data(all_data, "L222.GlobalTechCoef_en")
@@ -64,6 +65,7 @@ module_energy_batch_en_transformation_xml <- function(command, ...) {
       add_logit_tables_xml(L222.SubsectorLogit_en, "SubsectorLogit") %>%
       add_xml_data(L222.SubsectorShrwtFllt_en, "SubsectorShrwtFllt") %>%
       add_xml_data(L222.SubsectorInterp_en, "SubsectorInterp") %>%
+      add_xml_data(L222.SubsectorInterpTo_en, "SubsectorInterpTo") %>%
       add_xml_data(L222.StubTech_en, "StubTech") %>%
       add_xml_data(L222.GlobalTechInterp_en, "GlobalTechInterp") %>%
       add_xml_data(L222.GlobalTechCoef_en, "GlobalTechCoef") %>%
@@ -80,6 +82,7 @@ module_energy_batch_en_transformation_xml <- function(command, ...) {
                      "L222.SubsectorLogit_en",
                      "L222.SubsectorShrwtFllt_en",
                      "L222.SubsectorInterp_en",
+                     "L222.SubsectorInterpTo_en",
                      "L222.StubTech_en",
                      "L222.GlobalTechInterp_en",
                      "L222.GlobalTechCoef_en",
