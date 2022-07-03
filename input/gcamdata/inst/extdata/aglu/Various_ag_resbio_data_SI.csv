@@ -1,0 +1,26 @@
+# File: Various_ag_resbio_data_SI.csv
+# Title: Various_ag_resbio_data_SI
+# Units: Varied see below
+# Description: 0.3 tperha is added as min for ErosCtrl. Water content min is .13 of gross availability. DML is added based for two crop groups based on INL stover data. DML will be applied to water content as var is not separated.
+# Note that R_S ratio in the original file was not used anywhere. HI should be dry basis since water content is applied in the last step as opposed early HI adjustment in Gregg and Smith 2010.
+# When HI is 0 below the original values computed are used. Otherwise HI_min is binding.
+# Date of last update: 2022-07-03
+# Author: XZ
+# Column types: cnnnnc
+# ----------
+GCAM_commodity,ErosCtrl_tHa_min,HarvestIndex_min,WaterContent_min,DryMatterLoss,Source
+Corn,0.3,0,0.13,0.09,
+FiberCrop,0.3,0,0.13,0.09,https://www.mdpi.com/2073-4395/10/4/555/htm
+Fruits,0.3,0,0.13,0.15,
+Legumes,0.3,0.55,0.13,0.15,https://www.sciencedirect.com/science/article/pii/S1161030100000915
+MiscCrop,0.3,0,0.13,0.15,
+NutsSeeds,0.3,0.6,0.13,0.15,https://pubmed.ncbi.nlm.nih.gov/11756265/ https://www.sciencedirect.com/science/article/pii/S2095311920632531
+OilCrop,0.3,0,0.13,0.09,https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-015-1607-0 https://www.nature.com/articles/srep18835
+OilPalm,4,0,0.13,0.15,https://www.sciencedirect.com/science/article/pii/S1364032110003436 https://www.feedipedia.org/node/6916  https://www.sciencedirect.com/science/article/pii/S1364032114006741
+OtherGrain,0.3,0,0.13,0.09,
+Rice,0.3,0.48,0.13,0.09,https://acsess.onlinelibrary.wiley.com/doi/abs/10.2134/jpa1993.0585
+RootTuber,0.3,0.75,0.13,0.15,https://agris.fao.org/agris-search/search.do?recordID=DJ2012045473
+Soybean,0.3,0,0.13,0.09,https://onlinelibrary.wiley.com/doi/10.1111/gcbb.12285
+SugarCrop,0.3,0,0.13,0.15,https://onlinelibrary.wiley.com/doi/10.1111/gcbb.12285
+Vegetables,0.3,0,0.13,0.15,
+Wheat,0.3,0,0.13,0.09,

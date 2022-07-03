@@ -1,5 +1,5 @@
 # File: A22.subsector_interp_R.csv
-# Title: Region-specific electric subsector shareweights interpolation rules by GCAM4 region
+# Title: Region-specific electric subsector shareweights interpolation rules 
 # Descreption: adjust biomass liquid share weight for few regions with palm biodiesel to lower values. This is needed due to data update.
 # Units: Unitless share-weights
 # Source: EMRE
