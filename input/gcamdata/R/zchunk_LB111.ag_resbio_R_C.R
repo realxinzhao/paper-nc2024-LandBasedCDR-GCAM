@@ -72,7 +72,9 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
       left_join_error_no_match(Various_ag_resbio_data_SI, by = "GCAM_commodity") %>%
       mutate(ErosCtrl_tHa = pmax(ErosCtrl_tHa, ErosCtrl_tHa_min),
              HarvestIndex = pmax(HarvestIndex, HarvestIndex_min),
-             WaterContent = pmax(WaterContent, WaterContent_min) * (1 - DryMatterLoss)) %>%
+             WaterContent = pmax(WaterContent, WaterContent_min),
+             # DML should be applied after water content so deduct the product of the two
+             WaterContent = WaterContent + DryMatterLoss - WaterContent * DryMatterLoss) %>%
       select(names(L111.ag_resbio_R_C_beforeadjust)) ->
       L111.ag_resbio_R_C
 
