@@ -8,7 +8,7 @@
 #' @param ... other optional parameters, depending on command
 #' @return Depends on \code{command}: either a vector of required inputs, a vector of output names, or (if
 #'   \code{command} is "MAKE") all the generated outputs: \code{L1321.ag_prP_R_C_75USDkg},
-#'   \code{L1321.an_prP_R_C_75USDkg}, \code{L1321.expP_R_F_75USDm3
+#'   \code{L1321.an_prP_R_C_75USDkg}, \code{L1321.expP_R_F_75USDm3}
 #' @details This chunk calculates average prices over calibration years by GCAM commodity and region. Averages across
 #'   years, when applicable, are unweighted; averages over FAO item are weighted by production.
 #' @importFrom assertthat assert_that

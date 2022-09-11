@@ -186,6 +186,7 @@ SO2_SHIP_LIMIT_POLICY_MULTIPLIER <- 0.001 * 2
 # Time
 aglu.MODEL_MEAN_PERIOD_LENGTH <- 5       # AgLU data use a moving average over this period length in LA.100
 aglu.MODEL_PRICE_YEARS      <- 2013:2017 # consistent with aglu.MODEL_SUA_MEAN_PERIODS
+aglu.MODEL_MACRONUTRIENT_YEARS <- 2013:2017   # consistent with aglu.MODEL_SUA_MEAN_PERIODS; FAO only has data for after 2010
 aglu.MODEL_COST_YEARS       <- 2008:2016
 aglu.DEFLATOR_BASE_YEAR     <- 2015      # year used as the basis for computing regional price deflators
 aglu.FALLOW_YEARS           <- 2013:2017 # Years used for calculating the % of fallow land
@@ -275,7 +276,6 @@ aglu.BIO_GRASS_COST_75USD_GJ <- 0.75   # Production costs of biomass (from Patri
 aglu.BIO_TREE_COST_75USD_GJ  <- 0.67   # Production costs of biomass (from Patrick Luckow's work)
 aglu.FERT_PRICE              <- 596    # Price of fertilizer, 2010$ per ton NH3
 aglu.FERT_PRICE_YEAR         <- 2010   # Year corresponding to the above price/cost
-aglu.FOR_COST_75USDM3        <- 29.59  # Forestry cost (1975$/M3); Not used since GCAM5.4
 aglu.FOR_COST_SHARE          <- 0.59   # Non-land forestry cost share (from 2011 GTAP data base)
 
 # Price at which base year bio frac produced is used.

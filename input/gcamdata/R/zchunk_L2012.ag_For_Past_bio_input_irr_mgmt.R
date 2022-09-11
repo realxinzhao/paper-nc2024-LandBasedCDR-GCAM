@@ -13,7 +13,6 @@
 #' @details This chunk specifies the input tables for agriculture, forest, pasture and biomass supply sectors and subsectors,
 #' agricultural commodity production and harvest area to cropland by technologies, forest and pasture production,
 #' and biomass grass and tree crops yield by technologies.
-#' (XZ 3-11-2022) reduce dependency; will clean up later
 #' @importFrom assertthat assert_that
 #' @importFrom dplyr arrange bind_rows filter full_join group_by if_else left_join mutate right_join select semi_join summarise
 #' @importFrom tidyr gather replace_na separate
