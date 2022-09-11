@@ -15,13 +15,14 @@
 #' @importFrom assertthat assert_that
 #' @importFrom dplyr filter full_join group_by mutate select summarize_if
 #' @importFrom tidyr gather spread
-#' @author RC March 2017
+#' @author RC March 2017 XZ 2022
 module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
   if(command == driver.DECLARE_INPUTS) {
-    return(c(FILE = "aglu/FAO/FAO_ag_items_PRODSTAT",
-             "L100.FAO_ag_Prod_t",
+    return(c("L100.FAO_ag_Prod_t",
              FILE = "aglu/Various_ag_resbio_data",
              FILE = "aglu/Various_ag_resbio_data_SI"))
+    return(c("L100.FAO_ag_Prod_t",
+             FILE = "aglu/Various_ag_resbio_data"))
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L111.ag_resbio_R_C_beforeadjust",
              "L111.ag_resbio_R_C"))
@@ -33,16 +34,17 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
     all_data <- list(...)[[1]]
 
     # Load required inputs
-    FAO_ag_items_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_items_PRODSTAT")
     L100.FAO_ag_Prod_t <- get_data(all_data, "L100.FAO_ag_Prod_t")
     Various_ag_resbio_data <- get_data(all_data, "aglu/Various_ag_resbio_data")
     Various_ag_resbio_data_SI <- get_data(all_data, "aglu/Various_ag_resbio_data_SI") %>%
       select(-Source)
 
+    # Future development: L111.ag_resbio_R_C should be differentiated by GCAM_subsector
+
     # Compute weighted averages of each parameter (HarvestIndex, ErosionControl, and
     # ResidueEnergyContent) for each crop type in each GCAM region
     L100.FAO_ag_Prod_t %>%
-      select(iso, GCAM_region_ID, item, item_code, year, value) %>%
+      select(iso, GCAM_region_ID, item, item_code, GCAM_commodity, year, value) %>%
       filter(year %in% max(HISTORICAL_YEARS)) %>%
       select(-year) %>%
       rename(prod = value) %>%
@@ -52,10 +54,9 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
       # also drop rows where production weights are zero, as these would return missing values later on
       filter(prod != 0) %>%
       # Multiply by production to get weights, change to long-format for easier calculation
-      gather(resbio_params, value, -iso, -GCAM_region_ID, -item, -item_code, -prod) %>%
+      gather(resbio_params, value, -iso, -GCAM_region_ID, -GCAM_commodity, -item, -item_code, -prod) %>%
       mutate(value = value * prod) %>%
-      # Add vectors for GCAM regions and commodities, collapse, and divide by production to get residue biomass values
-      left_join_error_no_match(FAO_ag_items_PRODSTAT[c("item_code", "GCAM_commodity")], by = "item_code") %>%
+      # For GCAM regions and commodities, collapse, and divide by production to get residue biomass values
       select(-item_code) %>%
       group_by(GCAM_region_ID, GCAM_commodity, resbio_params) %>%
       summarize_if(is.numeric, sum) %>%
@@ -85,8 +86,7 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
       add_comments("Calculate the HarvestIndex, ErosCtrl, ResEnergy, and WaterContent of residue biomass") %>%
       add_comments("These parameters are weighted by production when calculating the average by GCAM region and commodity") %>%
       add_legacy_name("L111.ag_resbio_R_C_beforeadjust") %>%
-      add_precursors("aglu/FAO/FAO_ag_items_PRODSTAT",
-                     "L100.FAO_ag_Prod_t",
+      add_precursors("L100.FAO_ag_Prod_t",
                      "aglu/Various_ag_resbio_data") ->
       L111.ag_resbio_R_C_beforeadjust
 

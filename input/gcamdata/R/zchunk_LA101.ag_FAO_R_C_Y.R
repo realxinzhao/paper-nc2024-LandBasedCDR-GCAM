@@ -81,6 +81,7 @@ module_aglu_LA101.ag_FAO_R_C_Y <- function(command, ...) {
       ungroup() ->
       LDS_ctry_crop_SHARES
 
+    gcam.REGION_NUMBER <- iso_GCAM_regID %>% distinct(GCAM_region_ID) %>% nrow
     assertthat::assert_that(unique(LDS_ctry_crop_SHARES$GCAM_region_ID) %>%
                               length == gcam.REGION_NUMBER,
                             msg = "Not all GCAM regions are downscaled to GLU for production and area due to missing share info." )

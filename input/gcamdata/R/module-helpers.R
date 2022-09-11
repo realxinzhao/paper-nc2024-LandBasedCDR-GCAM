@@ -677,6 +677,10 @@ downscale_FAO_country <- function(data, country_name, dissolution_year, years = 
 #' @export
 
 Moving_average <- function(x, periods = 5){
+  if (periods == 1) {
+    return(x)
+  }
+
   if ((periods %% 2) == 0) {
     stop("Periods should be an odd value")
   } else{
