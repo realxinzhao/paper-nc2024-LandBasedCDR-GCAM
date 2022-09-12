@@ -17,17 +17,20 @@
 #' @importFrom tidyr gather spread
 #' @author RC April 2017 XZ 2022
 module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c("L101.ag_Food_Mt_R_C_Y",
+      "L101.ag_Prod_Mt_R_C_Y",
+      "L105.an_Food_Mt_R_C_Y",
+      "L105.an_Prod_Mt_R_C_Y",
+      "L108.ag_Feed_Mt_R_C_Y",
+      "L108.ag_NetExp_Mt_R_FodderHerb_Y",
+      "L122.in_Mt_R_C_Yh",
+      "L1091.GrossTrade_Mt_R_C_Y"
+    )
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c("L101.ag_Food_Mt_R_C_Y",
-              "L101.ag_Prod_Mt_R_C_Y",
-              "L105.an_Food_Mt_R_C_Y",
-              "L105.an_Prod_Mt_R_C_Y",
-              "L108.ag_Feed_Mt_R_C_Y",
-              "L108.ag_NetExp_Mt_R_FodderHerb_Y",
-              "L122.in_Mt_R_C_Yh",
-             # temp added XZ
-              "L1091.GrossTrade_Mt_R_C_Y"
-             ))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L109.ag_ALL_Mt_R_C_Y",
              "L109.an_ALL_Mt_R_C_Y"))
@@ -42,15 +45,13 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
     all_data <- list(...)[[1]]
 
     # Load required inputs ----
-    L101.ag_Food_Mt_R_C_Y <- get_data(all_data, "L101.ag_Food_Mt_R_C_Y")
-    L101.ag_Prod_Mt_R_C_Y <- get_data(all_data, "L101.ag_Prod_Mt_R_C_Y")
-    L105.an_Food_Mt_R_C_Y <- get_data(all_data, "L105.an_Food_Mt_R_C_Y")
-    L105.an_Prod_Mt_R_C_Y <- get_data(all_data, "L105.an_Prod_Mt_R_C_Y")
-    L108.ag_Feed_Mt_R_C_Y <- get_data(all_data, "L108.ag_Feed_Mt_R_C_Y")
-    L108.ag_NetExp_Mt_R_FodderHerb_Y <- get_data(all_data, "L108.ag_NetExp_Mt_R_FodderHerb_Y")
-    L122.in_Mt_R_C_Yh <- get_data(all_data, "L122.in_Mt_R_C_Yh")
 
-    L1091.GrossTrade_Mt_R_C_Y <- get_data(all_data, "L1091.GrossTrade_Mt_R_C_Y")
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
 
     # This chunk will adjust bioenergy feedstock and also feed demand using others

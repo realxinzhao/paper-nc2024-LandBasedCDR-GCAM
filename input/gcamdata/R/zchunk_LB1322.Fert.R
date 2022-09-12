@@ -20,17 +20,21 @@
 #' @importFrom tidyr complete fill gather replace_na spread
 #' @author AJS July 2017
 module_energy_LB1322.Fert <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c(FILE = "common/iso_GCAM_regID",
+      FILE = "energy/mappings/IEA_ctry",
+      FILE = "energy/IEA_Fert_fuel_data",
+      "L142.ag_Fert_Prod_MtN_ctry_Y",
+      FILE = "energy/H2A_Prod_Tech",
+      FILE = "energy/A10.rsrc_info",
+      FILE = "energy/A21.globaltech_cost",
+      FILE = "energy/A22.globaltech_cost",
+      "L1321.in_EJ_R_indenergy_F_Yh",
+      "L132.in_EJ_R_indfeed_F_Yh")
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c(FILE = "common/iso_GCAM_regID",
-             FILE = "energy/mappings/IEA_ctry",
-             FILE = "energy/IEA_Fert_fuel_data",
-             FILE = "energy/H2A_Prod_Tech",
-             "L142.ag_Fert_Prod_MtN_ctry_Y",
-             FILE = "energy/A10.rsrc_info",
-             FILE = "energy/A21.globaltech_cost",
-             FILE = "energy/A22.globaltech_cost",
-             "L1321.in_EJ_R_indenergy_F_Yh",
-             "L132.in_EJ_R_indfeed_F_Yh"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L1322.Fert_Prod_MtN_R_F_Y",
              "L1322.IO_R_Fert_F_Yh",
@@ -52,16 +56,12 @@ module_energy_LB1322.Fert <- function(command, ...) {
       in_indfeed_netFert <- Central_Natural_Gas_Sequestration <- Central_Natural_Gas <- Central_Coal <- Central_Coal_Sequestration <- NULL
 
     # Load required inputs
-    iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
-    IEA_ctry <- get_data(all_data, "energy/mappings/IEA_ctry")
-    IEA_Fert_fuel_data <- get_data(all_data, "energy/IEA_Fert_fuel_data")
-    H2A_Prod_Tech <- get_data(all_data, "energy/H2A_Prod_Tech")
-    L142.ag_Fert_Prod_MtN_ctry_Y <- get_data(all_data, "L142.ag_Fert_Prod_MtN_ctry_Y")
-    A10.rsrc_info <- get_data(all_data, "energy/A10.rsrc_info")
-    A21.globaltech_cost <- get_data(all_data, "energy/A21.globaltech_cost")
-    A22.globaltech_cost <- get_data(all_data, "energy/A22.globaltech_cost")
-    L1321.in_EJ_R_indenergy_F_Yh <- get_data(all_data, "L1321.in_EJ_R_indenergy_F_Yh", strip_attributes = TRUE)
-    L132.in_EJ_R_indfeed_F_Yh <- get_data(all_data, "L132.in_EJ_R_indfeed_F_Yh")
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
 
     # ===================================================
@@ -332,6 +332,8 @@ module_energy_LB1322.Fert <- function(command, ...) {
     L1322.Fert_Fuelcost_75USDGJ_gas <- L1322.P_gas_75USDGJ * L1322.IO_GJkgN_Fert_gas
 
     # Convert total NH3 cost (2010$/tNH3) to N cost (1975$/kgN)
+    # Note that aglu.FERT_PRICE is only used here for calculating nonenergy cost
+    # aglu.FERT_PRICE is not a real value
     Fert_Cost_75USDkgN <- aglu.FERT_PRICE * gdp_deflator(1975, aglu.FERT_PRICE_YEAR) * CONV_KG_T / CONV_NH3_N
 
     # Calculate non-fuel cost of natural gas steam reforming (includes delivery charges)
