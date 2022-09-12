@@ -19,13 +19,18 @@
 #' @importFrom tibble tibble
 #' @author KVC June 2017
 module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c(FILE = "common/GCAM_region_names",
+       FILE = "water/basin_to_country_mapping",
+       FILE = "aglu/A_Fodderbio_chars",
+       FILE = "aglu/A_RegionalFertPrice",
+       "L142.ag_Fert_IO_R_C_Y_GLU",
+       "L2052.AgCost_ag_irr_mgmt",
+       "L2052.AgCost_bio_irr_mgmt")
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c( FILE = "common/GCAM_region_names",
-              FILE = "water/basin_to_country_mapping",
-              FILE = "aglu/A_Fodderbio_chars",
-              "L142.ag_Fert_IO_R_C_Y_GLU",
-              "L2052.AgCost_ag_irr_mgmt",
-              "L2052.AgCost_bio_irr_mgmt"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L2062.AgCoef_Fert_ag_irr_mgmt",
              "L2062.AgCoef_Fert_bio_irr_mgmt",
@@ -41,12 +46,14 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
       FertCost <- GCAM_subsector <- NULL  # silence package check notes
 
     # Load required inputs
-    GCAM_region_names <- get_data(all_data, "common/GCAM_region_names")
-    basin_to_country_mapping <- get_data(all_data, "water/basin_to_country_mapping")
-    A_Fodderbio_chars <- get_data(all_data, "aglu/A_Fodderbio_chars")
-    L142.ag_Fert_IO_R_C_Y_GLU <- get_data(all_data, "L142.ag_Fert_IO_R_C_Y_GLU", strip_attributes = TRUE)
-    L2052.AgCost_ag_irr_mgmt <- get_data(all_data, "L2052.AgCost_ag_irr_mgmt", strip_attributes = TRUE)
-    L2052.AgCost_bio_irr_mgmt <- get_data(all_data, "L2052.AgCost_bio_irr_mgmt", strip_attributes = TRUE)
+
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
+
 
     # Process Fertilizer Coefficients: Copy coefficients to all four technologies (irr/rfd + hi/lo)
     L142.ag_Fert_IO_R_C_Y_GLU %>%
@@ -71,7 +78,7 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
       L2062.AgCoef_Fert_ag_irr_mgmt
 
     # Copy final base year coefficients to all future years, bind with historic coefficients, then remove zeroes
-    # Note: this assumes constant fertilizer coefficients in the future
+    # Note: this assumes constant fertilizer coefficients in the future ----
     L2062.AgCoef_Fert_ag_irr_mgmt %>%
       filter(year == max(MODEL_BASE_YEARS)) %>%
       select(-year) %>%
@@ -104,7 +111,8 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
                                    bio_grass_coef$coefficient, bio_tree_coef$coefficient)) ->
       L2062.AgCoef_Fert_bio_irr_mgmt
 
-    # Adjust nonLandVariableCost to separate fertilizer cost (which is accounted for specifically)
+    # Adjust nonLandVariableCost to separate fertilizer cost (which is accounted for specifically) ----
+    # Note that fertilizer price is determined by supply in calibration
     L2052.AgCost_ag_irr_mgmt %>%
       # Note: using left_join because there are instances with cost but no fertilizer use.
       left_join(L2062.AgCoef_Fert_ag_irr_mgmt,
@@ -112,12 +120,16 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
 
       # Set fertilizer coefficient to zero when missing. This will lead to zero fertilizer cost.
       replace_na(list(coefficient = 0)) %>%
-
+      # Using regional fert price in A_RegionalFertPrice
+      left_join(A_RegionalFertPrice %>% rename(FertPriceReg = value) %>% select(-unit),
+                by = c("region", "minicam.energy.input")) %>%
       # Calculate fertilizer cost using a fixed value (specified in constants.R in current $ per ton of NH3)
       # and the fertilizer coefficient calculated above. Subtract from original nonLandVariableCost.
-      mutate(FertCost = coefficient * aglu.FERT_PRICE * gdp_deflator(1975, aglu.FERT_PRICE_YEAR) * CONV_KG_T / CONV_NH3_N,
+      mutate(FertPriceWorld = aglu.FERT_PRICE * gdp_deflator(1975, aglu.FERT_PRICE_YEAR) * CONV_KG_T / CONV_NH3_N) %>%
+      mutate(FertCost = if_else(is.na(FertPriceReg), coefficient * FertPriceWorld,
+                                coefficient * FertPriceReg)  ,
              nonLandVariableCost = round(nonLandVariableCost - FertCost, aglu.DIGITS_CALPRICE)) %>%
-      select(-minicam.energy.input, -coefficient, -FertCost) ->
+      select(-minicam.energy.input, -coefficient, -FertCost, -FertPriceReg, - FertPriceWorld) ->
       L2062.AgCost_ag_irr_mgmt_adj
 
     # Adjust nonLandVariableCost to separate fertilizer cost (which is accounted for specifically)
@@ -129,11 +141,16 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
       # Set fertilizer coefficient to zero when missing. This will lead to zero fertilizer cost.
       replace_na(list(coefficient = 0)) %>%
 
-      # Calculate fertilizer cost using a fixed value (specified in constants.R in 2007$ per ton of NH3)
+      # Using regional fert price in A_RegionalFertPrice
+      left_join(A_RegionalFertPrice %>% rename(FertPriceReg = value) %>% select(-unit),
+                by = c("region", "minicam.energy.input")) %>%
+      # Calculate fertilizer cost using a fixed value (specified in constants.R in current $ per ton of NH3)
       # and the fertilizer coefficient calculated above. Subtract from original nonLandVariableCost.
-      mutate(FertCost = coefficient * aglu.FERT_PRICE * gdp_deflator(1975, 2007) * CONV_KG_T / CONV_NH3_N,
+      mutate(FertPriceWorld = aglu.FERT_PRICE * gdp_deflator(1975, aglu.FERT_PRICE_YEAR) * CONV_KG_T / CONV_NH3_N) %>%
+      mutate(FertCost = if_else(is.na(FertPriceReg), coefficient * FertPriceWorld,
+                                coefficient * FertPriceReg)  ,
              nonLandVariableCost = round(nonLandVariableCost - FertCost, aglu.DIGITS_CALPRICE)) %>%
-      select(-minicam.energy.input, -coefficient, -FertCost) ->
+      select(-minicam.energy.input, -coefficient, -FertCost, -FertPriceReg, - FertPriceWorld) ->
       L2062.AgCost_bio_irr_mgmt_adj
 
     # Produce outputs
@@ -163,7 +180,8 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
       add_comments("Fertilizer costs is computed using a fixed NH3 cost and the fertilizer coefficient") %>%
       add_legacy_name("L2062.AgCost_ag_irr_mgmt_adj") %>%
       same_precursors_as(L2062.AgCoef_Fert_ag_irr_mgmt) %>%
-      add_precursors("L2052.AgCost_ag_irr_mgmt") ->
+      add_precursors("L2052.AgCost_ag_irr_mgmt",
+                     "aglu/A_RegionalFertPrice") ->
       L2062.AgCost_ag_irr_mgmt_adj
     L2062.AgCost_bio_irr_mgmt_adj %>%
       add_title("Adjusted non-land variable cost for agricultural technologies") %>%
@@ -172,7 +190,8 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
       add_comments("Fertilizer costs is computed using a fixed NH3 cost and the fertilizer coefficient") %>%
       add_legacy_name("L2062.AgCost_bio_irr_mgmt_adj") %>%
       same_precursors_as(L2062.AgCoef_Fert_bio_irr_mgmt) %>%
-      add_precursors("L2052.AgCost_bio_irr_mgmt")  ->
+      add_precursors("L2052.AgCost_bio_irr_mgmt",
+                     "aglu/A_RegionalFertPrice")  ->
       L2062.AgCost_bio_irr_mgmt_adj
 
     return_data(L2062.AgCoef_Fert_ag_irr_mgmt, L2062.AgCoef_Fert_bio_irr_mgmt, L2062.AgCost_ag_irr_mgmt_adj, L2062.AgCost_bio_irr_mgmt_adj)

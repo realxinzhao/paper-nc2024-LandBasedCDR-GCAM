@@ -11,7 +11,7 @@
 #' a vector of output names, or (if \code{command} is "MAKE") all
 #' the generated outputs: \code{L142.ag_Fert_Prod_MtN_ctry_Y}, \code{L142.ag_Fert_NetExp_MtN_R_Y}, \code{L142.ag_Fert_IO_R_C_Y_GLU}. The corresponding file in the
 #' original data system was \code{LB142.ag_Fert_IO_R_C_Y_GLU.R} (aglu level1).
-#' @details This chunk calculates fertilizer prodcution by country / year (adjusted to global total consumption),
+#' @details This chunk calculates fertilizer production by country / year (adjusted to global total consumption),
 #' fertilizer net exports by GCAM region / year as production minus consumption, and fertilizer input-output coefficients
 #' by GCAM region / commodity / year / GLU.
 #' @importFrom assertthat assert_that

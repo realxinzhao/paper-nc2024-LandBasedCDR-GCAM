@@ -233,6 +233,7 @@ module_aglu_L2072.ag_water_irr_mgmt <- function(command, ...) {
       mutate(elec_GJm3 = if_else(year %in% MODEL_FUTURE_YEARS, elec_GJm3[year == max(MODEL_BASE_YEARS)], elec_GJm3)) %>%
       ungroup()
 
+    # Note that nonLandVariableCost in L2052.AgCost_ag_irr_mgmt includes fertilizer cost already ----
     L165.ag_IrrEff_R %>%
       left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
       right_join(L2072.AgCoef_IrrWaterWdraw_ag_mgmt, by = "region") %>%

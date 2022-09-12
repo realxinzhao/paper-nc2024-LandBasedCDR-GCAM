@@ -1,0 +1,44 @@
+# File: A_RegionalFertPrice.csv
+# Title: Regional fertilizer prices for initial NonLandCost calculation
+# Description: gcamdata assumed a aglu.FERT_PRICE of 0.224 1975$/kgN in constants.R which was used for calculating after-fertilizer-cost-NonLandCost
+# However for regions resulted in higher NonLandCost it could lead to negative profit issues e.g. India Misc crop
+# Thus we specific these regional values here but still use aglu.FERT_PRICE for potentially breaked out regions.
+# If we can calculate fertilizer price from energy data processing in gcamdata later we can connect them.
+# Source: GCAMv6 initial calibration
+# Units: 1975$/kgN
+# Date of last update: 2022-09-10 (XZ)
+# Column types: ccnc
+# ----------
+region,minicam.energy.input,value,unit
+Africa_Eastern,N fertilizer,0.225625,1975$/kgN
+Africa_Northern,N fertilizer,0.225625,1975$/kgN
+Africa_Southern,N fertilizer,0.224368,1975$/kgN
+Africa_Western,N fertilizer,0.22437,1975$/kgN
+Argentina,N fertilizer,0.230291,1975$/kgN
+Australia_NZ,N fertilizer,0.229442,1975$/kgN
+Brazil,N fertilizer,0.238256,1975$/kgN
+Canada,N fertilizer,0.234238,1975$/kgN
+Central America and Caribbean,N fertilizer,0.226827,1975$/kgN
+Central Asia,N fertilizer,0.238948,1975$/kgN
+China,N fertilizer,0.244682,1975$/kgN
+Colombia,N fertilizer,0.224401,1975$/kgN
+EU-12,N fertilizer,0.268351,1975$/kgN
+EU-15,N fertilizer,0.244106,1975$/kgN
+Europe_Eastern,N fertilizer,0.25245,1975$/kgN
+Europe_Non_EU,N fertilizer,0.243003,1975$/kgN
+European Free Trade Association,N fertilizer,0.224658,1975$/kgN
+India,N fertilizer,0.26974,1975$/kgN
+Indonesia,N fertilizer,0.227253,1975$/kgN
+Japan,N fertilizer,0.237896,1975$/kgN
+Mexico,N fertilizer,0.229558,1975$/kgN
+Middle East,N fertilizer,0.22448,1975$/kgN
+Pakistan,N fertilizer,0.233863,1975$/kgN
+Russia,N fertilizer,0.242766,1975$/kgN
+South Africa,N fertilizer,0.265724,1975$/kgN
+South America_Northern,N fertilizer,0.225362,1975$/kgN
+South America_Southern,N fertilizer,0.226985,1975$/kgN
+South Asia,N fertilizer,0.232757,1975$/kgN
+South Korea,N fertilizer,0.239588,1975$/kgN
+Southeast Asia,N fertilizer,0.237743,1975$/kgN
+Taiwan,N fertilizer,0.237918,1975$/kgN
+USA,N fertilizer,0.234045,1975$/kgN
