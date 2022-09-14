@@ -1189,11 +1189,7 @@ module_aglu_LA100.FAO_SUA_PrimaryEquivalent <- function(command, ...) {
                      "aglu/FAO/Mapping_SUA_PrimaryEquivalent") ->
       FAO_Food_MacronutrientRate_2010_2019_MaxValue
 
-    return_data(GCAM_AgLU_SUA_APE_1973_2019,
-                FAO_AgProd_Kt_All,
-                FAO_AgArea_Kha_All,
-                FAO_Food_Macronutrient_All_2010_2019,
-                FAO_Food_MacronutrientRate_2010_2019_MaxValue)
+    return_data(MODULE_OUTPUTS)
 
 
   } else {

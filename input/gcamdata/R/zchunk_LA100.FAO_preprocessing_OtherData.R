@@ -28,19 +28,22 @@ module_aglu_LA100.FAO_preprocessing_OtherData <- function(command, ...) {
       FILE = "aglu/FAO/GCAMDATA_FAOSTAT_LandCover_229Regs_3Covers_1973to2020",
       FILE = "aglu/FAO/GCAMDATA_FAOSTAT_NFertilizerProdDemand_175Regs_1Item_1973to2020")
 
+  MODULE_OUTPUTS <-
+    c("L100.FAO_an_Stocks",
+      "L100.FAO_an_Dairy_Stocks",
+      "L100.FAO_CL_kha",
+      "L100.FAO_fallowland_kha",
+      "L100.FAO_harv_CL_kha",
+      "L100.FAO_Fert_Cons_tN",
+      "L100.FAO_Fert_Prod_tN",
+      "L100.FAO_For_Exp_m3",
+      "L100.FAO_For_Imp_m3",
+      "L100.FAO_For_Prod_m3")
+
   if(command == driver.DECLARE_INPUTS) {
     return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L100.FAO_an_Stocks",
-             "L100.FAO_an_Dairy_Stocks",
-             "L100.FAO_CL_kha",
-             "L100.FAO_fallowland_kha",
-             "L100.FAO_harv_CL_kha",
-             "L100.FAO_Fert_Cons_tN",
-             "L100.FAO_Fert_Prod_tN",
-             "L100.FAO_For_Exp_m3",
-             "L100.FAO_For_Imp_m3",
-             "L100.FAO_For_Prod_m3"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     iso <- FAO_country <- `country codes` <- `element codes` <- `item codes` <-
@@ -241,16 +244,7 @@ module_aglu_LA100.FAO_preprocessing_OtherData <- function(command, ...) {
     #*********************************************************
 
     # Return data ----
-    return_data(L100.FAO_an_Stocks,
-                L100.FAO_an_Dairy_Stocks,
-                L100.FAO_CL_kha,
-                L100.FAO_fallowland_kha,
-                L100.FAO_harv_CL_kha,
-                L100.FAO_Fert_Cons_tN,
-                L100.FAO_Fert_Prod_tN,
-                L100.FAO_For_Exp_m3,
-                L100.FAO_For_Imp_m3,
-                L100.FAO_For_Prod_m3)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }

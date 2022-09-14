@@ -429,17 +429,7 @@ module_aglu_LA100.FAO_SUA_connection <- function(command, ...) {
       L1091.GrossTrade_Mt_R_C_Y
 
     # Done & return data----
-    return_data(L100.FAO_SUA_APE_balance,
-                L100.FAO_ag_HA_ha,
-                L100.FAO_ag_Prod_t,
-                L100.FAO_PRODSTAT_TO_DOWNSCAL,
-                L105.an_Prod_Mt_R_C_Y,
-                L105.an_Prod_Mt_ctry_C_Y,
-                L101.ag_Food_Mt_R_C_Y,
-                L105.an_Food_Mt_R_C_Y,
-                L101.CropMeat_Food_Pcal_R_C_Y,
-                L101.ag_Feed_Mt_R_C_Y,
-                L1091.GrossTrade_Mt_R_C_Y)
+    return_data(MODULE_OUTPUTS)
 
   } else {
     stop("Unknown command")
