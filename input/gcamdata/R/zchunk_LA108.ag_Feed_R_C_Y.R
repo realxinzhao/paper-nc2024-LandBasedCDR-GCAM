@@ -68,7 +68,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
                fill = list(value = 0)) %>%
       select(GCAM_region_ID, GCAM_commodity, year, value)
 
-    # Part 1: FEEDCROPS
+    # Part 1: FEEDCROPS ----
     # Compute regional feedcrop demands by GCAM region, commodity, and year in Mt/yr.
     # Use crop-specific information from FAO, in combination with feed totals from IMAGE,
     # to calculate region/crop specific information. This ensures totals match IMAGE and shares match FAO.
@@ -120,7 +120,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
       ag_Feed_Mt_R_Cnf_Y_adj
 
     # FODDERHERB/RESIDUE
-    # Part 2: Calculating FodderHerb and Residue balances by region and year
+    # Part 2: Calculating FodderHerb and Residue balances by region and year ----
     # First, compute differences between FodderHerb production and FodderHerb_Residue demand.
     # This will be used to compute Residue supply, and to adjust OtherUses of FodderHerb_Residue.
     L101.ag_Prod_Mt_R_C_Y %>%
@@ -175,7 +175,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
       ag_Feed_Mt_R_FodderHerb_Y
 
     # PASTURE & FODDERGRASS
-    # Part 3: Calculating Pasture and FodderGrass feed inputs by region and year
+    # Part 3: Calculating Pasture and FodderGrass feed inputs by region and year ----
 
     # compute pasture feed, which is equal to Pasture_FodderGrass demand minus FodderGrass production within each region
     # adding minimum pasture share over Pasture_FodderGrass to avoid zero pasture adjustments
@@ -209,14 +209,14 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
 
 
     # SCAVENGING & OTHER
-    # Part 4: Scavenging and other inputs
+    # Part 4: Scavenging and other inputs ----
     # Supply of scavenging_other is equal to demand
     an_Feed_Mt_R_C_Y %>%
       filter(feed == "Scavenging_Other") %>%
       rename(GCAM_commodity = feed) ->
       ag_Feed_Mt_R_ScvgOthr_Y
 
-    # Part 5: Merge all feed sources into a single table
+    # Part 5: Merge all feed sources into a single table ----
     ag_Feed_Mt_R_Cnf_Y_adj %>%
       bind_rows(ag_Feed_Mt_R_FodderHerb_Y) %>%
       bind_rows(ag_Feed_Mt_R_Residue_Y) %>%
@@ -225,7 +225,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
       bind_rows(ag_Feed_Mt_R_ScvgOthr_Y) ->
       ag_Feed_Mt_R_C_Y
 
-    # Part 6: Compute net exports of FodderHerb
+    # Part 6: Compute net exports of FodderHerb ----
     L101.ag_Prod_Mt_R_C_Y %>%
       filter(GCAM_commodity == "FodderHerb") %>%                                                          # Start with production of FodderHerb
       rename(Production = value) %>%

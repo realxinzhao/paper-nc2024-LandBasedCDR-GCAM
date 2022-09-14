@@ -55,7 +55,8 @@ module_aglu_LA100.FAO_SUA_connection <- function(command, ...) {
       # get name as the char after last /
       nm <- tail(strsplit(d, "/")[[1]], n = 1)
       # get data and assign
-      assign(nm, get_data(all_data, d), envir = parent.env(environment()))  })
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
 
 

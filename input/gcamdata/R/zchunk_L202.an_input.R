@@ -22,27 +22,32 @@
 #' @importFrom tidyr complete replace_na
 #' @author BBL August 2017
 module_aglu_L202.an_input <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c(FILE = "common/GCAM_region_names",
+      FILE = "energy/A_regions",
+      FILE = "aglu/A_agRsrc",
+      FILE = "aglu/A_agSubRsrc",
+      FILE = "aglu/A_agRsrcCurves",
+      FILE = "aglu/A_agUnlimitedRsrcCurves",
+      FILE = "aglu/A_an_input_supplysector",
+      FILE = "aglu/A_an_input_subsector",
+      FILE = "aglu/A_an_input_technology",
+      FILE = "aglu/A_an_input_globaltech_shrwt",
+      FILE = "aglu/A_an_supplysector",
+      FILE = "aglu/A_an_subsector",
+      FILE = "aglu/A_an_technology",
+      "L107.an_Prod_Mt_R_C_Sys_Fd_Y",
+      "L107.an_FeedIO_R_C_Sys_Fd_Y",
+      "L107.an_Feed_Mt_R_C_Sys_Fd_Y",
+      "L108.ag_Feed_Mt_R_C_Y",
+      "L109.ag_ALL_Mt_R_C_Y",
+      "L1321.ag_prP_R_C_75USDkg",
+      "L1321.an_prP_R_C_75USDkg")
+
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c(FILE = "common/GCAM_region_names",
-             FILE = "energy/A_regions",
-             FILE = "aglu/A_agRsrc",
-             FILE = "aglu/A_agSubRsrc",
-             FILE = "aglu/A_agRsrcCurves",
-             FILE = "aglu/A_agUnlimitedRsrcCurves",
-             FILE = "aglu/A_an_input_supplysector",
-             FILE = "aglu/A_an_input_subsector",
-             FILE = "aglu/A_an_input_technology",
-             FILE = "aglu/A_an_input_globaltech_shrwt",
-             FILE = "aglu/A_an_supplysector",
-             FILE = "aglu/A_an_subsector",
-             FILE = "aglu/A_an_technology",
-             "L107.an_Prod_Mt_R_C_Sys_Fd_Y",
-             "L107.an_FeedIO_R_C_Sys_Fd_Y",
-             "L107.an_Feed_Mt_R_C_Sys_Fd_Y",
-             "L108.ag_Feed_Mt_R_C_Y",
-             "L109.ag_ALL_Mt_R_C_Y",
-             "L1321.ag_prP_R_C_75USDkg",
-             "L1321.an_prP_R_C_75USDkg"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L202.RenewRsrc",
              "L202.RenewRsrcPrice",
@@ -83,22 +88,13 @@ module_aglu_L202.an_input <- function(command, ...) {
       Supply_Mt <- GrossImp_Mt <- ChinaCommodityPrice_USDkg <- to.value <- DefaultCommodityPrice_USDkg <- NULL  # silence package check notes
 
     # Load required inputs
-    GCAM_region_names <- get_data(all_data, "common/GCAM_region_names")
-    A_regions <- get_data(all_data, "energy/A_regions")
-    A_agRsrc <- get_data(all_data, "aglu/A_agRsrc", strip_attributes = TRUE)
-    A_agSubRsrc <- get_data(all_data, "aglu/A_agSubRsrc", strip_attributes = TRUE)
-    A_agRsrcCurves <- get_data(all_data, "aglu/A_agRsrcCurves", strip_attributes = TRUE)
-    A_agUnlimitedRsrcCurves <- get_data(all_data, "aglu/A_agUnlimitedRsrcCurves", strip_attributes = TRUE)
-    A_an_input_supplysector <- get_data(all_data, "aglu/A_an_input_supplysector", strip_attributes = TRUE)
-    A_an_input_subsector <- get_data(all_data, "aglu/A_an_input_subsector", strip_attributes = TRUE)
-    A_an_input_technology <- get_data(all_data, "aglu/A_an_input_technology", strip_attributes = TRUE)
-    A_an_input_globaltech_shrwt <- get_data(all_data, "aglu/A_an_input_globaltech_shrwt")
-    A_an_supplysector <- get_data(all_data, "aglu/A_an_supplysector", strip_attributes = TRUE)
-    A_an_subsector <- get_data(all_data, "aglu/A_an_subsector", strip_attributes = TRUE)
-    A_an_technology <- get_data(all_data, "aglu/A_an_technology", strip_attributes = TRUE)
-    L109.ag_ALL_Mt_R_C_Y <- get_data(all_data, "L109.ag_ALL_Mt_R_C_Y")
-    L1321.ag_prP_R_C_75USDkg <- get_data(all_data, "L1321.ag_prP_R_C_75USDkg", strip_attributes = TRUE)
-    L1321.an_prP_R_C_75USDkg <- get_data(all_data, "L1321.an_prP_R_C_75USDkg")
+
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
     # 2. Build tables
     # Base table for resources - add region names to Level1 data tables (lines 49-70 old file)

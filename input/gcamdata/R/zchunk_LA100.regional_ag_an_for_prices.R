@@ -15,22 +15,26 @@
 #' @importFrom dplyr bind_rows filter if_else inner_join left_join mutate rename select
 #' @importFrom tidyr  complete drop_na gather nesting spread replace_na
 #' @importFrom tibble tibble
-#' @author GPK/RC/STW February 2019; xz 2022
+#' @author GPK/RC/STW February 2019; XZ 2022
 module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c(FILE = "common/iso_GCAM_regID",
+      FILE = "common/GCAM_region_names",
+      FILE = "aglu/AGLU_ctry",
+      # region-specific deflators
+      FILE = "common/FAO_GDP_Deflators",
+      # US alfalfa price for interpolating fodder prices
+      FILE = "aglu/USDA/USDA_Alfalfa_prices_USDt",
+      # price items mapping
+      FILE = "aglu/FAO/FAO_ag_items_PRODSTAT",
+      FILE = "aglu/FAO/FAO_an_items_PRODSTAT",
+      # price data
+      FILE = "aglu/FAO/GCAMDATA_FAOSTAT_ProducerPrice_170Regs_185PrimaryItems_2010to2020",
+      FILE = "aglu/FAO/GCAMDATA_FAOSTAT_ForExportPrice_214Regs_Roundwood_1973to2020")
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c(FILE = "common/iso_GCAM_regID",
-             FILE = "common/GCAM_region_names",
-             FILE = "aglu/AGLU_ctry",
-             # region-specific deflators
-             FILE = "common/FAO_GDP_Deflators",
-             # US alfalfa price for interpolating fodder prices
-             FILE = "aglu/USDA/USDA_Alfalfa_prices_USDt",
-             # price items mapping
-             FILE = "aglu/FAO/FAO_ag_items_PRODSTAT",
-             FILE = "aglu/FAO/FAO_an_items_PRODSTAT",
-             # price data
-             FILE = "aglu/FAO/FAO_ag_an_ProducerPrice",
-             FILE = "aglu/FAO/FAO_For_Exp_m3_USD_FORESTAT"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
     return(c("L1321.ag_prP_R_C_75USDkg",
              "L1321.an_prP_R_C_75USDkg",
@@ -48,15 +52,13 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
     all_data <- list(...)[[1]]
 
     # Load required inputs ----
-    iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
-    GCAM_region_names <- get_data(all_data, "common/GCAM_region_names", strip_attributes = T)
-    AGLU_ctry <- get_data(all_data, "aglu/AGLU_ctry")
-    USDA_Alfalfa_prices_USDt <- get_data(all_data, "aglu/USDA/USDA_Alfalfa_prices_USDt")
-    FAO_ag_items_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_items_PRODSTAT")
-    FAO_an_items_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_an_items_PRODSTAT")
-    FAO_GDP_Deflators <- get_data(all_data, "common/FAO_GDP_Deflators")
-    FAO_ag_an_ProducerPrice <- get_data(all_data, "aglu/FAO/FAO_ag_an_ProducerPrice")
-    FAO_For_Exp_m3_USD_FORESTAT <- get_data(all_data, "aglu/FAO/FAO_For_Exp_m3_USD_FORESTAT")
+    lapply(MODULE_INPUTS,
+           function(d){
+             # get name as the char after last /
+             nm <- tail(strsplit(d, "/")[[1]], n = 1)
+             # get data and assign
+             assign(nm, get_data(all_data, d, strip_attributes = T),
+                    envir = parent.env(environment()))  })
 
 
     # Note that all AgLU prices are derived here
@@ -92,7 +94,7 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
 
     ## 2.2. Process Ag An producer prices and mapping to price items and regions ----
     L100.FAO_ag_an_ProducerPrice_0 <-
-      FAO_ag_an_ProducerPrice %>%
+      GCAMDATA_FAOSTAT_ProducerPrice_170Regs_185PrimaryItems_2010to2020 %>%
       gather_years() %>%
       # keep aglu.MODEL_PRICE_YEARS only here, price will be weighted average across the years
       filter(year %in% aglu.MODEL_PRICE_YEARS) %>% filter(!is.na(value)) %>%
@@ -121,7 +123,8 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
                                by = c("area_code", "area", "year"))
 
     ## clean a bit ----
-    rm(L100.FAO_ag_an_ProducerPrice_0, L100.FAO_ag_an_ProducerPrice_1)
+    rm(GCAMDATA_FAOSTAT_ProducerPrice_170Regs_185PrimaryItems_2010to2020,
+       L100.FAO_ag_an_ProducerPrice_0, L100.FAO_ag_an_ProducerPrice_1)
 
     ## 2.5. Aggregation to GCAM regions, items, and price years ----
     L100.ag_an_ProducerPrice_R_C_Y_nofodder <-
@@ -247,7 +250,7 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
     # 3. Forest export prices by country, analysis year, and crop ----
     ## 3.1. Export value and quantity ----
     L100.FAO_for_ExpPrice_0 <-
-      FAO_For_Exp_m3_USD_FORESTAT %>%
+      GCAMDATA_FAOSTAT_ForExportPrice_214Regs_Roundwood_1973to2020 %>%
       gather_years() %>%
       filter(year %in% aglu.TRADE_CAL_YEARS) %>%
       select(-element_code, -unit) %>%
@@ -273,7 +276,7 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
                by = c("area_code", "year")) %>%
       filter(!is.na(currentUSD_per_baseyearUSD))
 
-    rm(FAO_For_Exp_m3_USD_FORESTAT,
+    rm(GCAMDATA_FAOSTAT_ForExportPrice_214Regs_Roundwood_1973to2020,
        L100.FAO_for_ExpPrice_0, L100.FAO_for_ExpPrice_1,
        L100.FAO_GDP_Deflators)
 
@@ -314,7 +317,7 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
       add_precursors("common/iso_GCAM_regID",
                      "common/GCAM_region_names",
                      "aglu/AGLU_ctry",
-                     "aglu/FAO/FAO_ag_an_ProducerPrice",
+                     "aglu/FAO/GCAMDATA_FAOSTAT_ProducerPrice_170Regs_185PrimaryItems_2010to2020",
                      "aglu/FAO/FAO_ag_items_PRODSTAT",
                      "aglu/FAO/FAO_an_items_PRODSTAT",
                      "common/FAO_GDP_Deflators",
@@ -328,7 +331,7 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
       same_precursors_as(L1321.ag_prP_R_C_75USDkg) %>%
       add_precursors("common/iso_GCAM_regID",
                      "common/GCAM_region_names",
-                     "aglu/FAO/FAO_ag_an_ProducerPrice",
+                     "aglu/FAO/GCAMDATA_FAOSTAT_ProducerPrice_170Regs_185PrimaryItems_2010to2020",
                      "aglu/FAO/FAO_ag_items_PRODSTAT",
                      "aglu/FAO/FAO_an_items_PRODSTAT",
                      "common/FAO_GDP_Deflators") ->
@@ -341,7 +344,7 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
       add_precursors("common/iso_GCAM_regID",
                      "common/GCAM_region_names",
                      "aglu/AGLU_ctry",
-                     "aglu/FAO/FAO_For_Exp_m3_USD_FORESTAT",
+                     "aglu/FAO/GCAMDATA_FAOSTAT_ForExportPrice_214Regs_Roundwood_1973to2020",
                      "common/FAO_GDP_Deflators") ->
       L1321.expP_R_F_75USDm3
 
