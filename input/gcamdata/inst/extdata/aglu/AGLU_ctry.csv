@@ -1,7 +1,7 @@
 # File: AGLU_ctry.csv
 # Title: Mapping of countries in AGLU databases to ISO codes
 # Units: NA
-# Description: Note that both French Guiana and French Guyana are added for now and  Saint Helena, Ascension and Tristan da Cunha is added. Area_code should be used later, though they are the same region. Function FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL deals with region changes over time in gcamdata.
+# Description: Note that both French Guiana and French Guyana are added for now and  Saint Helena, Ascension and Tristan da Cunha is added. Area_code should be used later, though they are the same region. Function FAO_AREA_DISAGGREGATE_HIST_DISSOLUTION_ALL deals with region changes over time in gcamdata.,,,,,,,,
 # Last update: 4-2-2022 (XZ)
 # Column types: ccccicccicc
 # ----------
@@ -249,6 +249,7 @@ Tonga,ton,xoc,TONG,160,Tonga,,Rest of world,24,Oceania,South Asia
 Trinidad and Tobago,tto,xfa,TRIN,49,Trinidad and Tobago,,Rest of world,4,Rest Central America,Latin America and Caribbean
 Tunisia,tun,tun,TUNI,3,Tunisia,,Rest of world,7,Northern Africa,sub-Saharan Africa
 Turkey,tur,tur,TURK,73,Turkey,TURKEY,Turkey,13,Turkey,Industrial countries
+Turkiye,tur,tur,TURK,73,Turkey,TURKEY,Turkey,13,Turkey,Industrial countries
 Turkmenistan,tkm,xsu,CEAS,198,Turkmenistan,,Rest of world,15,Asia-Stan,Transition countries
 Turks and Caicos Islands,tca,xcb,,,,,Rest of world,4,Rest Central America,Latin America and Caribbean
 Tuvalu,tuv,xoc,,,Tuvalu,,Rest of world,24,Oceania,South Asia
