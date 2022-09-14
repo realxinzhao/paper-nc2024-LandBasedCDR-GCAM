@@ -33,12 +33,15 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
       FILE = "aglu/FAO/GCAMDATA_FAOSTAT_ProducerPrice_170Regs_185PrimaryItems_2010to2020",
       FILE = "aglu/FAO/GCAMDATA_FAOSTAT_ForExportPrice_214Regs_Roundwood_1973to2020")
 
+  MODULE_OUTPUTS <-
+    c("L1321.ag_prP_R_C_75USDkg",
+      "L1321.an_prP_R_C_75USDkg",
+      "L1321.expP_R_F_75USDm3")
+
   if(command == driver.DECLARE_INPUTS) {
     return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L1321.ag_prP_R_C_75USDkg",
-             "L1321.an_prP_R_C_75USDkg",
-             "L1321.expP_R_F_75USDm3"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     year <- value <- Year <- Value <- FAO_country <- iso <- deflator <-
@@ -348,9 +351,7 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
                      "common/FAO_GDP_Deflators") ->
       L1321.expP_R_F_75USDm3
 
-    return_data(L1321.ag_prP_R_C_75USDkg,
-                L1321.an_prP_R_C_75USDkg,
-                L1321.expP_R_F_75USDm3)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }
