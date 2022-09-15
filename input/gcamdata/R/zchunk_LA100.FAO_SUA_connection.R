@@ -86,27 +86,6 @@ module_aglu_LA100.FAO_SUA_connection <- function(command, ...) {
     ungroup() %>%
     filter(year %in% aglu.AGLU_HISTORICAL_YEARS)
 
-    # temp rm later----
-    # L100.FAO_SUA_APE_balance %>%
-    #   filter(GCAM_commodity == "SheepGoat", year == 2015) %>%
-    #   spread(element, value) %>%
-    #   summarise_if(is.numeric, sum) %>%
-    #   mutate(FOOD_PROD = Food / Production) %>% pull(FOOD_PROD)
-    #
-    # L100.FAO_SUA_APE_balance %>%
-    #   filter(!(GCAM_commodity == "SheepGoat" & year == 2015 &
-    #            element %in% c("Other uses", "Food"))) %>%
-    #   bind_rows(
-    #     L100.FAO_SUA_APE_balance %>%
-    #       filter(GCAM_commodity == "SheepGoat", year == 2015,
-    #              element %in% c("Other uses", "Food")) %>%
-    #       spread(element, value) %>%
-    #       mutate(`Other uses` = `Other uses` + Food - Food / 1.015,
-    #              Food = Food / 1.015 ) %>%
-    #       gather(element, value, "Other uses", "Food")
-    #   ) ->
-    #   L100.FAO_SUA_APE_balance
-
 
 
     # 2. Primary crop and meat production and harvested area ----
@@ -150,7 +129,8 @@ module_aglu_LA100.FAO_SUA_connection <- function(command, ...) {
           L100.FAO_ag_HA_ha %>%
             group_by(iso, GCAM_commodity, GCAM_subsector, year, GCAM_region_ID) %>%
             summarise(Area_harvested_ha = sum(value), .groups = "drop") %>%
-            ungroup() )
+            ungroup(),
+          by = c("iso", "GCAM_commodity", "GCAM_subsector", "year", "GCAM_region_ID") )
 
     ### clean ----
     rm(FAO_AgArea_Kha_All)
