@@ -26,14 +26,16 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
       "L108.ag_Feed_Mt_R_C_Y",
       "L108.ag_NetExp_Mt_R_FodderHerb_Y",
       "L122.in_Mt_R_C_Yh",
-      "L1091.GrossTrade_Mt_R_C_Y"
-    )
+      "L1091.GrossTrade_Mt_R_C_Y")
+
+  MODULE_OUTPUTS <-
+    c("L109.ag_ALL_Mt_R_C_Y",
+      "L109.an_ALL_Mt_R_C_Y")
 
   if(command == driver.DECLARE_INPUTS) {
     return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L109.ag_ALL_Mt_R_C_Y",
-             "L109.an_ALL_Mt_R_C_Y"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     year <- value <- GCAM_region_ID <- GCAM_commodity <- . <- flow <- Feed_Mt <-
@@ -372,7 +374,7 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
                      "L1091.GrossTrade_Mt_R_C_Y") ->
       L109.an_ALL_Mt_R_C_Y
 
-    return_data(L109.ag_ALL_Mt_R_C_Y, L109.an_ALL_Mt_R_C_Y)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }

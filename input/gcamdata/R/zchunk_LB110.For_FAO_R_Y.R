@@ -18,13 +18,20 @@
 #' @importFrom dplyr bind_rows filter group_by mutate select summarise summarise_all
 #' @author MC and ACS March 2017
 module_aglu_LB110.For_FAO_R_Y <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c(FILE = "common/iso_GCAM_regID",
+      "L100.FAO_For_Prod_m3",
+      "L100.FAO_For_Imp_m3",
+      "L100.FAO_For_Exp_m3")
+
+  MODULE_OUTPUTS <-
+    c("L110.For_ALL_bm3_R_Y")
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c(FILE = "common/iso_GCAM_regID",
-             "L100.FAO_For_Prod_m3",
-             "L100.FAO_For_Imp_m3",
-             "L100.FAO_For_Exp_m3"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L110.For_ALL_bm3_R_Y"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     value <- flow <- GCAM_region_ID <- GCAM_commodity <- year <- Prod_bm3 <-
@@ -33,10 +40,12 @@ module_aglu_LB110.For_FAO_R_Y <- function(command, ...) {
     all_data <- list(...)[[1]]
 
     # Load required inputs ----
-    iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
-    L100.FAO_For_Prod_m3 <- get_data(all_data, "L100.FAO_For_Prod_m3")
-    L100.FAO_For_Imp_m3 <- get_data(all_data, "L100.FAO_For_Imp_m3")
-    L100.FAO_For_Exp_m3 <- get_data(all_data, "L100.FAO_For_Exp_m3")
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
 
     # indicate flow on each tibble - flow is a directional quantity indicating net export or production
@@ -164,7 +173,7 @@ module_aglu_LB110.For_FAO_R_Y <- function(command, ...) {
                      "L100.FAO_For_Exp_m3") ->
       L110.For_ALL_bm3_R_Y
 
-    return_data(L110.For_ALL_bm3_R_Y)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }

@@ -18,22 +18,29 @@
 #' @importFrom stats weighted.mean
 #' @author BBL April 2017
 module_aglu_LB121.Carbon_LT <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c(FILE = "aglu/SAGE_LT",
+      FILE = "aglu/Various_CarbonData_LTsage",
+      FILE = "aglu/Various_Tree_C_yield_ratios",
+      FILE = "aglu/FAO/FAO_ag_items_PRODSTAT",
+      FILE = "common/iso_GCAM_regID",
+      "L100.LDS_ag_HA_ha",
+      "L100.LDS_ag_prod_t",
+      "L120.LC_bm2_R_LT_Yh_GLU",
+      "L120.LC_bm2_ctry_LTsage_GLU",
+      "L120.LC_bm2_ctry_LTpast_GLU",
+      "L120.LC_soil_veg_carbon_GLU")
+
+  MODULE_OUTPUTS <-
+    c("L121.CarbonContent_kgm2_R_LT_GLU",
+      "L121.Yield_kgm2_R_Past_GLU",
+      "L121.CarbonContent_kgm2_R_TreeCrop_GLU")
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c(FILE = "aglu/SAGE_LT",
-             FILE = "aglu/Various_CarbonData_LTsage",
-             FILE = "aglu/Various_Tree_C_yield_ratios",
-             FILE = "aglu/FAO/FAO_ag_items_PRODSTAT",
-             FILE = "common/iso_GCAM_regID",
-             "L100.LDS_ag_HA_ha",
-             "L100.LDS_ag_prod_t",
-             "L120.LC_bm2_R_LT_Yh_GLU",
-             "L120.LC_bm2_ctry_LTsage_GLU",
-             "L120.LC_bm2_ctry_LTpast_GLU",
-             "L120.LC_soil_veg_carbon_GLU"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L121.CarbonContent_kgm2_R_LT_GLU",
-             "L121.Yield_kgm2_R_Past_GLU",
-             "L121.CarbonContent_kgm2_R_TreeCrop_GLU"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     unit <- value <- Source <- variable <- pasture_yield <- GCAM_region_ID <-
@@ -43,18 +50,12 @@ module_aglu_LB121.Carbon_LT <- function(command, ...) {
     all_data <- list(...)[[1]]
 
     # Load required inputs
-    SAGE_LT <- get_data(all_data, "aglu/SAGE_LT")
-    Various_CarbonData_LTsage <- get_data(all_data, "aglu/Various_CarbonData_LTsage")
-    Various_Tree_C_yield_ratios <- get_data(all_data, "aglu/Various_Tree_C_yield_ratios")
-    iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
-    FAO_ag_items_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_items_PRODSTAT")
-    L100.LDS_ag_prod_t <- get_data(all_data, "L100.LDS_ag_prod_t")
-    L100.LDS_ag_HA_ha <- get_data(all_data, "L100.LDS_ag_HA_ha")
-    L120.LC_bm2_R_LT_Yh_GLU <- get_data(all_data, "L120.LC_bm2_R_LT_Yh_GLU")
-    L120.LC_bm2_ctry_LTsage_GLU <- get_data(all_data, "L120.LC_bm2_ctry_LTsage_GLU")
-    L120.LC_bm2_ctry_LTpast_GLU <- get_data(all_data, "L120.LC_bm2_ctry_LTpast_GLU")
-    L120.LC_soil_veg_carbon_GLU <- get_data(all_data, "L120.LC_soil_veg_carbon_GLU", strip_attributes = TRUE)
-
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
     # Convert characteristics by land type to correct units (kgC/m2)
     Various_CarbonData_LTsage %>%
@@ -172,7 +173,7 @@ module_aglu_LB121.Carbon_LT <- function(command, ...) {
                      "common/iso_GCAM_regID", "aglu/FAO/FAO_ag_items_PRODSTAT") ->
       L121.CarbonContent_kgm2_R_TreeCrop_GLU
 
-    return_data(L121.CarbonContent_kgm2_R_LT_GLU, L121.Yield_kgm2_R_Past_GLU, L121.CarbonContent_kgm2_R_TreeCrop_GLU)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }

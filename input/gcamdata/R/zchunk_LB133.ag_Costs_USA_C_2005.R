@@ -23,17 +23,24 @@
 #' @importFrom tidyr replace_na spread
 #' @author ACS May 2017
 module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c(FILE = "aglu/USDA/USDA_crops",
+      FILE = "aglu/USDA/USDA_item_cost",
+      FILE = "aglu/FAO/FAO_ag_items_PRODSTAT",
+      FILE = "aglu/USDA/USDA_cost_data",
+      "L100.LDS_ag_HA_ha",
+      "L100.LDS_ag_prod_t",
+      "L1321.ag_prP_R_C_75USDkg")
+
+  MODULE_OUTPUTS <-
+    c("L133.USDA_cost_data",
+      "L133.ag_Cost_75USDkg_C")
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c(FILE = "aglu/USDA/USDA_crops",
-             FILE = "aglu/USDA/USDA_item_cost",
-             FILE = "aglu/FAO/FAO_ag_items_PRODSTAT",
-             FILE = "aglu/USDA/USDA_cost_data",
-             "L100.LDS_ag_HA_ha",
-             "L100.LDS_ag_prod_t",
-             "L1321.ag_prP_R_C_75USDkg"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L133.USDA_cost_data",
-             "L133.ag_Cost_75USDkg_C"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     year <- value <- Crop <- Item <- Unit <- cost_type <- GCAM_commodity <-
@@ -45,13 +52,12 @@ module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
     all_data <- list(...)[[1]]
 
     # Load required inputs
-    USDA_crops <- get_data(all_data, "aglu/USDA/USDA_crops")
-    USDA_item_cost <- get_data(all_data, "aglu/USDA/USDA_item_cost")
-    FAO_ag_items_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_items_PRODSTAT")
-    USDA_cost_data <- get_data(all_data, "aglu/USDA/USDA_cost_data")
-    L100.LDS_ag_HA_ha <- get_data(all_data, "L100.LDS_ag_HA_ha")
-    L100.LDS_ag_prod_t <- get_data(all_data, "L100.LDS_ag_prod_t")
-    L1321.ag_prP_R_C_75USDkg <- get_data(all_data, "L1321.ag_prP_R_C_75USDkg")
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
     # convert USDA_cost_data to long form
     # Next, Take USDA item cost data from input table USDA_cost_data, and add GCAM commodity and GTAP crop mapping info
@@ -369,7 +375,7 @@ module_aglu_LB133.ag_Costs_USA_C_2005 <- function(command, ...) {
                      "L1321.ag_prP_R_C_75USDkg") ->
       L133.ag_Cost_75USDkg_C
 
-    return_data(L133.USDA_cost_data, L133.ag_Cost_75USDkg_C)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }

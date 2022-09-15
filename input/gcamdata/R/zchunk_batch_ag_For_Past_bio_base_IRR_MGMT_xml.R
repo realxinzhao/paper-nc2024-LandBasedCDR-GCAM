@@ -11,31 +11,35 @@
 #' the generated outputs: \code{ag_For_Past_bio_base_IRR_MGMT.xml}. The corresponding file in the
 #' original data system was \code{batch_ag_For_Past_bio_base_IRR_MGMT.xml.R} (aglu XML).
 module_aglu_batch_ag_For_Past_bio_base_IRR_MGMT_xml <- function(command, ...) {
-  if(command == driver.DECLARE_INPUTS) {
-    return(c("L2012.AgSupplySector",
-             "L2012.AgSupplySubsector",
-             "L2012.AgProduction_ag_irr_mgmt",
-             "L2012.AgProduction_For",
-             "L2012.AgProduction_Past",
-             #"L2012.AgHAtoCL_irr_mgmt", # Note (XZ): not exporting HAtoCL as not used in GCAM; this should be examined later.
-             "L2012.AgYield_bio_ref",
-			 "L2012.AgTechYr_Past"))
 
+  MODULE_INPUTS <-
+    c("L2012.AgSupplySector",
+      "L2012.AgSupplySubsector",
+      "L2012.AgProduction_ag_irr_mgmt",
+      "L2012.AgProduction_For",
+      "L2012.AgProduction_Past",
+      #"L2012.AgHAtoCL_irr_mgmt", # Note (XZ): not exporting HAtoCL as not used in GCAM; this should be examined later.
+      "L2012.AgYield_bio_ref",
+      "L2012.AgTechYr_Past")
+
+  MODULE_OUTPUTS <-
+    c(XML = "ag_For_Past_bio_base_IRR_MGMT.xml")
+
+  if(command == driver.DECLARE_INPUTS) {
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c(XML = "ag_For_Past_bio_base_IRR_MGMT.xml"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     all_data <- list(...)[[1]]
 
     # Load required inputs
-    L2012.AgSupplySector <- get_data(all_data, "L2012.AgSupplySector")
-    L2012.AgSupplySubsector <- get_data(all_data, "L2012.AgSupplySubsector")
-    L2012.AgProduction_ag_irr_mgmt <- get_data(all_data, "L2012.AgProduction_ag_irr_mgmt")
-    L2012.AgProduction_For <- get_data(all_data, "L2012.AgProduction_For")
-    L2012.AgProduction_Past <- get_data(all_data, "L2012.AgProduction_Past")
-    #L2012.AgHAtoCL_irr_mgmt <- get_data(all_data, "L2012.AgHAtoCL_irr_mgmt")
-    L2012.AgYield_bio_ref <- get_data(all_data, "L2012.AgYield_bio_ref")
-    L2012.AgTechYr_Past <- get_data(all_data, "L2012.AgTechYr_Past")
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
     # ===================================================
 
@@ -54,7 +58,7 @@ module_aglu_batch_ag_For_Past_bio_base_IRR_MGMT_xml <- function(command, ...) {
                      "L2012.AgYield_bio_ref", "L2012.AgSupplySector", "L2012.AgTechYr_Past") ->
       ag_For_Past_bio_base_IRR_MGMT.xml
 
-    return_data(ag_For_Past_bio_base_IRR_MGMT.xml)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }

@@ -16,15 +16,22 @@
 #' @importFrom tidyr complete gather nesting spread
 #' @author BBL June 2017
 module_aglu_LA100.IMAGE_downscale_ctry_yr <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c(FILE = "aglu/AGLU_ctry",
+      FILE = "aglu/IMAGE/IMAGE_an_Feedfrac_Rimg_C_Sys_Fd_Y",
+      FILE = "aglu/IMAGE/IMAGE_an_FeedIO_Rimg_C_Sys_Y",
+      FILE = "aglu/IMAGE/IMAGE_an_Prodmixfrac_Rimg_C_Y")
+
+  MODULE_OUTPUTS <-
+    c("L100.IMAGE_an_Feedfrac_ctry_C_Sys_Fd_Y",
+      "L100.IMAGE_an_FeedIO_ctry_C_Sys_Y",
+      "L100.IMAGE_an_Prodmixfrac_ctry_C_Y")
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c(FILE = "aglu/AGLU_ctry",
-             FILE = "aglu/IMAGE/IMAGE_an_Feedfrac_Rimg_C_Sys_Fd_Y",
-             FILE = "aglu/IMAGE/IMAGE_an_FeedIO_Rimg_C_Sys_Y",
-             FILE = "aglu/IMAGE/IMAGE_an_Prodmixfrac_Rimg_C_Y"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L100.IMAGE_an_Feedfrac_ctry_C_Sys_Fd_Y",
-             "L100.IMAGE_an_FeedIO_ctry_C_Sys_Y",
-             "L100.IMAGE_an_Prodmixfrac_ctry_C_Y"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     all_data <- list(...)[[1]]
@@ -33,10 +40,12 @@ module_aglu_LA100.IMAGE_downscale_ctry_yr <- function(command, ...) {
       input <- iso <- year <- NULL # silence package check notes
 
     # Load required inputs
-    AGLU_ctry <- get_data(all_data, "aglu/AGLU_ctry")
-    IMAGE_an_Feedfrac_Rimg_C_Sys_Fd_Y <- get_data(all_data, "aglu/IMAGE/IMAGE_an_Feedfrac_Rimg_C_Sys_Fd_Y")
-    IMAGE_an_FeedIO_Rimg_C_Sys_Y <- get_data(all_data, "aglu/IMAGE/IMAGE_an_FeedIO_Rimg_C_Sys_Y")
-    IMAGE_an_Prodmixfrac_Rimg_C_Y <- get_data(all_data, "aglu/IMAGE/IMAGE_an_Prodmixfrac_Rimg_C_Y")
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
     # Helper function: copy data to a new year
     create_new_yeardata <- function(x, source_year, new_year) {
@@ -148,7 +157,7 @@ module_aglu_LA100.IMAGE_downscale_ctry_yr <- function(command, ...) {
                      "aglu/IMAGE/IMAGE_an_Prodmixfrac_Rimg_C_Y") ->
       L100.IMAGE_an_Prodmixfrac_ctry_C_Y
 
-    return_data(L100.IMAGE_an_Feedfrac_ctry_C_Sys_Fd_Y, L100.IMAGE_an_FeedIO_ctry_C_Sys_Y, L100.IMAGE_an_Prodmixfrac_ctry_C_Y)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }

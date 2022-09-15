@@ -20,15 +20,22 @@
 #' @importFrom tidyr complete nesting replace_na
 #' @author KVC April 2017
 module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c(FILE = "common/iso_GCAM_regID",
+      "L101.ag_Feed_Mt_R_C_Y",
+      "L101.ag_Prod_Mt_R_C_Y",
+      "L107.an_Feed_Mt_R_C_Sys_Fd_Y",
+      "L122.FeedOut_Mt_R_C_Yh")
+
+  MODULE_OUTPUTS <-
+    c("L108.ag_Feed_Mt_R_C_Y",
+      "L108.ag_NetExp_Mt_R_FodderHerb_Y")
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c(FILE = "common/iso_GCAM_regID",
-             "L101.ag_Feed_Mt_R_C_Y",
-             "L101.ag_Prod_Mt_R_C_Y",
-             "L107.an_Feed_Mt_R_C_Sys_Fd_Y",
-             "L122.FeedOut_Mt_R_C_Yh"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L108.ag_Feed_Mt_R_C_Y",
-             "L108.ag_NetExp_Mt_R_FodderHerb_Y"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     iso <- item <- year <- value <- GCAM_commodity <- GCAM_region_ID <- feed <-
@@ -40,11 +47,12 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
     all_data <- list(...)[[1]]
 
     # Load required inputs
-    iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
-    L101.ag_Feed_Mt_R_C_Y <- get_data(all_data, "L101.ag_Feed_Mt_R_C_Y")
-    L101.ag_Prod_Mt_R_C_Y <- get_data(all_data, "L101.ag_Prod_Mt_R_C_Y", strip_attributes = TRUE)
-    L107.an_Feed_Mt_R_C_Sys_Fd_Y <- get_data(all_data, "L107.an_Feed_Mt_R_C_Sys_Fd_Y")
-    L122.FeedOut_Mt_R_C_Yh <- get_data(all_data, "L122.FeedOut_Mt_R_C_Yh")
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
     # 4/12/2019 revision - include DDGS and feedcakes. This is somewhat complicated. FAOSTAT includes oilcrop feedcakes
     # (e.g., soybean, rapeseed) that are co-produced with oils, irrespective of whether the oil is later used to produce
@@ -264,7 +272,7 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
       same_precursors_as("L108.ag_Feed_Mt_R_C_Y") ->
       L108.ag_NetExp_Mt_R_FodderHerb_Y
 
-    return_data(L108.ag_Feed_Mt_R_C_Y, L108.ag_NetExp_Mt_R_FodderHerb_Y)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }

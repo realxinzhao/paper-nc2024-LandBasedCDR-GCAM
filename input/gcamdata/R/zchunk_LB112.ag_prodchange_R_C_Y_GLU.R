@@ -18,18 +18,25 @@
 #' @importFrom stats median
 #' @author RC April 2017
 module_aglu_LB112.ag_prodchange_R_C_Y_GLU <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c(FILE = "common/iso_GCAM_regID",
+      FILE = "aglu/A_defaultYieldRate",
+      FILE = "aglu/AGLU_ctry",
+      FILE = "aglu/FAO/FAO_ag_items_PRODSTAT",
+      FILE = "aglu/FAO/FAO_ag_CROSIT",
+      "L100.LDS_ag_HA_ha",
+      "L101.ag_Prod_Mt_R_C_Y_GLU")
+
+  MODULE_OUTPUTS <-
+    c("L112.ag_YieldRatio_R_C_Ysy_GLU",
+      "L112.ag_YieldRate_R_C_Y_GLU",
+      "L112.bio_YieldRate_R_Y_GLU")
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c(FILE = "common/iso_GCAM_regID",
-             FILE = "aglu/A_defaultYieldRate",
-             FILE = "aglu/AGLU_ctry",
-             FILE = "aglu/FAO/FAO_ag_items_PRODSTAT",
-             FILE = "aglu/FAO/FAO_ag_CROSIT",
-             "L100.LDS_ag_HA_ha",
-             "L101.ag_Prod_Mt_R_C_Y_GLU"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L112.ag_YieldRatio_R_C_Ysy_GLU",
-             "L112.ag_YieldRate_R_C_Y_GLU",
-             "L112.bio_YieldRate_R_Y_GLU"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     CROSIT_ctry <- CROSIT_country_ID <- CROSIT_crop <- CROSIT_cropID <- year <-
@@ -44,13 +51,12 @@ module_aglu_LB112.ag_prodchange_R_C_Y_GLU <- function(command, ...) {
     all_data <- list(...)[[1]]
 
     # Load required inputs
-    iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
-    A_defaultYieldRate <- get_data(all_data, "aglu/A_defaultYieldRate")
-    AGLU_ctry <- get_data(all_data, "aglu/AGLU_ctry")
-    FAO_ag_items_PRODSTAT <- get_data(all_data, "aglu/FAO/FAO_ag_items_PRODSTAT")
-    FAO_ag_CROSIT <- get_data(all_data, "aglu/FAO/FAO_ag_CROSIT")
-    L100.LDS_ag_HA_ha <- get_data(all_data, "L100.LDS_ag_HA_ha")
-    L101.ag_Prod_Mt_R_C_Y_GLU <- get_data(all_data, "L101.ag_Prod_Mt_R_C_Y_GLU", strip_attributes = TRUE)
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
     # Initial preparation of CROSIT database
     # Mapping file for CROSIT country name and country ID
@@ -398,7 +404,7 @@ module_aglu_LB112.ag_prodchange_R_C_Y_GLU <- function(command, ...) {
                      "L101.ag_Prod_Mt_R_C_Y_GLU") ->
       L112.bio_YieldRate_R_Y_GLU
 
-    return_data(L112.ag_YieldRatio_R_C_Ysy_GLU, L112.ag_YieldRate_R_C_Y_GLU, L112.bio_YieldRate_R_Y_GLU)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }
