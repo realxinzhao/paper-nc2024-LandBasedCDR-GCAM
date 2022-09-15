@@ -45,34 +45,35 @@ module_aglu_L202.an_input <- function(command, ...) {
       "L1321.ag_prP_R_C_75USDkg",
       "L1321.an_prP_R_C_75USDkg")
 
+  MODULE_OUTPUTS <-
+    c("L202.RenewRsrc",
+      "L202.RenewRsrcPrice",
+      "L202.maxSubResource",
+      "L202.RenewRsrcCurves",
+      "L202.ResTechShrwt",
+      "L202.UnlimitedRenewRsrcCurves",
+      "L202.UnlimitedRenewRsrcPrice",
+      "L202.Supplysector_in",
+      "L202.SubsectorAll_in",
+      "L202.SubsectorInterpTo_in",
+      "L202.StubTech_in",
+      "L202.StubTechInterp_in",
+      "L202.GlobalTechCoef_in",
+      "L202.GlobalTechShrwt_in",
+      "L202.StubTechProd_in",
+      "L202.Supplysector_an",
+      "L202.SubsectorAll_an",
+      "L202.GlobalTechShrwt_an",
+      "L202.StubTechInterp_an",
+      "L202.StubTechProd_an",
+      "L202.StubTechCoef_an",
+      "L202.StubTechCost_an",
+      "L202.ag_consP_R_C_75USDkg")
 
   if(command == driver.DECLARE_INPUTS) {
     return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L202.RenewRsrc",
-             "L202.RenewRsrcPrice",
-             "L202.maxSubResource",
-             "L202.RenewRsrcCurves",
-             "L202.ResTechShrwt",
-             "L202.UnlimitedRenewRsrcCurves",
-             "L202.UnlimitedRenewRsrcPrice",
-             "L202.Supplysector_in",
-             "L202.SubsectorAll_in",
-             "L202.SubsectorInterpTo_in",
-             "L202.StubTech_in",
-             "L202.StubTechInterp_in",
-             "L202.GlobalTechCoef_in",
-             "L202.GlobalTechShrwt_in",
-             "L202.StubTechProd_in",
-             "L202.Supplysector_an",
-             "L202.SubsectorAll_an",
-             "L202.GlobalTechShrwt_an",
-             "L202.StubTechInterp_an",
-             "L202.StubTechProd_an",
-             "L202.StubTechCoef_an",
-             "L202.StubTechCost_an",
-             "L202.ag_consP_R_C_75USDkg"
-             ))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     all_data <- list(...)[[1]]
@@ -709,12 +710,7 @@ module_aglu_L202.an_input <- function(command, ...) {
       L202.ag_consP_R_C_75USDkg
 
 
-    return_data(L202.RenewRsrc, L202.RenewRsrcPrice, L202.maxSubResource, L202.RenewRsrcCurves, L202.ResTechShrwt,
-                L202.UnlimitedRenewRsrcCurves, L202.UnlimitedRenewRsrcPrice, L202.Supplysector_in,
-                L202.SubsectorAll_in, L202.SubsectorInterpTo_in, L202.StubTech_in, L202.StubTechInterp_in, L202.GlobalTechCoef_in,
-                L202.GlobalTechShrwt_in, L202.StubTechProd_in, L202.Supplysector_an, L202.SubsectorAll_an,
-                L202.GlobalTechShrwt_an, L202.StubTechInterp_an, L202.StubTechProd_an, L202.StubTechCoef_an,
-                L202.StubTechCost_an, L202.ag_consP_R_C_75USDkg)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }

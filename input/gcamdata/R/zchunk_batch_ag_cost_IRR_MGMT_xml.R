@@ -11,21 +11,30 @@
 #' the generated outputs: \code{ag_cost_IRR_MGMT.xml}. The corresponding file in the
 #' original data system was \code{batch_ag_cost_IRR_MGMT_xml.R} (aglu XML).
 module_aglu_batch_ag_cost_IRR_MGMT_xml <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c("L2062.AgCost_ag_irr_mgmt_adj",
+      "L2062.AgCost_bio_irr_mgmt_adj",
+      "L2052.AgCost_For")
+
+  MODULE_OUTPUTS <-
+    c(XML = "ag_cost_IRR_MGMT.xml")
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c("L2062.AgCost_ag_irr_mgmt_adj",
-             "L2062.AgCost_bio_irr_mgmt_adj",
-             # Note that L2052.Agcost ag and bio files are replaced by L2062 ones as fertilizer costs were adjusted
-             "L2052.AgCost_For"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c(XML = "ag_cost_IRR_MGMT.xml"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     all_data <- list(...)[[1]]
 
     # Load required inputs
-    L2062.AgCost_ag_irr_mgmt_adj <- get_data(all_data, "L2062.AgCost_ag_irr_mgmt_adj")
-    L2062.AgCost_bio_irr_mgmt_adj <- get_data(all_data, "L2062.AgCost_bio_irr_mgmt_adj")
-    L2052.AgCost_For <- get_data(all_data, "L2052.AgCost_For")
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
     # ===================================================
 
@@ -37,7 +46,7 @@ module_aglu_batch_ag_cost_IRR_MGMT_xml <- function(command, ...) {
       add_precursors("L2062.AgCost_ag_irr_mgmt_adj", "L2062.AgCost_bio_irr_mgmt_adj", "L2052.AgCost_For") ->
       ag_cost_IRR_MGMT.xml
 
-    return_data(ag_cost_IRR_MGMT.xml)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }

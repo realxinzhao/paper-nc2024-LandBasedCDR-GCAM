@@ -17,15 +17,20 @@
 #' @importFrom tidyr gather spread
 #' @author RC March 2017 XZ 2022
 module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c("L100.FAO_ag_Prod_t",
+      FILE = "aglu/Various_ag_resbio_data",
+      FILE = "aglu/Various_ag_resbio_data_SI")
+
+  MODULE_OUTPUTS <-
+    c("L111.ag_resbio_R_C",
+      "L111.ag_resbio_R_C_beforeadjust")
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c("L100.FAO_ag_Prod_t",
-             FILE = "aglu/Various_ag_resbio_data",
-             FILE = "aglu/Various_ag_resbio_data_SI"))
-    return(c("L100.FAO_ag_Prod_t",
-             FILE = "aglu/Various_ag_resbio_data"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L111.ag_resbio_R_C_beforeadjust",
-             "L111.ag_resbio_R_C"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     iso <- item <- year <- value <- resbio_params <- GCAM_region_ID <-
@@ -34,10 +39,12 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
     all_data <- list(...)[[1]]
 
     # Load required inputs
-    L100.FAO_ag_Prod_t <- get_data(all_data, "L100.FAO_ag_Prod_t")
-    Various_ag_resbio_data <- get_data(all_data, "aglu/Various_ag_resbio_data")
-    Various_ag_resbio_data_SI <- get_data(all_data, "aglu/Various_ag_resbio_data_SI") %>%
-      select(-Source)
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
     # Future development: L111.ag_resbio_R_C should be differentiated by GCAM_subsector
 
@@ -103,8 +110,7 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
                      "aglu/Various_ag_resbio_data_SI") ->
       L111.ag_resbio_R_C
 
-    return_data(L111.ag_resbio_R_C_beforeadjust,
-                L111.ag_resbio_R_C)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }

@@ -19,16 +19,24 @@
 #' @importFrom tidyr replace_na
 #' @author ACS April 2017
 module_aglu_LA107.an_IMAGE_R_C_Sys_Fd_Y <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c(FILE = "common/iso_GCAM_regID",
+      "L100.IMAGE_an_Prodmixfrac_ctry_C_Y",
+      "L100.IMAGE_an_Feedfrac_ctry_C_Sys_Fd_Y",
+      "L100.IMAGE_an_FeedIO_ctry_C_Sys_Y",
+      "L105.an_Prod_Mt_ctry_C_Y")
+
+  MODULE_OUTPUTS <-
+    c("L107.an_Prod_Mt_R_C_Sys_Fd_Y",
+      "L107.an_Feed_Mt_R_C_Sys_Fd_Y",
+      "L107.an_FeedIO_R_C_Sys_Fd_Y")
+
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c(FILE = "common/iso_GCAM_regID",
-             "L100.IMAGE_an_Prodmixfrac_ctry_C_Y",
-             "L100.IMAGE_an_Feedfrac_ctry_C_Sys_Fd_Y",
-             "L100.IMAGE_an_FeedIO_ctry_C_Sys_Y",
-             "L105.an_Prod_Mt_ctry_C_Y"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L107.an_Prod_Mt_R_C_Sys_Fd_Y",
-             "L107.an_Feed_Mt_R_C_Sys_Fd_Y",
-             "L107.an_FeedIO_R_C_Sys_Fd_Y"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     year <- value <- iso <- IMAGE_region_ID <- commodity <- input <-
@@ -38,11 +46,12 @@ module_aglu_LA107.an_IMAGE_R_C_Sys_Fd_Y <- function(command, ...) {
     all_data <- list(...)[[1]]
 
     # Load required inputs
-    iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
-    L100.IMAGE_an_Prodmixfrac_ctry_C_Y <- get_data(all_data, "L100.IMAGE_an_Prodmixfrac_ctry_C_Y")
-    L100.IMAGE_an_Feedfrac_ctry_C_Sys_Fd_Y <- get_data(all_data, "L100.IMAGE_an_Feedfrac_ctry_C_Sys_Fd_Y")
-    L100.IMAGE_an_FeedIO_ctry_C_Sys_Y <- get_data(all_data, "L100.IMAGE_an_FeedIO_ctry_C_Sys_Y")
-    L105.an_Prod_Mt_ctry_C_Y <- get_data(all_data, "L105.an_Prod_Mt_ctry_C_Y")
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
     # Perform computations:
     #
@@ -227,7 +236,7 @@ module_aglu_LA107.an_IMAGE_R_C_Sys_Fd_Y <- function(command, ...) {
       L107.an_FeedIO_R_C_Sys_Fd_Y
 
 
-    return_data(L107.an_Prod_Mt_R_C_Sys_Fd_Y, L107.an_Feed_Mt_R_C_Sys_Fd_Y, L107.an_FeedIO_R_C_Sys_Fd_Y)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }

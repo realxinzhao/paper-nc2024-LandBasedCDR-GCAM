@@ -11,18 +11,29 @@
 #' the generated outputs: \code{ag_Fert_IRR_MGMT.xml}. The corresponding file in the
 #' original data system was \code{batch_ag_Fert_IRR_MGMT.xml} (aglu XML).
 module_aglu_batch_ag_Fert_IRR_MGMT_xml <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c("L2062.AgCoef_Fert_ag_irr_mgmt",
+      "L2062.AgCoef_Fert_bio_irr_mgmt")
+
+  MODULE_OUTPUTS <-
+    c(XML = "ag_Fert_IRR_MGMT.xml")
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c("L2062.AgCoef_Fert_ag_irr_mgmt",
-             "L2062.AgCoef_Fert_bio_irr_mgmt"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c(XML = "ag_Fert_IRR_MGMT.xml"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     all_data <- list(...)[[1]]
 
     # Load required inputs
-    L2062.AgCoef_Fert_ag_irr_mgmt <- get_data(all_data, "L2062.AgCoef_Fert_ag_irr_mgmt")
-    L2062.AgCoef_Fert_bio_irr_mgmt <- get_data(all_data, "L2062.AgCoef_Fert_bio_irr_mgmt")
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
     # ===================================================
 
     # Produce outputs
@@ -32,7 +43,7 @@ module_aglu_batch_ag_Fert_IRR_MGMT_xml <- function(command, ...) {
       add_precursors("L2062.AgCoef_Fert_ag_irr_mgmt", "L2062.AgCoef_Fert_bio_irr_mgmt") ->
       ag_Fert_IRR_MGMT.xml
 
-    return_data(ag_Fert_IRR_MGMT.xml)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }

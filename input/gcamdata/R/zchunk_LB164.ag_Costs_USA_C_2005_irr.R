@@ -24,16 +24,23 @@
 #' @importFrom stats glm predict
 #' @author ACS June 2017
 module_aglu_LB164.ag_Costs_USA_C_2005_irr <- function(command, ...) {
+
+  MODULE_INPUTS <-
+    c(FILE = "common/iso_GCAM_regID",
+      FILE = "aglu/USDA/USDA_crops",
+      FILE = "aglu/USDA/USDA_item_cost",
+      "L133.USDA_cost_data",
+      "L100.LDS_ag_HA_ha",
+      "L133.ag_Cost_75USDkg_C",
+      "L161.ag_irrHA_frac_R_C_GLU")
+
+  MODULE_OUTPUTS <-
+    c("L164.ag_Cost_75USDkg_C")
+
   if(command == driver.DECLARE_INPUTS) {
-    return(c(FILE = "common/iso_GCAM_regID",
-             FILE = "aglu/USDA/USDA_crops",
-             FILE = "aglu/USDA/USDA_item_cost",
-             "L133.USDA_cost_data",
-             "L100.LDS_ag_HA_ha",
-             "L133.ag_Cost_75USDkg_C",
-             "L161.ag_irrHA_frac_R_C_GLU"))
+    return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L164.ag_Cost_75USDkg_C"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     all_data <- list(...)[[1]]
@@ -46,13 +53,12 @@ module_aglu_LB164.ag_Costs_USA_C_2005_irr <- function(command, ...) {
       `Purchased irrigation water` <- `Total operating costs` <- NULL  # silence package check notes
 
     # Load required inputs
-    iso_GCAM_regID <- get_data(all_data, "common/iso_GCAM_regID")
-    USDA_crops <- get_data(all_data, "aglu/USDA/USDA_crops")
-    USDA_item_cost <- get_data(all_data, "aglu/USDA/USDA_item_cost")
-    L133.USDA_cost_data <- get_data(all_data, "L133.USDA_cost_data")
-    L100.LDS_ag_HA_ha <- get_data(all_data, "L100.LDS_ag_HA_ha")
-    L133.ag_Cost_75USDkg_C <- get_data(all_data, "L133.ag_Cost_75USDkg_C", strip_attributes = TRUE)
-    L161.ag_irrHA_frac_R_C_GLU <- get_data(all_data, "L161.ag_irrHA_frac_R_C_GLU")
+    lapply(MODULE_INPUTS, function(d){
+      # get name as the char after last /
+      nm <- tail(strsplit(d, "/")[[1]], n = 1)
+      # get data and assign
+      assign(nm, get_data(all_data, d, strip_attributes = T),
+             envir = parent.env(environment()))  })
 
 
     # Perform computations
@@ -172,7 +178,7 @@ module_aglu_LB164.ag_Costs_USA_C_2005_irr <- function(command, ...) {
                      "L161.ag_irrHA_frac_R_C_GLU") ->
       L164.ag_Cost_75USDkg_C
 
-    return_data(L164.ag_Cost_75USDkg_C)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }
