@@ -221,7 +221,7 @@ aglu.MAX_FAO_LDS_SCALER <- 5   # Unitless max multiplier in reconciling LDS harv
 aglu.TREECROP_MATURE_AGE <- 10 # Number of years for vegetation carbon to reach peak, for tree crops
 
 aglu.Min_Share_PastureFeed_in_PastureFodderGrass <- 0.1 # minimum share of pasture in Pasture_FodderGrass for feed uses to avoid negative or zero (not including Japan now); USA has ~30%
-aglu.Zero_Min_PastureFeed_Share_region_ID <- c(19) # GCAM_region_ID of Japan; Japan has zero unmanaged and protected pasture
+aglu.Zero_Min_PastureFeed_Share_iso <- c("jpn")         # mapped to GCAM_region_ID of Japan; Japan has zero unmanaged and protected pasture
 
 # GLU (Geographic Land Unit) settings - see module_aglu_LA100.0_LDS_preprocessing
 aglu.GLU <- "GLU"
