@@ -39,13 +39,15 @@ module_aglu_LA100.IMAGE_downscale_ctry_yr <- function(command, ...) {
     year <- IMAGE_region_ID <- value <- commodity <-
       input <- iso <- year <- NULL # silence package check notes
 
-    # Load required inputs
+    # Load required inputs ----
     lapply(MODULE_INPUTS, function(d){
       # get name as the char after last /
       nm <- tail(strsplit(d, "/")[[1]], n = 1)
       # get data and assign
       assign(nm, get_data(all_data, d, strip_attributes = T),
              envir = parent.env(environment()))  })
+
+    # Step 1 Interpolation across years  ----
 
     # Helper function: copy data to a new year
     create_new_yeardata <- function(x, source_year, new_year) {
@@ -92,6 +94,7 @@ module_aglu_LA100.IMAGE_downscale_ctry_yr <- function(command, ...) {
       L100.IMAGE_an_Prodmixfrac_Rimg_C_Y
 
 
+    # Step 2 Mapping to all iso regions ----
     # Downscale IMAGE region-level data to all countries
 
     # Change AGLU_ctry$IMAGE_region_ID to character for easy joining in helper function

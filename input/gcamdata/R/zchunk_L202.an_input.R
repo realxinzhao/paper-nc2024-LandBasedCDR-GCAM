@@ -38,8 +38,7 @@ module_aglu_L202.an_input <- function(command, ...) {
       FILE = "aglu/A_an_subsector",
       FILE = "aglu/A_an_technology",
       "L107.an_Prod_Mt_R_C_Sys_Fd_Y",
-      "L107.an_FeedIO_R_C_Sys_Fd_Y",
-      "L107.an_Feed_Mt_R_C_Sys_Fd_Y",
+      "L108.an_Feed_Mt_R_C_Sys_Fd_Y_adj",
       "L108.ag_Feed_Mt_R_C_Y",
       "L109.ag_ALL_Mt_R_C_Y",
       "L1321.ag_prP_R_C_75USDkg",
@@ -88,7 +87,7 @@ module_aglu_L202.an_input <- function(command, ...) {
       weight <- SalesRevenue_bilUSD <- tradedP <- Exp_wtd_price <- ImpShare <- PrP <- GrossExp_Mt <-
       Supply_Mt <- GrossImp_Mt <- ChinaCommodityPrice_USDkg <- to.value <- DefaultCommodityPrice_USDkg <- NULL  # silence package check notes
 
-    # Load required inputs
+    # Load required inputs ----
 
     lapply(MODULE_INPUTS, function(d){
       # get name as the char after last /
@@ -97,7 +96,95 @@ module_aglu_L202.an_input <- function(command, ...) {
       assign(nm, get_data(all_data, d, strip_attributes = T),
              envir = parent.env(environment()))  })
 
-    # 2. Build tables
+    # 1. Livestock feed IO coef in GCAM regions ----
+    # Moved to here from LA107 (XZ)
+    # so any adjustment in feed demand can be included.
+    # Calculate the weighted average feed input-output coefficients by region, commodity, system, feed, and year
+
+    L108.an_Feed_Mt_R_C_Sys_Fd_Y_adj %>%
+      rename(feedVal = value) %>%
+      # add in the corresponding animal production amount
+      left_join_error_no_match(L107.an_Prod_Mt_R_C_Sys_Fd_Y %>% rename(prodVal = value),
+                               by = c("GCAM_region_ID", "GCAM_commodity", "year", "system", "feed")) %>%
+      # calculate the region, commodity, system, feed type, year IO coefficient as feed consumption/animal production
+      mutate(value = feedVal / prodVal) %>%
+      select(-feedVal, -prodVal) ->
+      L107.an_FeedIO_R_C_Sys_Fd_Y
+
+
+    ### Need to fill in NAs (when Prod = 0)  ----
+    # - new method RLH 3/9/22
+    # Step 1: Extrapolate for any commodity/system/feed combos that are just missing some years
+    L107.an_FeedIO_R_C_Sys_Fd_Y %>%
+      group_by(GCAM_region_ID, GCAM_commodity, system, feed) %>%
+      # Filter if there is an NA, but not in all years
+      filter(any(is.na(value)) & !all(is.na(value))) %>%
+      # Replace with last/first available year
+      mutate(value = approx_fun(year, value, rule = 2)) %>%
+      ungroup() ->
+      L107.an_FeedIO_extrapolate
+
+    # add in extrapolated values
+    L107.an_FeedIO_R_C_Sys_Fd_Y %>%
+      anti_join(L107.an_FeedIO_extrapolate, by = c("GCAM_region_ID", "GCAM_commodity", "year", "system", "feed")) %>%
+      bind_rows(L107.an_FeedIO_extrapolate) ->
+      L107.an_FeedIO_R_C_Sys_Fd_Y
+
+    # Step 2: For any commodity/system/feed combos that exist in other regions and in that region with a different system
+    # Replace with global average ratio of commodity/feed between systems in other regions
+    L107.an_FeedIO_R_C_Sys_Fd_Y %>%
+      spread(system, value) %>%
+      # na.omit will remove any commodity/feeds that only exist with one system
+      na.omit() %>%
+      mutate(mixed_to_pastoral = Mixed/Pastoral) %>%
+      group_by(GCAM_commodity, year, feed) %>%
+      # mean ratio each commodity/year/system/feed
+      summarise(mixed_to_pastoral = mean(mixed_to_pastoral)) %>%
+      ungroup ->
+      L107.an_FeedIO_global_ratios
+
+    # Adjust values based on ratios
+    L107.an_FeedIO_R_C_Sys_Fd_Y %>%
+      # Need to use right_join since there would be many NAs where only one system type existed
+      right_join(L107.an_FeedIO_global_ratios, by = c("GCAM_commodity", "year", "feed")) %>%
+      group_by(GCAM_region_ID, GCAM_commodity, year, feed) %>%
+      # Filter to values with an NA and both Mixed and Pastoral systems
+      filter(any(is.na(value)) & dplyr::n() > 1) %>%
+      mutate(value = if_else(system == "Pastoral", value[system == "Mixed"] / mixed_to_pastoral, value),
+             value = if_else(system == "Mixed", value[system == "Pastoral"]  * mixed_to_pastoral, value)) %>%
+      select(-mixed_to_pastoral) ->
+      L107.an_FeedIO_ratio_adjust
+
+    # Add in adjusted values
+    L107.an_FeedIO_R_C_Sys_Fd_Y %>%
+      anti_join(L107.an_FeedIO_ratio_adjust, by = c("GCAM_region_ID", "GCAM_commodity", "year", "feed")) %>%
+      bind_rows(L107.an_FeedIO_ratio_adjust) ->
+      L107.an_FeedIO_R_C_Sys_Fd_Y
+
+
+    # Step 3: For any commodity/system/feed combos that exist in other regions
+    # Replace NAs with max from other regions in that year as a conservative estimate
+    L107.an_FeedIO_R_C_Sys_Fd_Y %>%
+      group_by(GCAM_commodity, year, system, feed) %>%
+      # we get superfluous warnings about no non-missing arguments to max despite
+      # explicitly checking for it
+      # this is due to: https://stackoverflow.com/questions/16275149/does-ifelse-really-calculate-both-of-its-vectors-every-time-is-it-slow
+      # so in this case we can safely just suppress the warning
+      mutate(value = if_else(is.na(value) & !all(is.na(value)), suppressWarnings(max(value, na.rm = T)), value)) %>%
+      ungroup ->
+      L107.an_FeedIO_R_C_Sys_Fd_Y
+
+    # Step 4: if all NA in all region/year/commodity/system/feed, then replace with maximum for all
+    # region/year/commodity (ie replace Pork/Mixed/Pasture_FodderGrass with max Pork value)
+    L107.an_FeedIO_R_C_Sys_Fd_Y %>%
+      group_by(GCAM_commodity) %>%
+      mutate(value = if_else(is.na(value), max(value, na.rm = T), value)) %>%
+      ungroup ->
+      L107.an_FeedIO_R_C_Sys_Fd_Y
+
+
+
+    # 2. Build tables ----
     # Base table for resources - add region names to Level1 data tables (lines 49-70 old file)
 
     # Following datasets are already 'long' so just skip the old interpolate_and_melt step
@@ -109,9 +196,12 @@ module_aglu_L202.an_input <- function(command, ...) {
     }
 
     L202.an_Prod_Mt_R_C_Sys_Fd_Y.mlt <- get_join_filter("L107.an_Prod_Mt_R_C_Sys_Fd_Y")
-    L202.an_FeedIO_R_C_Sys_Fd_Y.mlt <- get_join_filter("L107.an_FeedIO_R_C_Sys_Fd_Y")
-    L202.an_Feed_Mt_R_C_Sys_Fd_Y.mlt <- get_join_filter("L107.an_Feed_Mt_R_C_Sys_Fd_Y")
+    L202.an_Feed_Mt_R_C_Sys_Fd_Y.mlt <- get_join_filter("L108.an_Feed_Mt_R_C_Sys_Fd_Y_adj")
     L202.ag_Feed_Mt_R_C_Y.mlt <- get_join_filter("L108.ag_Feed_Mt_R_C_Y")
+
+    L202.an_FeedIO_R_C_Sys_Fd_Y.mlt <- L107.an_FeedIO_R_C_Sys_Fd_Y %>%
+      left_join_error_no_match(GCAM_region_names, by = "GCAM_region_ID") %>%
+      filter(year %in% MODEL_BASE_YEARS)
 
 
 
@@ -638,7 +728,9 @@ module_aglu_L202.an_input <- function(command, ...) {
       add_units("Mt/yr") %>%
       add_comments("Calibrated primary sources of animal feed commodities, specific to each region and time period.") %>%
       add_legacy_name("L202.StubTechProd_in") %>%
-      add_precursors("aglu/A_an_input_technology", "L107.an_FeedIO_R_C_Sys_Fd_Y",
+      add_precursors("aglu/A_an_input_technology",
+                     "L107.an_Prod_Mt_R_C_Sys_Fd_Y",
+                     "L108.an_Feed_Mt_R_C_Sys_Fd_Y_adj",
                      "energy/A_regions", "common/GCAM_region_names") ->
       L202.StubTechProd_in
 
@@ -697,7 +789,7 @@ module_aglu_L202.an_input <- function(command, ...) {
       add_legacy_name("L202.StubTechCost_an") %>%
       same_precursors_as(L202.StubTechCoef_an) %>%
       add_precursors("L1321.ag_prP_R_C_75USDkg", "L1321.an_prP_R_C_75USDkg",
-                     "L107.an_Feed_Mt_R_C_Sys_Fd_Y", "L109.ag_ALL_Mt_R_C_Y") ->
+                     "L108.an_Feed_Mt_R_C_Sys_Fd_Y_adj", "L109.ag_ALL_Mt_R_C_Y") ->
       L202.StubTechCost_an
 
     # Return also the consumer prices, to be made available elsewhere
