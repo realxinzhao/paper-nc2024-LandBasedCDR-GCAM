@@ -124,18 +124,18 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
     # Original METHOD
     # Compute feedcrop demand by region, crop, and year using IMAGE totals, minus DDGS and feedcakes, multiplied by feed
     # fractions computed above
-    an_Feed_Mt_R_C_Y %>%
-      filter(feed == "FeedCrops") %>%                                                              # Filter to only include "FeedCrops"
-      left_join_error_no_match(select(L108.DDGS_feedcakes, GCAM_region_ID, year, ddgs_feedcakes = value),
-                               by = c("GCAM_region_ID", "year")) %>%
-      mutate(value = value - ddgs_feedcakes) %>%
-      select(-ddgs_feedcakes) %>%
-      right_join(select(ag_Feed_Mt_R_Cnf_Y, GCAM_region_ID, GCAM_commodity, year, Feedfrac),
-                 by = c("GCAM_region_ID", "year")) %>%                                             # Map in feed fractions computed from FAO data
-      mutate(value = value * Feedfrac) %>%                                                         # Compute FAO-IMAGE adjusted feed crop demand
-      select(-feed, -Feedfrac) %>%
-      bind_rows(L108.DDGS_feedcakes) ->                                                            # Bind with the DDGS and feedcakes commodity(s)
-      ag_Feed_Mt_R_Cnf_Y_adj
+    # an_Feed_Mt_R_C_Y %>%
+    #   filter(feed == "FeedCrops") %>%                                                              # Filter to only include "FeedCrops"
+    #   left_join_error_no_match(select(L108.DDGS_feedcakes, GCAM_region_ID, year, ddgs_feedcakes = value),
+    #                            by = c("GCAM_region_ID", "year")) %>%
+    #   mutate(value = value - ddgs_feedcakes) %>%
+    #   select(-ddgs_feedcakes) %>%
+    #   right_join(select(ag_Feed_Mt_R_Cnf_Y, GCAM_region_ID, GCAM_commodity, year, Feedfrac),
+    #              by = c("GCAM_region_ID", "year")) %>%                                             # Map in feed fractions computed from FAO data
+    #   mutate(value = value * Feedfrac) %>%                                                         # Compute FAO-IMAGE adjusted feed crop demand
+    #   select(-feed, -Feedfrac) %>%
+    #   bind_rows(L108.DDGS_feedcakes) ->                                                            # Bind with the DDGS and feedcakes commodity(s)
+    #   ag_Feed_Mt_R_Cnf_Y_adj
 
     # 9/18/2022 Update to the NEW method:
     # Instead of preserving the IO coefficient (dry matter basis) from IMAGE (2005 base year)
@@ -144,10 +144,10 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
     # the original method is commented out but kept above
     # The code is generalized so that method can be switched smoothly
 
-    # ag_Feed_Mt_R_Cnf_Y %>%
-    #   select(-Feedfrac) %>%
-    #   bind_rows(L108.DDGS_feedcakes) ->
-    #   ag_Feed_Mt_R_Cnf_Y_adj
+    ag_Feed_Mt_R_Cnf_Y %>%
+      select(-Feedfrac) %>%
+      bind_rows(L108.DDGS_feedcakes) ->
+      ag_Feed_Mt_R_Cnf_Y_adj
 
 
     # FODDERHERB/RESIDUE
