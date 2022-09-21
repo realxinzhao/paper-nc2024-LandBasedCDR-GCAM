@@ -364,8 +364,8 @@ module_aglu_LA100.FAO_SUA_connection <- function(command, ...) {
       add_comments("Aggregates FAO data by GCAM region, commodity, and year") %>%
       add_comments("Data is also converted from tons to Mt") %>%
       add_legacy_name("L101.ag_Food_Mt_R_C_Y") %>%
-      add_precursors("L100.FAO_SUA_APE_balance",
-                     "common/iso_GCAM_regID",
+      add_precursors("common/GCAM_region_names",
+                     "aglu/FAO/FAO_ag_items_PRODSTAT",
                      "FAO_Food_Macronutrient_All_2010_2019",
                      "FAO_Food_MacronutrientRate_2010_2019_MaxValue") ->
       L101.ag_Food_Mt_R_C_Y
@@ -385,8 +385,8 @@ module_aglu_LA100.FAO_SUA_connection <- function(command, ...) {
       add_comments("Aggregate FAO country and item data by GCAM region, commodity, and year") %>%
       add_comments("Convert data from ton to Mt") %>%
       add_legacy_name("L105.an_Food_Mt_R_C_Y") %>%
-      add_precursors("common/iso_GCAM_regID",
-                     "L100.FAO_SUA_APE_balance",
+      add_precursors("common/GCAM_region_names",
+                     "GCAM_AgLU_SUA_APE_1973_2019",
                      "aglu/FAO/FAO_an_items_PRODSTAT",
                      "FAO_Food_Macronutrient_All_2010_2019",
                      "FAO_Food_MacronutrientRate_2010_2019_MaxValue") ->
@@ -396,8 +396,9 @@ module_aglu_LA100.FAO_SUA_connection <- function(command, ...) {
       add_title("Feed use by GCAM region, commodity, and year aggregated from FAO") %>%
       add_comments("Feed consumption of GCAM Ag commodities; they will be adjusted in L108") %>%
       add_units("Mt") %>%
-      add_legacy_name("L101.ag_Feed_Mt_R_C_Y") %>%
-      add_precursors("L100.FAO_SUA_APE_balance") ->
+      add_legacy_name("aglu/FAO/FAO_ag_items_PRODSTAT",
+                      "L101.ag_Feed_Mt_R_C_Y") %>%
+      add_precursors("GCAM_AgLU_SUA_APE_1973_2019") ->
       L101.ag_Feed_Mt_R_C_Y
 
     L1091.GrossTrade_Mt_R_C_Y %>%
@@ -405,7 +406,7 @@ module_aglu_LA100.FAO_SUA_connection <- function(command, ...) {
       add_comments("Balanced gross trade of GCAM Ag commodities") %>%
       add_units("Mt") %>%
       add_legacy_name("L1091.GrossTrade_Mt_R_C_Y") %>%
-      add_precursors("L100.FAO_SUA_APE_balance") ->
+      add_precursors("GCAM_AgLU_SUA_APE_1973_2019") ->
       L1091.GrossTrade_Mt_R_C_Y
 
     # Done & return data----

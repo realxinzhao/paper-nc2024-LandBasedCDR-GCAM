@@ -255,7 +255,7 @@ module_aglu_LA100.regional_ag_an_for_prices <- function(command, ...) {
     L100.FAO_for_ExpPrice_0 <-
       GCAMDATA_FAOSTAT_ForExportPrice_214Regs_Roundwood_1973to2020 %>%
       gather_years() %>%
-      filter(year %in% aglu.TRADE_CAL_YEARS) %>%
+      filter(year %in% aglu.MODEL_PRICE_YEARS) %>%
       select(-element_code, -unit) %>%
       mutate(element = if_else(element == "Export Quantity", "Exp_m3", element),
              element = if_else(element == "Export Value", "ExpV_kUSD", element),
