@@ -116,7 +116,7 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
   if(any(L109.ag_ALL_Mt_R_C_Y$Feed_Mt < 0)){
     L109.ag_ALL_Mt_R_C_Y %>% filter(Feed_Mt <0) %>%
       mutate(OtherUses_Mt = OtherUses_Mt + Feed_Mt,
-             OtherUses_Mt = 0) %>%
+             Feed_Mt = 0) %>%
       bind_rows(L109.ag_ALL_Mt_R_C_Y %>% filter(Feed_Mt >= 0) ) ->
       L109.ag_ALL_Mt_R_C_Y }
 
