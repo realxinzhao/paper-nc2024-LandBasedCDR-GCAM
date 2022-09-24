@@ -22,6 +22,8 @@ module_aglu_LB120.LC_GIS_R_LTgis_Yh_GLU <- function(command, ...) {
     return(c(FILE = "common/iso_GCAM_regID",
              FILE = "aglu/LDS/LDS_land_types",
              FILE = "aglu/SAGE_LT",
+             # 09-24-2022 XZ
+             # The following two LDS files need updates for Base Year Update later!
              "L100.Land_type_area_ha",
              FILE = "aglu/LDS/L123.LC_bm2_R_MgdFor_Yh_GLU_beforeadjust"))
   } else if(command == driver.DECLARE_OUTPUTS) {

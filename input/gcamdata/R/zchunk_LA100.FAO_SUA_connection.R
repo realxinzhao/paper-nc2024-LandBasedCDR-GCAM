@@ -396,9 +396,9 @@ module_aglu_LA100.FAO_SUA_connection <- function(command, ...) {
       add_title("Feed use by GCAM region, commodity, and year aggregated from FAO") %>%
       add_comments("Feed consumption of GCAM Ag commodities; they will be adjusted in L108") %>%
       add_units("Mt") %>%
-      add_legacy_name("aglu/FAO/FAO_ag_items_PRODSTAT",
-                      "L101.ag_Feed_Mt_R_C_Y") %>%
-      add_precursors("GCAM_AgLU_SUA_APE_1973_2019") ->
+      add_legacy_name("L101.ag_Feed_Mt_R_C_Y") %>%
+      add_precursors("GCAM_AgLU_SUA_APE_1973_2019",
+                     "aglu/FAO/FAO_ag_items_PRODSTAT") ->
       L101.ag_Feed_Mt_R_C_Y
 
     L1091.GrossTrade_Mt_R_C_Y %>%
