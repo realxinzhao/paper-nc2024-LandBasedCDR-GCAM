@@ -1900,7 +1900,7 @@ element input {
                 </supplyDemandQuery>
                 <supplyDemandQuery title="gas prices by sector">
                     <axis1 name="fuel">sector</axis1>
-                    <axis2 name="Year">price</axis2>
+                    <axis2 name="Year">cost</axis2>
                     <xPath buildList="true" dataName="cost" group="false" sumAll="false">*[@type='sector' and (@name='gas processing' or @name='gas pipeline' or
                @name='wholesale gas' or @name='delivered gas')]/cost/text()</xPath>
                     <comments/>
@@ -4100,13 +4100,13 @@ element input {
             <supplyDemandQuery title="import vs. domestic share-weights (Armington regional taste)">
                 <axis1 name="subsector">subsector</axis1>
                 <axis2 name="Year">share-weight</axis2>
-                <xPath buildList="true" dataName="input" group="false" sumAll="false">*[@type='sector' and contains(@name, 'traded')]/*[@type='subsector']/share-weight/text()</xPath>
+                <xPath buildList="true" dataName="input" group="false" sumAll="false">*[@type='sector' and contains(@name, 'regional')]/*[@type='subsector']/share-weight/text()</xPath>
                 <comments/>
             </supplyDemandQuery>
             <supplyDemandQuery title="international competition share-weights (Armington intl. taste)">
                 <axis1 name="subsector">subsector</axis1>
                 <axis2 name="Year">share-weight</axis2>
-                <xPath buildList="true" dataName="input" group="false" sumAll="false">*[@type='sector' and contains(@name, 'regional')]/*[@type='subsector']/share-weight/text()</xPath>
+                <xPath buildList="true" dataName="input" group="false" sumAll="false">*[@type='sector' and contains(@name, 'traded')]/*[@type='subsector']/share-weight/text()</xPath>
                 <comments/>
             </supplyDemandQuery>
         </queryGroup>

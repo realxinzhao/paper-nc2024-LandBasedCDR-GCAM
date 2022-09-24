@@ -29,13 +29,16 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
        "L2052.AgCost_ag_irr_mgmt",
        "L2052.AgCost_bio_irr_mgmt")
 
+  MODULE_OUTPUTS <-
+    c("L2062.AgCoef_Fert_ag_irr_mgmt",
+      "L2062.AgCoef_Fert_bio_irr_mgmt",
+      "L2062.AgCost_ag_irr_mgmt_adj",
+      "L2062.AgCost_bio_irr_mgmt_adj")
+
   if(command == driver.DECLARE_INPUTS) {
     return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L2062.AgCoef_Fert_ag_irr_mgmt",
-             "L2062.AgCoef_Fert_bio_irr_mgmt",
-             "L2062.AgCost_ag_irr_mgmt_adj",
-             "L2062.AgCost_bio_irr_mgmt_adj"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     all_data <- list(...)[[1]]
@@ -194,7 +197,7 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
                      "aglu/A_RegionalFertPrice")  ->
       L2062.AgCost_bio_irr_mgmt_adj
 
-    return_data(L2062.AgCoef_Fert_ag_irr_mgmt, L2062.AgCoef_Fert_bio_irr_mgmt, L2062.AgCost_ag_irr_mgmt_adj, L2062.AgCost_bio_irr_mgmt_adj)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }
