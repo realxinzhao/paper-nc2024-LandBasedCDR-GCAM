@@ -111,9 +111,11 @@ module_aglu_LA108.ag_Feed_R_C_Y <- function(command, ...) {
     # This should be addressed by looking specifically at the data, and likely reducing the secondary output coefficient
     # of the problematic process(es). Failure to do so will result in negative calibration values read to GCAM and
     # model solution failure.
-    if(any(ag_Feed_Mt_R_Cnf_Y$value < 0)){
-      stop("Negative feed demands due to secondary output feedcakes exceeding regional feed usage")
-    }
+
+    # XZ: 09-23-2022 comment this out to address this issue (if exist) using other use in LB109 balance
+    # if(any(ag_Feed_Mt_R_Cnf_Y$value < 0)){
+    #   stop("Negative feed demands due to secondary output feedcakes exceeding regional feed usage")
+    # }
 
 
     # 4/12/2019 revision, cont'd: because DDGS and biofuel-related feedcakes are coming from calibrated energy

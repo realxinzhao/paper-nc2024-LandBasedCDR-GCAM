@@ -58,10 +58,9 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
 
     # This chunk will adjust bioenergy feedstock and also feed demand using others
     # There will be some assumptions needed
-    # Trade of secondary products will also be traced here
     # New balance
     # c("BeginStock_Mt", "Prod_Mt", "GrossImp_Mt", "Supply_Mt",
-    #   "Food_Mt", "Feed_Mt", "Biofuels_Mt","GrossExp_Mt", "NetExp_Mt", "Losses", "OtherUses_Mt", "EndStock_Mt")
+    #   "Food_Mt", "Feed_Mt", "Biofuels_Mt","GrossExp_Mt", "NetExp_Mt", "OtherUses_Mt", "EndStock_Mt")
     # Stock variation is not included here yet!
     # Here, when other use is negative, net trade is adjusted
     # There will be concerns on primary vs. secondary trade and trade within or across aggregated regions.
@@ -112,8 +111,16 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
              OtherUses_Mt = Supply_Mt - Food_Mt - Feed_Mt - Biofuels_Mt)  ->
     L109.ag_ALL_Mt_R_C_Y
 
+  ## Adjust negative crop feed use using other use ----
+  # The negative feed use, if exist, came from connecting feed crops to feedcake or ddgd (bioenergy) in LA108
+  if(any(L109.ag_ALL_Mt_R_C_Y$Feed_Mt < 0)){
+    L109.ag_ALL_Mt_R_C_Y %>% filter(Feed_Mt <0) %>%
+      mutate(OtherUses_Mt = OtherUses_Mt + Feed_Mt,
+             OtherUses_Mt = 0) %>%
+      bind_rows(L109.ag_ALL_Mt_R_C_Y %>% filter(Feed_Mt >= 0) ) ->
+      L109.ag_ALL_Mt_R_C_Y }
 
-  ## Adjust global and regional crop mass balances to remove net negative other uses ----
+  ## Adjust negative other uses using trade or food ----
   # Assign negative other net uses to imports, and adjust global trade to maintain balances
   # Changes in global net exports are apportioned among regions with positive other uses, according to regional shares
 
@@ -138,7 +145,7 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
       Other use in ag crop commodities may require a case-by-case adjustment (in food) since total global other use is negative.
       Please check food consumption adjustments.") }
 
-  # Ship negative otheruse to other regions with positives
+  ### Ship negative otheruse to other regions with positives ----
   # positive regions will be scaled down simply
   L109.ag_ALL_Mt_R_C_Y_1 %>%
     group_by(GCAM_commodity, year, negOther) %>%
@@ -184,9 +191,11 @@ module_aglu_LB109.ag_an_ALL_R_C_Y <- function(command, ...) {
     mutate(value = round(value, aglu.DIGITS_CALOUTPUT))->
     L109.ag_ALL_Mt_R_C_Y_3
 
-  L109.ag_ALL_Mt_R_C_Y <- L109.ag_ALL_Mt_R_C_Y_3 %>% spread(element, value)
+  L109.ag_ALL_Mt_R_C_Y_3 %>%
+    spread(element, value) ->
+    L109.ag_ALL_Mt_R_C_Y
 
-  # Check again in model base year and adjust food consumption if needed.
+  ## Check again in model base year and adjust food consumption if needed ----
   if(any(filter(L109.ag_ALL_Mt_R_C_Y, year %in% MODEL_BASE_YEARS)$OtherUses_Mt < 0)){
 
     L109.ag_ALL_Mt_R_C_Y %>%
