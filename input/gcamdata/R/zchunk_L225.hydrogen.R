@@ -21,6 +21,7 @@ module_energy_L225.hydrogen <- function(command, ...) {
              FILE = "energy/A25.sector",
              FILE = "energy/A25.subsector_logit",
              FILE = "energy/A25.subsector_shrwt",
+             FILE = "energy/A25.subsector_interp",
              FILE = "energy/A25.globaltech_eff",
              FILE = "energy/A25.globaltech_cost",
              FILE = "energy/A25.globaltech_shrwt",
@@ -59,6 +60,7 @@ module_energy_L225.hydrogen <- function(command, ...) {
     A25.globaltech_shrwt <- get_data(all_data, "energy/A25.globaltech_shrwt", strip_attributes = TRUE)
     A25.globaltech_keyword <- get_data(all_data, "energy/A25.globaltech_keyword", strip_attributes = TRUE)
     A25.globaltech_co2capture <- get_data(all_data, "energy/A25.globaltech_co2capture", strip_attributes = TRUE)
+    A25.subsector_interp <- get_data(all_data, "energy/A25.subsector_interp", strip_attributes = TRUE)
 
     # ===================================================
 
@@ -89,6 +91,12 @@ module_energy_L225.hydrogen <- function(command, ...) {
 
     # L225.SubsectorInterp_h2 and L225.SubsectorInterpTo_h2: Subsector shareweight interpolation of hydrogen sectors
     # These are not created currently
+
+    A25.subsector_interp %>%
+      filter(is.na(to.value)) %>%
+      write_to_all_regions(LEVEL2_DATA_NAMES[["SubsectorInterp"]], GCAM_region_names) ->
+      L225.SubsectorInterp_h2
+
 
 
     # 1c. Technology information
@@ -231,7 +239,7 @@ module_energy_L225.hydrogen <- function(command, ...) {
         L225.SubsectorShrwtFllt_h2
     }
 
-    if(exists("L225.SubsectorInterpTo_h2")) {
+    if(exists("L225.SubsectorInterp_h2")) {
       L225.SubsectorInterp_h2 %>%
         add_title("Subsector shareweight interpolation of hydrogen sectors") %>%
         add_units("unitless") %>%

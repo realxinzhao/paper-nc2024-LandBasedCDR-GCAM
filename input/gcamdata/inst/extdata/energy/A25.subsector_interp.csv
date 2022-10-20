@@ -1,0 +1,7 @@
+# File: A25.subsector_interp.csv
+# Title: H2 default subsector shareweight interpolation
+# Units: NA
+# Column types: ccccccc
+# ----------
+supplysector,subsector,apply.to,from.year,to.year,to.value,interpolation.function
+H2 central production,biomass,share-weight,2020,end-year,,linear

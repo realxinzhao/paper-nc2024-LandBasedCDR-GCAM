@@ -2,7 +2,7 @@
 # Title: Primary energy transformation default technology shareweights
 # Units: N/A
 # Description: Shareweights of transformation technologies 
-# Column types: ccciiiii 
+# Column types: cccnnnnn 
 # ----------
 supplysector,subsector,technology,1971,2015,2020,2050,2100
 gas processing,natural gas,natural gas,1,1,1,1,1
@@ -23,6 +23,6 @@ refining,biomass liquids,cellulosic ethanol CCS level 2,0,0,0,1,1
 refining,biomass liquids,FT biofuels,0,0,1,1,1
 refining,biomass liquids,FT biofuels CCS level 1,0,0,0,1,1
 refining,biomass liquids,FT biofuels CCS level 2,0,0,0,1,1
-refining,biomass liquids,corn ethanol,0,1,1,1,1
-refining,biomass liquids,sugar cane ethanol,0,1,1,1,1
-refining,biomass liquids,biodiesel,0,1,1,1,1
+refining,biomass liquids,corn ethanol,0,0.5,0.5,0.1,0.05
+refining,biomass liquids,sugar cane ethanol,0,0.5,0.5,0.1,0.05
+refining,biomass liquids,biodiesel,0,0.5,0.5,0.1,0.05

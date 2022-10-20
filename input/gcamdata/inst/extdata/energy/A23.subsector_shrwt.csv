@@ -9,7 +9,7 @@ supplysector,subsector,year.fillout,year,share.weight
 electricity,coal,start-year,,1
 electricity,gas,start-year,,1
 electricity,refined liquids,start-year,,1
-electricity,biomass,2050,,1
+electricity,biomass,2100,,0.3
 electricity,nuclear,start-year,,0
 electricity,hydro,start-year,,0
 electricity,wind,2025,,1
