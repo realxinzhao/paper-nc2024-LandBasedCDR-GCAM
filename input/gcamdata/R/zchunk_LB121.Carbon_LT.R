@@ -29,8 +29,7 @@ module_aglu_LB121.Carbon_LT <- function(command, ...) {
       "L100.LDS_ag_prod_t",
       "L120.LC_bm2_R_LT_Yh_GLU",
       "L120.LC_bm2_ctry_LTsage_GLU",
-      "L120.LC_bm2_ctry_LTpast_GLU",
-      "L120.LC_soil_veg_carbon_GLU")
+      "L120.LC_bm2_ctry_LTpast_GLU")
 
   MODULE_OUTPUTS <-
     c("L121.CarbonContent_kgm2_R_LT_GLU",

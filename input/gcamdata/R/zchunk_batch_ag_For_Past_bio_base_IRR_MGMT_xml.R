@@ -19,8 +19,7 @@ module_aglu_batch_ag_For_Past_bio_base_IRR_MGMT_xml <- function(command, ...) {
       "L2012.AgProduction_For",
       "L2012.AgProduction_Past",
       #"L2012.AgHAtoCL_irr_mgmt", # Note (XZ): not exporting HAtoCL as not used in GCAM; this should be examined later.
-      "L2012.AgYield_bio_ref",
-      "L2012.AgTechYr_Past")
+      "L2012.AgYield_bio_ref")
 
   MODULE_OUTPUTS <-
     c(XML = "ag_For_Past_bio_base_IRR_MGMT.xml")

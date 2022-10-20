@@ -77,7 +77,9 @@ module_aglu_LB111.ag_resbio_R_C <- function(command, ...) {
     # Adjustment made based on add on info ----
     # Dry matter loss is accounted for in water content
     L111.ag_resbio_R_C_beforeadjust %>%
-      left_join_error_no_match(Various_ag_resbio_data_SI, by = "GCAM_commodity") %>%
+      left_join_error_no_match(
+        Various_ag_resbio_data_SI %>% select(-Source),
+        by = "GCAM_commodity") %>%
       mutate(ErosCtrl_tHa = pmax(ErosCtrl_tHa, ErosCtrl_tHa_min),
              HarvestIndex = pmax(HarvestIndex, HarvestIndex_min),
              WaterContent = pmax(WaterContent, WaterContent_min),
