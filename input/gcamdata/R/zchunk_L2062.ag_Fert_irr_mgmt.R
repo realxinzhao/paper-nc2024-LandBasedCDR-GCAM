@@ -16,6 +16,7 @@
 #' @importFrom assertthat assert_that
 #' @importFrom dplyr bind_rows filter if_else left_join mutate select
 #' @importFrom tidyr replace_na
+#' @importFrom tibble tibble
 #' @author KVC June 2017
 module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
 
@@ -28,13 +29,16 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
        "L2052.AgCost_ag_irr_mgmt",
        "L2052.AgCost_bio_irr_mgmt")
 
+  MODULE_OUTPUTS <-
+    c("L2062.AgCoef_Fert_ag_irr_mgmt",
+      "L2062.AgCoef_Fert_bio_irr_mgmt",
+      "L2062.AgCost_ag_irr_mgmt_adj",
+      "L2062.AgCost_bio_irr_mgmt_adj")
+
   if(command == driver.DECLARE_INPUTS) {
     return(MODULE_INPUTS)
   } else if(command == driver.DECLARE_OUTPUTS) {
-    return(c("L2062.AgCoef_Fert_ag_irr_mgmt",
-             "L2062.AgCoef_Fert_bio_irr_mgmt",
-             "L2062.AgCost_ag_irr_mgmt_adj",
-             "L2062.AgCost_bio_irr_mgmt_adj"))
+    return(MODULE_OUTPUTS)
   } else if(command == driver.MAKE) {
 
     all_data <- list(...)[[1]]
@@ -61,8 +65,8 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
       left_join_error_no_match(basin_to_country_mapping[ c("GLU_code", "GLU_name")], by = c("GLU" = "GLU_code")) %>%
 
       # Copy coefficients to all four technologies
-      repeat_add_columns(tibble::tibble(IRR_RFD = c("IRR", "RFD"))) %>%
-      repeat_add_columns(tibble::tibble(MGMT = c("hi", "lo"))) %>%
+      repeat_add_columns(tibble(IRR_RFD = c("IRR", "RFD"))) %>%
+      repeat_add_columns(tibble(MGMT = c("hi", "lo"))) %>%
 
       # Add sector, subsector, technology names
       mutate(AgSupplySector = GCAM_commodity,
@@ -81,7 +85,7 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
     L2062.AgCoef_Fert_ag_irr_mgmt %>%
       filter(year == max(MODEL_BASE_YEARS)) %>%
       select(-year) %>%
-      repeat_add_columns(tibble::tibble(year = MODEL_FUTURE_YEARS)) %>%
+      repeat_add_columns(tibble(year = MODEL_FUTURE_YEARS)) %>%
       bind_rows(L2062.AgCoef_Fert_ag_irr_mgmt) %>%
       filter(coefficient > 0) ->
       L2062.AgCoef_Fert_ag_irr_mgmt
@@ -193,7 +197,7 @@ module_aglu_L2062.ag_Fert_irr_mgmt <- function(command, ...) {
                      "aglu/A_RegionalFertPrice")  ->
       L2062.AgCost_bio_irr_mgmt_adj
 
-    return_data(L2062.AgCoef_Fert_ag_irr_mgmt, L2062.AgCoef_Fert_bio_irr_mgmt, L2062.AgCost_ag_irr_mgmt_adj, L2062.AgCost_bio_irr_mgmt_adj)
+    return_data(MODULE_OUTPUTS)
   } else {
     stop("Unknown command")
   }

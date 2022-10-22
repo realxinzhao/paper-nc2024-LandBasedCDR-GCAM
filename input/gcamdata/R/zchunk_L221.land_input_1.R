@@ -46,7 +46,8 @@ module_aglu_L221.land_input_1 <- function(command, ...) {
       "L121.CarbonContent_kgm2_R_LT_GLU",
       "L125.LC_bm2_R_LT_Yh_GLU",
       "L125.LC_bm2_R",
-      "L131.LV_USD75_m2_R_GLU")
+      "L131.LV_USD75_m2_R_GLU",
+      "L120.LC_soil_veg_carbon_GLU")
 
   if(command == driver.DECLARE_INPUTS) {
     return(MODULE_INPUTS)
@@ -71,11 +72,11 @@ module_aglu_L221.land_input_1 <- function(command, ...) {
       veg.carbon.density <- soil.carbon.density <- allocation <- Land_Type.y <- mature.age.year.fillout <-
       min.veg.carbon.density <- min.soil.carbon.density <- . <- NULL
 
-
     # Load required inputs
 
     lapply(setdiff(MODULE_INPUTS,
-                   c("L121.CarbonContent_kgm2_R_LT_GLU")),
+                   c("L120.LC_soil_veg_carbon_GLU",
+                     "L121.CarbonContent_kgm2_R_LT_GLU")),
            function(d){
       # get name as the char after last /
       nm <- tail(strsplit(d, "/")[[1]], n = 1)
@@ -83,7 +84,16 @@ module_aglu_L221.land_input_1 <- function(command, ...) {
       assign(nm, get_data(all_data, d, strip_attributes = T),
              envir = parent.env(environment()))  })
 
-    L121.CarbonContent_kgm2_R_LT_GLU <- get_data(all_data, "L121.CarbonContent_kgm2_R_LT_GLU")
+    # If the carbon data source is set to moirai, use the spatially distinct carbon values. If not, use the Houghton values.
+    if(aglu.CARBON_DATA_SOURCE =="moirai"){
+
+      L121.CarbonContent_kgm2_R_LT_GLU <- get_data(all_data, "L120.LC_soil_veg_carbon_GLU")
+    }else{
+      L121.CarbonContent_kgm2_R_LT_GLU <- get_data(all_data, "L121.CarbonContent_kgm2_R_LT_GLU")
+
+    }
+
+
 
 
 
@@ -315,6 +325,7 @@ module_aglu_L221.land_input_1 <- function(command, ...) {
                      "aglu/A_LandLeaf_Unmgd1",
                      "aglu/GCAMLandLeaf_CdensityLT",
                      "L121.CarbonContent_kgm2_R_LT_GLU",
+                     "L120.LC_soil_veg_carbon_GLU",
                      "L125.LC_bm2_R_LT_Yh_GLU",
                      "L131.LV_USD75_m2_R_GLU") ->
       L221.LN1_UnmgdCarbon

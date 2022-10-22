@@ -165,6 +165,7 @@ module_aglu_LA107.an_IMAGE_R_C_Sys_Fd_Y <- function(command, ...) {
     # Note that IO coefficients are now computed in L202 so any adjustment in feed demand can be included.
 
 
+
     # Produce outputs
     L107.an_Prod_Mt_R_C_Sys_Fd_Y %>%
       add_title("Animal production by GCAM region / commodity / system / feed type / year") %>%

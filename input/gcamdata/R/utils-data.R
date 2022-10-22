@@ -206,6 +206,7 @@ get_reference <- function(x) { attr(x, ATTR_REFERENCE) }
 get_data <- function(all_data, name, strip_attributes = FALSE) {
   assertthat::assert_that(is_data_list(all_data))
 
+  names(all_data) <- gsub(data.USER_MOD_POSTFIX, '', names(all_data))
   if(is.null(all_data[[name]])) {
     stop("Data system: couldn't find ", name)
   }
@@ -288,6 +289,24 @@ return_data <- function(...) {
   dots
 }
 
+#' return_modified
+#'
+#' Construct a data structure of objects (\code{...}) and return it.
+#' This version should only be used in user modification chunks where
+#' it is used in place of \link{return_data}.
+#'
+#' @param ... Objects to handle
+#' @return Object ready for insertion into the data system data structure.
+#' @export
+return_modified <- function(...) {
+  data_list <- return_data(...)
+  lapply(names(data_list), function(dname) {
+    attr(data_list[[dname]], ATTR_PRECURSORS) <<- c(dname)
+  })
+  names(data_list) <- paste0(names(data_list), data.USER_MOD_POSTFIX)
+
+  data_list
+}
 
 #' empty_data
 #'
@@ -347,14 +366,14 @@ is_data_list <- function(data_list) {
 }
 
 
-#' prebuilt_data
+#' extract_prebuilt_data
 #'
 #' Extract a prebuilt data object from the PREBUILT_DATA store.
 #'
 #' @param object_name The name of the desired object, character
 #' @param pb \code{PREBUILT_DATA} object; overridden only for testing
 #' @return The data object (a tibble).
-prebuilt_data <- function(object_name, pb = NULL) {
+extract_prebuilt_data <- function(object_name, pb = NULL) {
   if(is.null(pb)) {
     pb <- PREBUILT_DATA
   }
