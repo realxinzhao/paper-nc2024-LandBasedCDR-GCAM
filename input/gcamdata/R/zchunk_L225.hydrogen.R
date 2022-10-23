@@ -21,6 +21,7 @@ module_energy_L225.hydrogen <- function(command, ...) {
              FILE = "energy/A25.sector",
              FILE = "energy/A25.subsector_logit",
              FILE = "energy/A25.subsector_shrwt",
+             FILE = "energy/A25.subsector_interp",
              FILE = "energy/A25.globaltech_cost",
              FILE = "energy/A25.globaltech_coef",
              FILE = "energy/A25.globaltech_retirement",
@@ -38,6 +39,7 @@ module_energy_L225.hydrogen <- function(command, ...) {
              "L225.SectorUseTrialMarket_h2",
              "L225.SubsectorLogit_h2",
              "L225.SubsectorShrwtFllt_h2",
+             "L225.SubsectorInterp_h2",
              "L225.StubTech_h2",
              "L225.GlobalTechCoef_h2",
              "L225.GlobalTechCost_h2",
@@ -69,13 +71,13 @@ module_energy_L225.hydrogen <- function(command, ...) {
     A25.sector <- get_data(all_data, "energy/A25.sector", strip_attributes = TRUE)
     A25.subsector_logit <- get_data(all_data, "energy/A25.subsector_logit", strip_attributes = TRUE)
     A25.subsector_shrwt <- get_data(all_data, "energy/A25.subsector_shrwt", strip_attributes = TRUE)
+    A25.subsector_interp <- get_data(all_data, "energy/A25.subsector_interp", strip_attributes = TRUE)
     A25.globaltech_coef <- get_data(all_data, "energy/A25.globaltech_coef", strip_attributes = TRUE)
     A25.globaltech_cost <- get_data(all_data, "energy/A25.globaltech_cost", strip_attributes = TRUE)
     A25.globaltech_shrwt <- get_data(all_data, "energy/A25.globaltech_shrwt", strip_attributes = TRUE)
     A25.globaltech_keyword <- get_data(all_data, "energy/A25.globaltech_keyword", strip_attributes = TRUE)
     A25.globaltech_retirement <- get_data(all_data, "energy/A25.globaltech_retirement", strip_attributes = TRUE)
     A25.globaltech_co2capture <- get_data(all_data, "energy/A25.globaltech_co2capture", strip_attributes = TRUE)
-    A25.subsector_interp <- get_data(all_data, "energy/A25.subsector_interp", strip_attributes = TRUE)
 
     L125.globaltech_coef <- get_data(all_data, "L125.globaltech_coef", strip_attributes = TRUE)
     L125.globaltech_cost <- get_data(all_data, "L125.globaltech_cost", strip_attributes = TRUE)
@@ -113,6 +115,10 @@ module_energy_L225.hydrogen <- function(command, ...) {
       filter(!is.na(year.fillout)) %>%
       write_to_all_regions(LEVEL2_DATA_NAMES[["SubsectorShrwtFllt"]], GCAM_region_names) ->
       L225.SubsectorShrwtFllt_h2
+
+    A25.subsector_interp %>%
+      write_to_all_regions(LEVEL2_DATA_NAMES[["SubsectorInterp"]], GCAM_region_names) ->
+      L225.SubsectorInterp_h2
 
 
     # 1c. Technology information
@@ -469,12 +475,21 @@ module_energy_L225.hydrogen <- function(command, ...) {
                      "L223.GlobalIntTechOMfixed_elec") ->
       L225.StubTechCost_h2
 
+    L225.SubsectorInterp_h2 %>%
+      add_title("Subsector shareweight interpolation of hydrogen sectors") %>%
+      add_units("unitless") %>%
+      add_comments("Expand Subsector shareweight interpolation for all GCAM regions") %>%
+      add_legacy_name("L225.SubsectorInterp_h2") %>%
+      add_precursors("common/GCAM_region_names") ->
+      L225.SubsectorInterp_h2
+
     return_data(L225.Supplysector_h2, L225.SectorUseTrialMarket_h2, L225.SubsectorLogit_h2, L225.StubTech_h2,
                 L225.GlobalTechCoef_h2, L225.GlobalTechCost_h2, L225.GlobalTechShrwt_h2,
                 L225.PrimaryRenewKeyword_h2, L225.AvgFossilEffKeyword_h2,
                 L225.GlobalTechCapture_h2, L225.SubsectorShrwtFllt_h2,
                 L225.GlobalTechInputPMult_h2,
-                L225.GlobalTechSCurve_h2, L225.GlobalTechProfitShutdown_h2, L225.StubTechCost_h2)
+                L225.GlobalTechSCurve_h2, L225.GlobalTechProfitShutdown_h2, L225.StubTechCost_h2,
+                L225.SubsectorInterp_h2)
   } else {
     stop("Unknown command")
   }

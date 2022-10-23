@@ -8,4 +8,4 @@ bio_externality_cost,bio_externality_cost,grade 1,0,0
 bio_externality_cost,bio_externality_cost,grade 2,0.01,75
 bio_externality_cost,bio_externality_cost,grade 3,1.5,100
 bio_externality_cost,bio_externality_cost,grade 4,3,300
-bio_externality_cost,bio_externality_cost,grade 5,3,1000
+bio_externality_cost,bio_externality_cost,grade 5,3.5,1000

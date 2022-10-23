@@ -2020,6 +2020,21 @@ element input {
                *[@type='input']/demand-physical/node()</xPath>
                     <comments/>
                 </supplyDemandQuery>
+                <supplyDemandQuery title="hydrogen share-weights by tech">
+                    <axis1 name="technology">technology</axis1>
+                    <axis2 name="Year">technology</axis2>
+                    <xPath buildList="true" dataName="share-weight" group="false" sumAll="false">*[@type='sector' and contains(@name,'H2')]/
+               *[@type='subsector']/*[@type='technology']/
+               share-weight/node()</xPath>
+                    <comments/>
+                </supplyDemandQuery>
+                <supplyDemandQuery title="hydrogen share-weights by subsector">
+                    <axis1 name="technology">subsector</axis1>
+                    <axis2 name="Year">share-weight</axis2>
+                    <xPath buildList="true" dataName="share-weight" group="false" sumAll="false">*[@type='sector' and contains(@name,'H2')]/
+               *[@type='subsector']/share-weight/node()</xPath>
+                    <comments/>
+                </supplyDemandQuery>
             </queryGroup>
         </queryGroup>
         <queryGroup name="end use sectors">

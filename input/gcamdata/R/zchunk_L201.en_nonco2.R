@@ -79,7 +79,8 @@ module_emissions_L201.en_nonco2 <- function(command, ...) {
     bind_rows(
       get_data(all_data, "energy/calibrated_techs") %>% select(supplysector, subsector, fuel, technology, minicam.energy.input),
       get_data(all_data, "energy/calibrated_techs_bld_det") %>% select(supplysector, subsector, fuel, technology, minicam.energy.input),
-      get_data(all_data, UCD_tech_map_name) %>% select(supplysector, subsector = tranSubsector, fuel, technology = tranTechnology, minicam.energy.input)) %>%
+      get_data(all_data, UCD_tech_map_name) %>% select(supplysector, subsector = tranSubsector, fuel, technology = tranTechnology, minicam.energy.input)
+      ) %>%
       left_join(ind_subsector_revised %>% select(supplysector, subsector.emissions, fuel, technology, minicam.energy.input),
                                by=c("supplysector","fuel","technology","minicam.energy.input")) %>% #remap iron and steel subsector to match emissions data
       mutate(subsector = if_else(!is.na(subsector.emissions),subsector.emissions,subsector)) %>%
@@ -88,7 +89,6 @@ module_emissions_L201.en_nonco2 <- function(command, ...) {
              input.name = minicam.energy.input) %>%
       distinct() ->
       EnTechInputNameMap
-
 
     # L201.en_pol_emissions: Pollutant emissions for energy technologies in all regions
     L111.nonghg_tg_R_en_S_F_Yh %>%
