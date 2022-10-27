@@ -43,6 +43,7 @@ module_aglu_L221.land_input_1 <- function(command, ...) {
       FILE = "aglu/A_LandLeaf_Unmgd1",
       FILE = "aglu/A_LT_Mapping",
       FILE = "aglu/A_soil_time_scale_R",
+      FILE = "aglu/GCAMLandProfit",
       "L121.CarbonContent_kgm2_R_LT_GLU",
       "L125.LC_bm2_R_LT_Yh_GLU",
       "L125.LC_bm2_R",
@@ -206,6 +207,70 @@ module_aglu_L221.land_input_1 <- function(command, ...) {
       select(region, LandAllocatorRoot, LandNode1, unManagedLandValue, logit.year.fillout, logit.exponent, logit.type) ->
       L221.LN1_ValueLogit
 
+    # Unmanaged land value compare & update ----
+
+    GCAMLandProfit %>%
+      mutate(Rent = Tkm2 * Rent_DollarPerTkm2) %>%
+      separate(col = LandLeaf,
+               into = c("commodity", "basin", "irr", "fert"), fill = "left",
+               sep = "_") %>%
+      filter(grepl("Unmanaged|Protected|Urban|Rock|Tundra|biomass|Grass|Shrub",
+                   commodity) == F) %>%
+      mutate(commodity = if_else(grepl(c("OtherArableLand|Forest|Pasture"), commodity),
+                                 commodity, "Cropland")) %>%
+      group_by(region, commodity, basin) %>%
+      summarise_at(vars(Tkm2, Rent), sum) %>% ungroup %>%
+      mutate(RentalRate = Rent / Tkm2) %>% filter(Tkm2 >0) ->
+      GCAM_Rental
+
+    L221.LN1_ValueLogit %>%
+      filter(grepl("AgroForestLand_", LandNode1)) %>%
+      transmute(region,
+                basin = gsub("AgroForestLand_", "", LandNode1),
+                commodity = "GTAP_mean",
+                RentalRate  = unManagedLandValue) ->
+      GTAP_Rental
+
+    GCAM_Rental %>%
+      filter(commodity != "OtherArableLand") %>%
+      group_by(region, basin) %>%
+      summarise_at(vars(Tkm2, Rent), sum) %>% ungroup %>%
+      mutate(RentalRate = Rent / Tkm2) %>%
+      mutate(commodity = "GCAM_mean") %>%
+      bind_rows(GCAM_Rental) %>%
+      select(-Rent, - Tkm2) %>%
+      bind_rows(GTAP_Rental) ->
+      Rental_compare
+
+    # Rental_compare %>%
+    #   mutate(RentalRate = RentalRate / 100000) %>%
+    #   group_by_at(vars(commodity)) %>%
+    #   summarize(mean = mean(RentalRate),
+    #             Q05 = quantile(RentalRate, 0.05),
+    #             Q25 = quantile(RentalRate, 0.25),
+    #             median = median(RentalRate),
+    #             Q75 = quantile(RentalRate, 0.75),
+    #             Q95 = quantile(RentalRate, 0.95) ) %>%
+    #   readr::write_csv(file = "Rental_compare_stat.csv")
+
+    L221.LN1_ValueLogit %>%
+      filter(grepl("AgroForestLand_", LandNode1)) %>%
+      mutate(basin = gsub("AgroForestLand_", "", LandNode1)) %>%
+      left_join(
+        Rental_compare %>% spread(commodity, RentalRate),
+        by = c("region", "basin")
+      )  %>%
+      # Use GCAM mean value and GTAP values to fill in NA
+      mutate(unManagedLandValue =
+               if_else(is.na(GCAM_mean),
+                       unManagedLandValue, GCAM_mean)) %>%
+      select(names(L221.LN1_ValueLogit)) %>%
+      bind_rows(
+        L221.LN1_ValueLogit %>%
+          filter(!grepl("AgroForestLand_", LandNode1)) ) ->
+      L221.LN1_ValueLogit
+
+
 
     # Land use history
     # Build a temporary table of Land Cover allocated for Unmanaged Land, and then split into different
@@ -248,7 +313,7 @@ module_aglu_L221.land_input_1 <- function(command, ...) {
     LEVEL2_DATA_NAMES$LN1_Delete
 
 
-    # 3. Produce outputs
+    # 3. Produce outputs ----
     L221.LN0_Logit %>%
       add_title("Logit exponent of the top-level (zero) land nest by region") %>%
       add_units("NA") %>%
