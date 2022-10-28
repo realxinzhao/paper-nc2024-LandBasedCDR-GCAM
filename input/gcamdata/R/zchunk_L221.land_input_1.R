@@ -212,7 +212,7 @@ module_aglu_L221.land_input_1 <- function(command, ...) {
     GCAMLandProfit %>%
       mutate(Rent = Tkm2 * Rent_DollarPerTkm2) %>%
       separate(col = LandLeaf,
-               into = c("commodity", "basin", "irr", "fert"), fill = "left",
+               into = c("commodity", "basin", "irr", "fert"), fill = "right",
                sep = "_") %>%
       filter(grepl("Unmanaged|Protected|Urban|Rock|Tundra|biomass|Grass|Shrub",
                    commodity) == F) %>%
@@ -244,14 +244,14 @@ module_aglu_L221.land_input_1 <- function(command, ...) {
 
     # Rental_compare %>%
     #   mutate(RentalRate = RentalRate / 100000) %>%
-    #   group_by_at(vars(commodity)) %>%
+    #   dplyr::group_by_at(vars(commodity)) %>%
     #   summarize(mean = mean(RentalRate),
     #             Q05 = quantile(RentalRate, 0.05),
     #             Q25 = quantile(RentalRate, 0.25),
     #             median = median(RentalRate),
     #             Q75 = quantile(RentalRate, 0.75),
     #             Q95 = quantile(RentalRate, 0.95) ) %>%
-    #   readr::write_csv(file = "Rental_compare_stat.csv")
+    #   readr::write_csv(file = "Rental_compare_stat1.csv")
 
     L221.LN1_ValueLogit %>%
       filter(grepl("AgroForestLand_", LandNode1)) %>%
