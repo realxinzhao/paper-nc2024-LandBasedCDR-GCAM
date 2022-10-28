@@ -24,7 +24,8 @@ H2 retail dispensing,H2 retail dispensing,start-year,,0
 H2 central production,coal,2020,,1
 H2 central production,gas,2020,,1
 H2 central production,biomass,2020,,0
-H2 central production,biomass,2100,,0.2
+H2 central production,biomass,2050,,0.1
+H2 central production,biomass,2100,,0.1
 H2 central production,nuclear,2020,,1
 H2 central production,electricity,2020,,1
 H2 central production,wind,2020,,1
