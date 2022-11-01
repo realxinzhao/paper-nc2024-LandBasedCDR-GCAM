@@ -217,16 +217,16 @@ module_aglu_LA100.FAO_SUA_connection <- function(command, ...) {
       # NEC is removed by joining
       # though not all food items are consumed in all regions (deal with NA later)
       right_join(
-        L100.FAO_SUA_APE_balance %>%
+        L100.FAO_SUA_APE_balance %>% # Unit is Mt
           filter(element == "Food",
                  year == dplyr::last(MODEL_BASE_YEARS)),
         by = c("GCAM_region_ID", "GCAM_commodity")
       ) %>%
     # Both data were average already
     transmute(GCAM_region_ID, GCAM_commodity,
-              calperg = MKcal * 1000 / value,
-              fatperc = MtFat * 1000 / value * 100,
-              proteinperc = MtProtein * 1000 / value * 100) ->
+              calperg = MKcal / value / 1000,
+              fatperc = MtFat / value * 100,
+              proteinperc = MtProtein / value * 100) ->
       DF_Macronutrient_FoodItem2
 
 
