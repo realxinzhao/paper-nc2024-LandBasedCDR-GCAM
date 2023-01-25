@@ -9,7 +9,7 @@ LandNode,logit.exponent,logit.type
 Tundra,0,
 RockIceDesert,0,
 UrbanLand,0,
-AgroForestLand,1.5,
+AgroForestLand,1.75,
 AllPastureLand,2,
 AgroForest_NonPasture,0.75,
 AllForestLand,1.25,
