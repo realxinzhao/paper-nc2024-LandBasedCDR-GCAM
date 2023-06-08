@@ -1,9 +1,11 @@
 # Overview
 
 This Repo includes the GCAM model and related files for replicating GCAM runs performed for the study:
+
 **Trade-Offs in Land-Based Carbon Removal Measures under 1.5°C and 2°C Futures**
 
 Xin Zhao<sup>a*</sup>, Bryan K. Mignone<sup>a</sup>, Marshall A. Wise<sup>a</sup>, and Haewon C. McJeon<sup>a</sup>
+
 <sup>a</sup>Joint Global Change Research Institute, Pacific Northwest National Laboratory
 <sup>b</sup>ExxonMobil Research and Engineering Company
 *Corresponding Author. Email: xin.zhao@pnnl.gov
