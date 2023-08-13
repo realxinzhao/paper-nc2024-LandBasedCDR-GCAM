@@ -2,19 +2,20 @@
 
 This Repo includes the GCAM model and related files for replicating GCAM runs performed for the study:  
 
-**Trade-Offs in Land-Based Carbon Removal Measures under 1.5°C and 2°C Futures**
+**Trade-Offs in Land-Based Carbon Removal Measures under 1.5°C and 2°C Futures**  
+
 Xin Zhao<sup>a*</sup>, Bryan K. Mignone<sup>a</sup>, Marshall A. Wise<sup>a</sup>, and Haewon C. McJeon<sup>a</sup>  
 <sup>a</sup>Joint Global Change Research Institute, Pacific Northwest National Laboratory  
 <sup>b</sup>ExxonMobil Research and Engineering Company  
 *Corresponding Author. Email: xin.zhao@pnnl.gov
 
+
 Project Manager  
 Haewon C. McJeon 	(May 2021 - July 2023)  
 Matthew Binsted 	(August 2023 -)  
 
-
+**The model was built based on GCAM v6 and includes data and assumption changes, which are documented in the supplementary information of the paper. The compressed folder, "Zhao-LandBasedCDR-GCAMConfig.7z," contains the configuration and XML files necessary for the running the model.**
 ## Read Me in Zhao-LandBasedCDR-GCAMConfig.7z
-The model was built based on GCAM v6 and includes data and assumption changes, which are documented in the supplementary information of the paper. The compressed folder, "Zhao-LandBasedCDR-GCAMConfig.7z," contains the configuration and XML files necessary for the running the model.
 
 ### Run model:
 
