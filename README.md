@@ -12,9 +12,9 @@ Xin Zhao<sup>a*</sup>, Bryan K. Mignone<sup>a</sup>, Marshall A. Wise<sup>a</sup
 
 The model was built based on GCAM v6 and includes data and assumption changes, which are documented in the supplementary information of the paper. The compressed folder, "Zhao-LandBasedCDR-GCAMConfig.7z," contains the configuration and XML files necessary for the running the model.
 
-##Read Me in Zhao-LandBasedCDR-GCAMConfig.7z
+## Read Me in Zhao-LandBasedCDR-GCAMConfig.7z
 
-###Run model:
+### Run model:
 
 The folder starts with exe includes configuration, gcam.exe, and other nessary files to replicate GCAM runs performed in our study. The optimal carbon path is read in already. There were found using our cumulative target finder structure (see code in input/R/Run_Target_Finder.R). The CMD file run-gcam.bat should start a model run. The output database will be generated in the output folder.
 
